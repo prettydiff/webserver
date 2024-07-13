@@ -1,0 +1,38 @@
+{
+    "author": "Austin Cheney",
+    "bin": "./bin/share-files.js",
+    "bugs": {
+        "url": "https://github.com/prettydiff/webserver/issues"
+    },
+    "command": "share",
+    "description": "WebSocket first web server, HTTP over WebSockets.",
+    "devDependencies": {
+        "@swc/cli": "^0.4.0",
+        "@swc/core": "^1.6.13",
+        "@types/node": "^20.14.10",
+        "@typescript-eslint/eslint-plugin": "^7.16.0",
+        "@typescript-eslint/parser": "^7.16.0",
+        "eslint": "^8.56.0",
+        "eslint-plugin-eslint-comments": "^3.2.0",
+        "typescript": "^5.5.3"
+    },
+    "directories": {
+        "bin": "./bin",
+        "lib": "./lib"
+    },
+    "keywords": [],
+    "license": "AGPL-3.0-only",
+    "main": "js/lib/index.js",
+    "name": "webserver",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/prettydiff/webserver.git"
+    },
+    "scripts": {
+        "build": "npx swc ./lib -d ./js",
+        "lint": "npx eslint ./ --ext ts"
+    },
+    "types": "/lib/typescript",
+    "type": "module",
+    "version": "0.0.1"
+}
