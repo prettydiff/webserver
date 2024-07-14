@@ -1,5 +1,4 @@
 
-import getSocket from "./getSocket.js";
 import hash from "../utilities/hash.js";
 import http from "./http.js";
 import messageHandler from "./messageHandler.js";
@@ -13,7 +12,6 @@ const server = function transmit_server(config:config_websocket_server):node_net
                 handshake = function transmit_server_connection_handshake(data:Buffer):void {
                     let browserType:string = null,
                         hashKey:string = null,
-                        hashName:string = null,
                         nonceHeader:string = null,
                         userAgent:string = null,
                         type:socket_type = null,
@@ -22,7 +20,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
                         testNonce:RegExp = (/^Sec-WebSocket-Protocol:\s*\w+-/),
                         headerIndex:number = dataString.indexOf("\r\n\r\n"),
                         headerList:string[] = (headerIndex > 0)
-                            ? dataString.slice(0, dataString.indexOf("\r\n\r\n")).split("\r\n")
+                            ? dataString.slice(0, headerIndex).split("\r\n")
                             : dataString.split("\r\n"),
                         bodyString:string = dataString.slice(headerIndex + 4),
                         flags:store_flag = {
@@ -48,6 +46,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
                             // some complexity is present because browsers will not have a "hash" heading
                             if (flags.key === true && (flags.type === true || flags.userAgent === true)) {
                                 const headerComplete = function transmit_server_connection_handshake_headers_headerComplete():void {
+                                    /*
                                     const identifier:string = (type === "browser")
                                         ? `${userAgent}-${browserType}-${hashKey}`
                                         : hashName;
@@ -55,10 +54,11 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                         socket.destroy();
                                         return;
                                     }
+                                    */
                                     socket_extension({
                                         callback: clientRespond,
                                         handler: messageHandler,
-                                        identifier: identifier,
+                                        identifier: `${userAgent}-${browserType}-${hashKey}`,
                                         role: "server",
                                         socket: socket,
                                         type: type
@@ -123,6 +123,10 @@ const server = function transmit_server(config:config_websocket_server):node_net
                         http(headerList, bodyString, socket);
                     }
                 };
+            socket.on("error", function transmit_server_connection_handshake_socketError():void {
+                // this worthless error trapping prevents an "unhandled error" escalation that breaks the process
+                return null;
+            });
             socket.on("data", handshake);
         },
         wsServer:node_net_Server = (vars.secure === true && config.options !== null)

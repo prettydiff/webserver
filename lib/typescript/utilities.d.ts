@@ -15,8 +15,8 @@ interface store_flag {
 
 interface vars {
     host: string;
+    path: store_string;
     port: number;
-    projectPath: string;
     secure: boolean;
     sep: string;
     text: store_string;

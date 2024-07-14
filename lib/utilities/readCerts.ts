@@ -4,7 +4,7 @@ import node from "./node.js";
 import vars from "./vars.js";
 
 const readCerts = function utilities_readCerts(callback:(options:transmit_tlsOptions, certLogs:string[]) => void):void {
-    const certLocation:string = `${vars.projectPath}lib${vars.sep}certs${vars.sep}`,
+    const certLocation:string = `${vars.path.project}lib${vars.sep}certs${vars.sep}`,
         certName:string = "server",
         caName:string = "int",
         https:transmit_tlsOptions = {

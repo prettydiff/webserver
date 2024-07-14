@@ -7,6 +7,14 @@ interface config_hash {
     source: Buffer | string;
 }
 
+interface config_html {
+    binary: boolean;
+    content: Buffer|string[];
+    content_type: string;
+    status: number;
+    template: boolean;
+}
+
 interface config_websocket_create extends config_websocket_openService {
     headers: string[];
 }

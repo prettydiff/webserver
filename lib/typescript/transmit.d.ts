@@ -1,4 +1,13 @@
 
+interface stat_item extends node_fs_Stats {
+    path: string;
+    type: file_type;
+}
+
+interface statList extends Array<stat_item> {
+    [index:number]: stat_item;
+}
+
 interface socket_data {
     data: socket_data_type;
     service: service_type;

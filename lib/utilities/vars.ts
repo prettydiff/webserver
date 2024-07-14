@@ -3,8 +3,11 @@ import node from "./node.js";
 
 const vars:vars = {
     host: "",
+    path: {
+        project: "",
+        webRoot: "/appdata/apache/www"
+    },
     port: 3333,
-    projectPath: "",
     secure: false,
     sep: node.path.sep,
     text: {

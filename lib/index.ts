@@ -3,7 +3,7 @@ import readCerts from "./utilities/readCerts.js";
 import server from "./transmit/server.js";
 import vars from "./utilities/vars.js";
 
-vars.projectPath = process.argv[1].slice(0, process.argv[1].indexOf(`${vars.sep}js${vars.sep}`)) + vars.sep;
+vars.path.project = process.argv[1].slice(0, process.argv[1].indexOf(`${vars.sep}js${vars.sep}`)) + vars.sep;
 
 if (vars.secure === true) {
     readCerts(function index_readCerts(tlsOptions:transmit_tlsOptions):void {
