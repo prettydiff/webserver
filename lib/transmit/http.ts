@@ -1,12 +1,22 @@
 
 import dateString from "../utilities/dateString.js";
+import getAddress from "../utilities/getAddress.js";
 import node from "../utilities/node.js";
 import vars from "../utilities/vars.js";
+
+/* cspell: words nofollow, prettydiff */
 
 const http = function transmit_http(headerList:string[], body:Buffer|string, socket:websocket_client):void {
     const index0:string[] = headerList[0].replace(/^\s+/, "").replace(/\s+/, " ").split(" "),
         method:string = index0[0],
-        uri:string[] = index0[1].split("/"),
+        resource:string = index0[1],
+        scheme:"http"|"https" = (vars.secure === true)
+            ? "https"
+            : "http",
+        socketAddress:transmit_addresses_socket = getAddress({
+            socket: socket,
+            type: "ws"
+        }),
         host:string = (function transmit_http_host():string {
             let index:number = headerList.length;
             do {
@@ -16,12 +26,14 @@ const http = function transmit_http(headerList:string[], body:Buffer|string, soc
                 }
             } while (index > 0);
             return "";
-        }());
+        }()),
+        domain:string = host.replace(`:${socketAddress.local.port}`, "");
     if (method === "GET") {
-        if (host.indexOf("www.x") === 0) {
-            const fileFragment:string = (index0[1] === "/")
+        if (domain === "www.x") {
+            const asset:string[] = resource.split("/"),
+                fileFragment:string = (index0[1] === "/")
                     ? `${vars.sep}index.html`
-                    : uri.join(vars.sep),
+                    : asset.join(vars.sep),
                 filePath:string = vars.path.webRoot + fileFragment.replace(/%\d{2}/g, function transmit_http_uriEscape(input:string):string {
                     return String.fromCharCode(parseInt(`00${input.slice(1)}`, 16));
                 }),
@@ -91,7 +103,7 @@ const http = function transmit_http(headerList:string[], body:Buffer|string, soc
                 const notFound = function transmit_http_stat_notFound():void {
                         write(html({
                             binary: false,
-                            content: [`<p>Resource not found: <strong>${uri.join("/")}</strong></p>`],
+                            content: [`<p>Resource not found: <strong>${asset.join("/")}</strong></p>`],
                             content_type: "text/html; utf8",
                             status: 404,
                             template: true
@@ -187,9 +199,6 @@ const http = function transmit_http(headerList:string[], body:Buffer|string, soc
                                                 `<p>${index0[1]}</p>`,
                                                 "<table><thead><tr><th>object</th><th>type</th><th>modified date</th><th>modified time</th></tr></thead><tbody>"
                                             ],
-                                            scheme:"http"|"https" = (vars.secure === true)
-                                                ? "https"
-                                                : "http",
                                             total:number = stat_list.length,
                                             icon:store_string = {
                                                 "block_device": "\u2580",
@@ -298,6 +307,29 @@ const http = function transmit_http(headerList:string[], body:Buffer|string, soc
                     notFound();
                 }
             });
+        } else if (vars.portMap[domain] !== undefined) {
+            const proxy:node_net_Socket = node.net.connect({
+                host: socketAddress.local.address,
+                port: vars.portMap[domain]
+            });
+            socket.pipe(proxy);
+            proxy.pipe(socket);
+            proxy.on("close", function transmit_http_proxyClose():void {
+                proxy.destroy();
+                socket.destroy();
+            });
+            proxy.on("error", function transmit_http_proxyError():void {
+                // this worthless error trapping prevents an "unhandled error" escalation that breaks the process
+                return null;
+            });
+            headerList.push("");
+            headerList.push("");
+            proxy.write(headerList.join("\r\n"));
+            if (body !== null && body !== "") {
+                proxy.write(body);
+            }
+        } else {
+            socket.destroy();
         }
     }
 };

@@ -1,6 +1,8 @@
 
 import node from "./node.js";
 
+/* cspell: words appdata */
+
 const vars:vars = {
     host: "",
     path: {
@@ -8,6 +10,7 @@ const vars:vars = {
         webRoot: "/appdata/apache/www"
     },
     port: 3333,
+    portMap: {},
     secure: false,
     sep: node.path.sep,
     text: {

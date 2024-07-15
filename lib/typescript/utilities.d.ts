@@ -5,18 +5,23 @@ interface hash_output {
     hash: string;
 }
 
-interface store_string {
-    [key:string]: string;
-}
-
 interface store_flag {
     [key:string]: boolean;
+}
+
+interface store_number {
+    [key:string]: number;
+}
+
+interface store_string {
+    [key:string]: string;
 }
 
 interface vars {
     host: string;
     path: store_string;
     port: number;
+    portMap: store_number;
     secure: boolean;
     sep: string;
     text: store_string;

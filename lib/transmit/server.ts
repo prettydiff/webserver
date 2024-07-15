@@ -1,4 +1,5 @@
 
+import error from "../utilities/error.js";
 import hash from "../utilities/hash.js";
 import http from "./http.js";
 import messageHandler from "./messageHandler.js";
@@ -153,6 +154,13 @@ const server = function transmit_server(config:config_websocket_server):node_net
             port: vars.port
         }, listenerCallback);
     }
+    node.fs.readFile(`${vars.path.project}portMap.json`, function transmit_server_portMap(erp:node_error, fileContents:Buffer):void {
+        if (erp === null) {
+            vars.portMap = JSON.parse(fileContents.toString()) as store_number;
+            return;
+        }
+        error(["Error reading project file portMap.json, which maps vanity domains to port numbers for the HTTP proxy."], erp);
+    });
     return wsServer;
 };
 

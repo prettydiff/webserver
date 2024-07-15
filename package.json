@@ -30,7 +30,8 @@
     },
     "scripts": {
         "build": "npx swc ./lib -d ./js",
-        "lint": "npx eslint ./ --ext ts"
+        "lint": "npx eslint ./ --ext ts",
+        "server": "node js/lib/index.js"
     },
     "types": "/lib/typescript",
     "type": "module",
