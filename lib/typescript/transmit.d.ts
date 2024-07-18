@@ -41,7 +41,7 @@ interface transmit_tlsOptions {
     };
 }
 
-interface transmit_type {
+interface transmit_socket {
     socket: node_http_ClientRequest | node_http_ServerResponse | websocket_client;
     type: "http" | "ws";
 }

@@ -2,3 +2,4 @@ node_modules
 /js
 /lib/certs
 /portMap.json
+/lib/conf

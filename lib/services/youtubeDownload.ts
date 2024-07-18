@@ -1,0 +1,93 @@
+
+import humanTime from "../utilities/humanTime.js";
+import node from "../utilities/node.js";
+import send from "../transmit/send.js";
+import vars from "../utilities/vars.js";
+
+const youtube_download = function services_youtubeDownload(socketData:socket_data, transmit:transmit_socket):void {
+    let fileName:string = "";
+    const data:services_youtubeDownload = socketData.data as services_youtubeDownload,
+        socket:websocket_client = transmit.socket as websocket_client,
+        type:youtubeDownload_type = data.type,
+        types:string[] = type.split("-"),
+        originalMediaType:youtubeDownload_mediaType = types[0] as youtubeDownload_mediaType,
+        startTime:bigint = process.hrtime.bigint(),
+        message = function services_youtubeDownload_message(item:string):void {
+            send({
+                "data": {
+                    "status": item,
+                    "time": humanTime(startTime)
+                },
+                "service": "youtube-download-status"
+            }, socket, 1);
+        },
+        merge = function services_youtubeDownload_merge():void {
+            const str:string = `ffmpeg -i "${fileName}.mp4" -i "${fileName}.m4a" -c:v copy -c:a aac "${fileName}x.mp4" && rm "${fileName}.mp4" && rm "${fileName}.m4a"`,
+                spawn:node_childProcess_ChildProcess = node.child_process.spawn(str, {
+                    cwd: vars.path.project,
+                    shell: true
+                });
+            message(`[COMMAND] ${str}`);
+            socket.on("close", function services_youtubeDownload_socketClose():void {
+                spawn.kill(1);
+            });
+            spawn.on("close", function services_youtubeDownload_close():void {
+                message("Operation complete!");
+                spawn.kill(0);
+            });
+            spawn.on("error", function services_youtubeDownload_error(error:node_error):void {
+                message(`[SPAWN error] ${JSON.stringify(error)}`);
+            });
+            spawn.stderr.on("data", function services_youtubeDownload_stderr(data:Buffer):void {
+                message(`[STDERR] ${data.toString()}`);
+            });
+            spawn.stdout.on("data", function services_youtubeDownload_data(data:Buffer):void {
+                message(data.toString());
+            });
+        },
+        createSpawn = function services_youtubeDownload_createSpawn(mediaType:"audio"|"video"):void {
+            const options:string = ((/-+\w/).test(data.options.replace(/^\s+/, "")) === true)
+                    ? ` ${data.options}`
+                    : "",
+                name:string = (originalMediaType === "video" && mediaType === "audio")
+                    ? "yt-dlp-audio-video.conf"
+                    : `yt-dlp-${mediaType}-${types[1]}.conf`,
+                script:string = `yt-dlp --config-locations ${vars.path.project}lib${vars.sep}conf${vars.sep + name + options} ${data.address}`,
+                spawn:node_childProcess_ChildProcess = node.child_process.spawn(script, {
+                    cwd: vars.path.project,
+                    shell: true
+                });
+            message(`[COMMAND] ${script}`);
+            socket.on("close", function services_youtubeDownload_socketClose():void {
+                spawn.kill(1);
+            });
+            spawn.on("close", function services_youtubeDownload_close():void {
+                if (mediaType === "audio" && originalMediaType === "audio") {
+                    message("Operation complete!");
+                } else if (mediaType === "audio" && originalMediaType === "video") {
+                    setTimeout(merge, 10000);
+                } else if (originalMediaType === "video") {
+                    createSpawn("audio");
+                }
+                spawn.kill(0);
+            });
+            spawn.on("error", function services_youtubeDownload_error(error:node_error):void {
+                message(`[SPAWN error] ${JSON.stringify(error)}`);
+            });
+            spawn.stderr.on("data", function services_youtubeDownload_stderr(data:Buffer):void {
+                message(`[STDERR] ${data.toString()}`);
+            });
+            spawn.stdout.on("data", function services_youtubeDownload_data(data:Buffer):void {
+                const str:string = data.toString(),
+                    pathFragment:string = "[download] Destination: ";
+                if (mediaType === "video" && str.indexOf(pathFragment) > -1 && str.indexOf(`${vars.sep}yt_download${vars.sep}`) > 0) {
+                    const fullName:string = str.split(pathFragment)[1];
+                    fileName = fullName.slice(0, fullName.lastIndexOf("."));
+                }
+                message(str);
+            });
+        };
+    createSpawn(originalMediaType);
+};
+
+export default youtube_download;

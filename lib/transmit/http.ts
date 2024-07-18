@@ -314,7 +314,7 @@ const http = function transmit_http(headerList:string[], body:Buffer|string, soc
             });
             socket.pipe(proxy);
             proxy.pipe(socket);
-            proxy.on("close", function transmit_http_proxyClose():void {
+            proxy.once("close", function transmit_http_proxyClose():void {
                 proxy.destroy();
                 socket.destroy();
             });

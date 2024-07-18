@@ -113,7 +113,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
                             } else if (testNonce.test(header) === true) {
                                 flags.type = true;
                                 nonceHeader = header;
-                                type = "browser";
+                                type = header.replace(/^Sec-WebSocket-Protocol:\s*/, "") as socket_type;
                                 header = header.slice(header.indexOf(":")).replace(/^:\s+/, "");
                                 browserType = header.slice(0, header.indexOf("-"));
                                 headers();
