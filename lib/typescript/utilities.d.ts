@@ -20,7 +20,10 @@ interface store_string {
 interface vars {
     host: string;
     path: store_string;
-    port: number;
+    port: {
+        open: number;
+        secure: number;
+    };
     portMap: store_number;
     secure: boolean;
     sep: string;

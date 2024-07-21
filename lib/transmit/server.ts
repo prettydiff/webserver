@@ -1,5 +1,7 @@
 
+import create_proxy from "./createProxy.js";
 import error from "../utilities/error.js";
+import getAddress from "../utilities/getAddress.js";
 import hash from "../utilities/hash.js";
 import http from "./http.js";
 import messageHandler from "./messageHandler.js";
@@ -13,8 +15,8 @@ const server = function transmit_server(config:config_websocket_server):node_net
                 handshake = function transmit_server_connection_handshake(data:Buffer):void {
                     let browserType:string = null,
                         hashKey:string = null,
-                        nonceHeader:string = null,
                         userAgent:string = null,
+                        host:string = null,
                         type:socket_type = null,
                         ws:boolean = false;
                     const dataString:string = data.toString(),
@@ -35,10 +37,12 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                             "HTTP/1.1 101 Switching Protocols",
                                             "Upgrade: websocket",
                                             "Connection: Upgrade",
-                                            `Sec-WebSocket-Accept: ${hashKey}`
+                                            `Sec-WebSocket-Accept: ${hashKey}`,
+                                            "Access-Control-Allow-Origin: *",
+                                            "Server: webserver"
                                         ];
                                     if (type === "browser") {
-                                        headers.push(nonceHeader);
+                                        // headers.push(nonceHeader);
                                     }
                                     headers.push("");
                                     headers.push("");
@@ -67,6 +71,20 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                 };
                                 ws = true;
                                 headerComplete();
+                                if (host !== null && host !== "www.x") {
+                                    const socketAddress:transmit_addresses_socket = getAddress({
+                                            socket: socket,
+                                            type: "ws"
+                                        }),
+                                        config:config_createProxy = {
+                                            body: bodyString,
+                                            domain: host,
+                                            headerList: headerList,
+                                            socket: socket,
+                                            socketAddress: socketAddress
+                                        };console.log(headerList);
+                                    create_proxy(config);
+                                }
                             }
                         },
                         headerEach = function transmit_server_connection_handshake_headerEach(header:string):void {
@@ -112,11 +130,16 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                 headers();
                             } else if (testNonce.test(header) === true) {
                                 flags.type = true;
-                                nonceHeader = header;
                                 type = header.replace(/^Sec-WebSocket-Protocol:\s*/, "") as socket_type;
                                 header = header.slice(header.indexOf(":")).replace(/^:\s+/, "");
                                 browserType = header.slice(0, header.indexOf("-"));
                                 headers();
+                            } else if (header.toLowerCase().indexOf("host:") === 0) {
+                                const domain:string = header.toLowerCase().replace("host:", "").replace(/\s+/g, ""),
+                                    index:number = domain.indexOf(":");
+                                host = (index > 0)
+                                    ? domain.slice(0, index)
+                                    : domain;
                             }
                         };
                     headerList.forEach(headerEach);
@@ -130,28 +153,32 @@ const server = function transmit_server(config:config_websocket_server):node_net
             });
             socket.on("data", handshake);
         },
-        wsServer:node_net_Server = (vars.secure === true && config.options !== null)
+        wsServer:node_net_Server = (config.options === null)
             // options are of type TlsOptions
-            ? node.tls.createServer({
+            ? node.net.createServer()
+            : node.tls.createServer({
                 ca: config.options.options.ca,
                 cert: config.options.options.cert,
                 key: config.options.options.key
-            }, connection)
-            : node.net.createServer(),
+            }, connection),
         listenerCallback = function transmit_server_listenerCallback():void {
             config.callback(wsServer.address() as node_net_AddressInfo);
         };
-    if (vars.secure === false) {
+    if (config.options === null) {
         wsServer.on("connection", connection);
     }
     if (vars.host === "") {
         wsServer.listen({
-            port: vars.port
+            port: (config.options === null)
+                ? vars.port.open
+                : vars.port.secure
         }, listenerCallback);
     } else {
         wsServer.listen({
             host: vars.host,
-            port: vars.port
+            port: (config.options === null)
+                ? vars.port.open
+                : vars.port.secure
         }, listenerCallback);
     }
     node.fs.readFile(`${vars.path.project}portMap.json`, function transmit_server_portMap(erp:node_error, fileContents:Buffer):void {

@@ -14,7 +14,7 @@ const hash = function utilities_hash(config:config_hash):void {
             if (ers === null && stat.isFile() === true) {
                 const hash:node_crypto_Hash = node.crypto.createHash(config.algorithm),
                     hashStream:node_fs_ReadStream = node.fs.createReadStream(config.source),
-                    hashBack = function terminal_commands_library_hash_dirComplete_hashBack():void {
+                    hashBack = function utilities_hash_hashBack():void {
                         hashOutput.hash = hash.digest(config.digest).replace(/\s+/g, "");
                         config.callback(hashOutput);
                     };

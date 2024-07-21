@@ -1,4 +1,5 @@
 
+import create_proxy from "./createProxy.js";
 import dateString from "../utilities/dateString.js";
 import getAddress from "../utilities/getAddress.js";
 import node from "../utilities/node.js";
@@ -308,26 +309,13 @@ const http = function transmit_http(headerList:string[], body:Buffer|string, soc
                 }
             });
         } else if (vars.portMap[domain] !== undefined) {
-            const proxy:node_net_Socket = node.net.connect({
-                host: socketAddress.local.address,
-                port: vars.portMap[domain]
+            create_proxy({
+                body: body,
+                domain: domain,
+                headerList: headerList,
+                socket: socket,
+                socketAddress: socketAddress
             });
-            socket.pipe(proxy);
-            proxy.pipe(socket);
-            proxy.once("close", function transmit_http_proxyClose():void {
-                proxy.destroy();
-                socket.destroy();
-            });
-            proxy.on("error", function transmit_http_proxyError():void {
-                // this worthless error trapping prevents an "unhandled error" escalation that breaks the process
-                return null;
-            });
-            headerList.push("");
-            headerList.push("");
-            proxy.write(headerList.join("\r\n"));
-            if (body !== null && body !== "") {
-                proxy.write(body);
-            }
         } else {
             socket.destroy();
         }

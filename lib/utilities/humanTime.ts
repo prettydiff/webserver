@@ -16,7 +16,7 @@ const humanTime = function utilities_humanTime(startTime:bigint):string {
         elapsedMin:bigint  = (minutes * factorMin),
         seconds:bigint     = ((elapsed - (elapsedHour + elapsedMin)) / factorSec),
         nanosecond:bigint  = (elapsed - (elapsedHour + elapsedMin + (seconds * factorSec))),
-        nanoString:string  = (function terminal_utilities_humanTime_nanoString():string {
+        nanoString:string  = (function utilities_humanTime_nanoString():string {
             let nano:string = nanosecond.toString(),
                 a:number = nano.length;
             if (a < 9) {

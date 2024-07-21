@@ -6,7 +6,7 @@ type hash_input_type = "direct" | "file";
 type service_type = "youtube-download-status" | "youtube-download";
 type socket_data_type = services_youtubeDownload | services_youtubeStatus;
 type socket_status_type = "closed" | "end" | "open" | "pending";
-type socket_type = "browser-youtube-download" | "browser";
+type socket_type = "browser-youtube-download" | "browser" | "proxy";
 type youtubeDownload_mediaType = "audio" | "video";
 type youtubeDownload_type = "audio-file" | "audio-playlist" | "video-file" | "video-playlist";
 

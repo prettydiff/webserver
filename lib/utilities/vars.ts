@@ -9,7 +9,10 @@ const vars:vars = {
         project: "",
         webRoot: "/appdata/apache/www"
     },
-    port: 80,
+    port: {
+        open: 80,
+        secure: 443
+    },
     portMap: {},
     secure: false,
     sep: node.path.sep,

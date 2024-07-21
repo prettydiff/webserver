@@ -27,7 +27,7 @@ const error = function utilities_error(errText:string[], errObject:node_childPro
     if (errText[0] === "" && errText.length < 2) {
         logger(`${vars.text.yellow}No error message supplied${vars.text.none}`);
     } else {
-        errText.forEach(function terminal_utilities_error_errorOut_each(value:string):void {
+        errText.forEach(function utilities_error_each(value:string):void {
             logger(value);
         });
     }

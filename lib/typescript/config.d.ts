@@ -1,4 +1,12 @@
 
+interface config_createProxy {
+    body: Buffer | string;
+    domain: string;
+    headerList: string[];
+    socket: websocket_client;
+    socketAddress: transmit_addresses_socket;
+}
+
 interface config_hash {
     algorithm: hash_algorithm_type;
     callback: (hashOutput:hash_output) => void;
@@ -15,8 +23,15 @@ interface config_html {
     template: boolean;
 }
 
-interface config_websocket_create extends config_websocket_openService {
+interface config_websocket_create {
+    callback: (socket:websocket_client) => void;
+    handler: websocket_message_handler;
+    hash: string;
     headers: string[];
+    ip: string;
+    port: number;
+    proxy: boolean;
+    socketType: socket_type;
 }
 
 interface config_websocket_extensions {
@@ -26,15 +41,6 @@ interface config_websocket_extensions {
     role: "client"|"server";
     socket: websocket_client;
     type: socket_type;
-}
-
-interface config_websocket_openService {
-    callback: (socket:websocket_client) => void;
-    handler: websocket_message_handler;
-    hash: string;
-    ip: string;
-    port: number;
-    socketType: socket_type;
 }
 
 interface config_websocket_server {

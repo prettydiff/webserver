@@ -66,9 +66,9 @@ const send = function transmit_send(body:Buffer|socket_data, socketItem:websocke
             op:1|2 = (isBuffer === true)
                 ? 2
                 : 1,
-            fragmentation = function terminal_server_transmission_transmitWs_queue_fragmentation(first:boolean):void {
+            fragmentation = function transmit_send_fragmentation(first:boolean):void {
                 let finish:boolean = false;
-                const frameBody:Buffer = (function terminal_server_transmission_transmitWs_queue_fragmentation_frameBody():Buffer {
+                const frameBody:Buffer = (function transmit_send_fragmentation_frameBody():Buffer {
                         if (fragmentSize < 1 || len === fragmentSize) {
                             finish = true;
                             return dataPackage;
@@ -82,7 +82,7 @@ const send = function transmit_send(body:Buffer|socket_data, socketItem:websocke
                         return fragment;
                     }()),
                     size:number = frameBody.length,
-                    frameHeader:Buffer = (function terminal_server_transmission_transmitWs_queue_fragmentation_frameHeader():Buffer {
+                    frameHeader:Buffer = (function transmit_send_fragmentation_frameHeader():Buffer {
                         // frame 0 is:
                         // * 128 bits for fin, 0 for unfinished plus opcode
                         // * opcode 0 - continuation of fragments
@@ -122,7 +122,7 @@ const send = function transmit_send(body:Buffer|socket_data, socketItem:websocke
                         writeFrame();
                     }
                 } else {
-                    terminal_server_transmission_transmitWs_queue_fragmentation(false);
+                    transmit_send_fragmentation(false);
                 }
             };
         let len:number = dataPackage.length;

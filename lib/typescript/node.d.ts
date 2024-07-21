@@ -9,7 +9,7 @@ import { AddressInfo, Server, Socket } from "node:net";
 import { NetworkInterfaceInfo, NetworkInterfaceInfoIPv4, NetworkInterfaceInfoIPv6 } from "node:os";
 import { Readable } from "node:stream";
 import { StringDecoder } from "node:string_decoder";
-import { TLSSocket } from "node:tls";
+import { TLSSocket, TLSSocketOptions } from "node:tls";
 import { BrotliCompress, BrotliDecompress } from "node:zlib";
 
 declare global {
@@ -39,6 +39,7 @@ declare global {
     type node_stream_Readable = Readable;
     type node_stringDecoder_StringDecoder = StringDecoder;
     type node_tls_TLSSocket = TLSSocket;
+    type node_tls_TLSSocketOptions = TLSSocketOptions;
     type node_zlib_BrotliCompress = BrotliCompress;
     type node_zlib_BrotliDecompress = BrotliDecompress;
 }

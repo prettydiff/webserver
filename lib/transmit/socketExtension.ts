@@ -10,8 +10,8 @@ import vars from "../utilities/vars.js";
 const socket_extension = function transmit_socketExtension(config:config_websocket_extensions):void {
     // permit if the socket is not already created
     if (getSocket(config.type, config.identifier) === null) {
-        const ping = function terminal_server_transmission_transmitWs_socketExtension_ping(ttl:number, callback:(err:node_error, roundtrip:bigint) => void):void {
-                const errorObject = function terminal_server_transmission_transmitWs_socketExtension_ping_errorObject(code:string, message:string):node_error {
+        const ping = function transmit_socketExtension_ping(ttl:number, callback:(err:node_error, roundtrip:bigint) => void):void {
+                const errorObject = function transmit_socketExtension_ping_errorObject(code:string, message:string):node_error {
                         const err:node_error = new Error();
                         err.code = code;
                         err.message = `${message} Socket type ${config.socket.type} and name ${config.socket.hash}.`;
@@ -26,7 +26,7 @@ const socket_extension = function transmit_socketExtension(config:config_websock
                     config.socket.pong[nameSlice] = {
                         callback: callback,
                         start: process.hrtime.bigint(),
-                        timeOut: setTimeout(function terminal_server_transmission_transmitWs_socketExtension_ping_delay():void {
+                        timeOut: setTimeout(function transmit_socketExtension_ping_delay():void {
                             callback(config.socket.pong[nameSlice].timeOutMessage, null);
                             delete config.socket.pong[nameSlice];
                         }, ttl),
@@ -35,10 +35,10 @@ const socket_extension = function transmit_socketExtension(config:config_websock
                     };
                 }
             },
-            socketEnd = function terminal_server_transmission_transmitWs_socketExtension_socketEnd():void {
+            socketEnd = function transmit_socketExtension_socketEnd():void {
                 config.socket.status = "end";
             },
-            socketError = function terminal_server_transmission_transmitWs_socketExtension_socketError(errorMessage:node_error):void {
+            socketError = function transmit_socketExtension_socketError(errorMessage:node_error):void {
                 if (vars.verbose === true) {
                     error([
                         `Error on socket of type ${config.socket.type} at location ${config.socket.role} with identifier ${config.socket.hash}.`,

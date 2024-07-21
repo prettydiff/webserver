@@ -58,7 +58,9 @@ interface websocket_client extends node_tls_TLSSocket {
     };
     queue: Buffer[];
     role: "client"|"server";
+    secure: boolean;
     status: socket_status_type;
+    tlsOptions: node_tls_TLSSocketOptions;
     type: socket_type;
 }
 

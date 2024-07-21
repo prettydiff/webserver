@@ -46,16 +46,20 @@ const create_socket = function transmit_createSocket(config:config_websocket_cre
                     header.push("");
                     header.push("");
                     client.write(header.join("\r\n"));
-                    client.once("data", function transmit_createSocket_hash_ready_data():void {
-                        socket_extension({
-                            callback: config.callback,
-                            handler: config.handler,
-                            identifier: config.hash,
-                            role: "client",
-                            socket: client,
-                            type: config.socketType
+                    if (config.proxy === true) {
+                        config.callback(client);
+                    } else {
+                        client.once("data", function transmit_createSocket_hash_ready_data():void {
+                            socket_extension({
+                                callback: config.callback,
+                                handler: config.handler,
+                                identifier: config.hash,
+                                role: "client",
+                                socket: client,
+                                type: config.socketType
+                            });
                         });
-                    });
+                    }
                 };
             if (len > 0) {
                 do {

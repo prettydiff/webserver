@@ -5,7 +5,6 @@ import send from "../transmit/send.js";
 import vars from "../utilities/vars.js";
 
 const youtube_download = function services_youtubeDownload(socketData:socket_data, transmit:transmit_socket):void {
-    let fileName:string = "";
     const data:services_youtubeDownload = socketData.data as services_youtubeDownload,
         socket:websocket_client = transmit.socket as websocket_client,
         type:youtubeDownload_type = data.type,
@@ -21,7 +20,7 @@ const youtube_download = function services_youtubeDownload(socketData:socket_dat
                 "service": "youtube-download-status"
             }, socket, 1);
         },
-        merge = function services_youtubeDownload_merge():void {
+        merge = function services_youtubeDownload_merge(fileName:string):void {
             const str:string = `ffmpeg -i "${fileName}.mp4" -i "${fileName}.m4a" -c:v copy -c:a aac "${fileName}x.mp4" && rm "${fileName}.mp4" && rm "${fileName}.m4a"`,
                 spawn:node_childProcess_ChildProcess = node.child_process.spawn(str, {
                     cwd: vars.path.project,
@@ -45,7 +44,8 @@ const youtube_download = function services_youtubeDownload(socketData:socket_dat
                 message(data.toString());
             });
         },
-        createSpawn = function services_youtubeDownload_createSpawn(mediaType:"audio"|"video"):void {
+        createSpawn = function services_youtubeDownload_createSpawn(mediaType:"audio"|"video", fileNameItem:string):void {
+            let fileName:string = "";
             const options:string = ((/-+\w/).test(data.options.replace(/^\s+/, "")) === true)
                     ? ` ${data.options}`
                     : "",
@@ -65,9 +65,11 @@ const youtube_download = function services_youtubeDownload(socketData:socket_dat
                 if (mediaType === "audio" && originalMediaType === "audio") {
                     message("Operation complete!");
                 } else if (mediaType === "audio" && originalMediaType === "video") {
-                    setTimeout(merge, 10000);
+                    setTimeout(function services_youtubeDownload_close_merge():void {
+                        merge(fileNameItem);
+                    }, 10000);
                 } else if (originalMediaType === "video") {
-                    createSpawn("audio");
+                    createSpawn("audio", fileName);
                 }
                 spawn.kill(0);
             });
@@ -87,7 +89,7 @@ const youtube_download = function services_youtubeDownload(socketData:socket_dat
                 message(str);
             });
         };
-    createSpawn(originalMediaType);
+    createSpawn(originalMediaType, "");
 };
 
 export default youtube_download;
