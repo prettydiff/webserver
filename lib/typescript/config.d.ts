@@ -19,6 +19,8 @@ interface config_html {
     binary: boolean;
     content: Buffer|string[];
     content_type: string;
+    page_title: string;
+    script: string;
     status: number;
     template: boolean;
 }

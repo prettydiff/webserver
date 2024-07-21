@@ -82,7 +82,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                             headerList: headerList,
                                             socket: socket,
                                             socketAddress: socketAddress
-                                        };console.log(headerList);
+                                        };
                                     create_proxy(config);
                                 }
                             }

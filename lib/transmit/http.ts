@@ -65,7 +65,9 @@ const http = function transmit_http(headerList:string[], body:Buffer|string, soc
                             "<html lang=\"en\">",
                             "<head>",
                             "<meta charset=\"utf-8\"/>",
-                            "<title>Cheney</title>",
+                            (config.page_title === null)
+                                ? "<title>Cheney</title>"
+                                : `<title>Cheney ${config.page_title}</title>`,
                             "<meta content=\"text/html;charset=UTF-8\" http-equiv=\"Content-Type\"/>",
                             "<meta content=\"width=device-width, initial-scale=1\" name=\"viewport\"/>",
                             "<meta content=\"noindex, nofollow\" name=\"robots\"/>",
@@ -86,9 +88,11 @@ const http = function transmit_http(headerList:string[], body:Buffer|string, soc
                                 ? ""
                                 : `<h2>${config.status}</h2>`
                         ],
-                        templateEnd:string[] = [
-                            "</body></html>"
-                        ],
+                        templateEnd:string[] = (config.script === null)
+                            ? ["</body></html"]
+                            : [
+                                `<script type="application/javascript" src="${config.script}"></script></body></html>`
+                            ],
                         bodyText:string = templateText.join("\r\n") + config.content.join("\r\n") + templateEnd.join("\r\n");
                         headerText[2] = `content-length: ${Buffer.from(bodyText).length}`;
                         return headerText.join("\r\n") + bodyText;
@@ -106,6 +110,8 @@ const http = function transmit_http(headerList:string[], body:Buffer|string, soc
                             binary: false,
                             content: [`<p>Resource not found: <strong>${asset.join("/")}</strong></p>`],
                             content_type: "text/html; utf8",
+                            page_title: "404",
+                            script: null,
                             status: 404,
                             template: true
                         }));
@@ -118,6 +124,8 @@ const http = function transmit_http(headerList:string[], body:Buffer|string, soc
                                 JSON.stringify(errorObject)
                             ],
                             content_type: "text/html; utf8",
+                            page_title: "500",
+                            script: null,
                             status: 500,
                             template: true
                         }));
@@ -167,6 +175,8 @@ const http = function transmit_http(headerList:string[], body:Buffer|string, soc
                                         binary: binary,
                                         content: fileContents,
                                         content_type: content_type,
+                                        page_title: null,
+                                        script: null,
                                         status: 200,
                                         template: false
                                     }));
@@ -176,6 +186,8 @@ const http = function transmit_http(headerList:string[], body:Buffer|string, soc
                                         binary: binary,
                                         content: [fileContents.toString()],
                                         content_type: content_type,
+                                        page_title: null,
+                                        script: null,
                                         status: 200,
                                         template: false
                                     }));
@@ -196,9 +208,8 @@ const http = function transmit_http(headerList:string[], body:Buffer|string, soc
                                             dtg:string[] = null,
                                             address:string = "";
                                         const content:string[] = [
-                                                "<h2>Directory List</h2>",
-                                                `<p>${index0[1]}</p>`,
-                                                "<table><thead><tr><th>object</th><th>type</th><th>modified date</th><th>modified time</th></tr></thead><tbody>"
+                                                `<h2>Directory List - ${index0[1]}</h2>`,
+                                                "<table><thead><tr><th>object <button>⇅</button></th><th>type <button>⇅</button></th><th>modified date <button>⇅</button></th><th>modified time <button>⇅</button></th></tr></thead><tbody>"
                                             ],
                                             total:number = stat_list.length,
                                             icon:store_string = {
@@ -248,8 +259,10 @@ const http = function transmit_http(headerList:string[], body:Buffer|string, soc
                                             binary: false,
                                             content: content,
                                             content_type: "text/html; utf8",
+                                            page_title: index0[1],
                                             status: 200,
-                                            template: true
+                                            template: true,
+                                            script: "/browser_scripts/fileList.js"
                                         }));
                                     },
                                     stat_step = function transmit_http_stat_readDir_statStep():void {

@@ -13,11 +13,11 @@ const youtube_download = function services_youtubeDownload(socketData:socket_dat
         startTime:bigint = process.hrtime.bigint(),
         message = function services_youtubeDownload_message(item:string):void {
             send({
-                "data": {
-                    "status": item,
-                    "time": humanTime(startTime)
+                data: {
+                    status: item,
+                    time: humanTime(startTime)
                 },
-                "service": "youtube-download-status"
+                service: "youtube-download-status"
             }, socket, 1);
         },
         merge = function services_youtubeDownload_merge(fileName:string):void {

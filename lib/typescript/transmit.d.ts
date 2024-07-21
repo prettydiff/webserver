@@ -64,6 +64,10 @@ interface websocket_client extends node_tls_TLSSocket {
     type: socket_type;
 }
 
+interface websocket_event extends Event {
+    data: string;
+}
+
 interface websocket_frame {
     extended: number;
     fin: boolean;
