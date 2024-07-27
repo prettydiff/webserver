@@ -2,7 +2,7 @@
 import node from "../utilities/node.js";
 import router from "./router.js";
 
-const messageHandler = function transmit_messageHandler(bufferData:Buffer):void {
+const message_handler = function transmit_messageHandler(bufferData:Buffer):void {
     const decoder:node_stringDecoder_StringDecoder = new node.stringDecoder.StringDecoder("utf8"),
         result:string = decoder.end(bufferData);
 
@@ -16,4 +16,4 @@ const messageHandler = function transmit_messageHandler(bufferData:Buffer):void 
     }
 };
 
-export default messageHandler;
+export default message_handler;

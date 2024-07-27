@@ -1,11 +1,11 @@
 
 // cspell: words RSAPSS
-import { ChildProcess, ExecException, ExecOptions } from "node:child_process";
+import { ChildProcess, ExecException, ExecOptions, SpawnOptions } from "node:child_process";
 import { ECDH, Hash, KeyObject, RSAKeyPairOptions } from "node:crypto";
 import { ReadStream, Stats, WriteStream } from "node:fs";
 import { ClientRequest, IncomingMessage, OutgoingHttpHeaders, Server as httpServer, ServerResponse } from "node:http";
 import { RequestOptions } from "node:https";
-import { AddressInfo, Server, Socket } from "node:net";
+import { AddressInfo, NetConnectOpts, Server, Socket } from "node:net";
 import { NetworkInterfaceInfo, NetworkInterfaceInfoIPv4, NetworkInterfaceInfoIPv6 } from "node:os";
 import { Readable } from "node:stream";
 import { StringDecoder } from "node:string_decoder";
@@ -16,6 +16,7 @@ declare global {
     type node_childProcess_ChildProcess = ChildProcess;
     type node_childProcess_ExecException = ExecException;
     type node_childProcess_ExecOptions = ExecOptions;
+    type node_childProcess_SpawnOptions = SpawnOptions;
     type node_crypto_ECDH = ECDH;
     type node_crypto_Hash = Hash;
     type node_crypto_KeyObject = KeyObject;
@@ -31,6 +32,7 @@ declare global {
     type node_http_ServerResponse = ServerResponse;
     type node_https_RequestOptions = RequestOptions;
     type node_net_AddressInfo = AddressInfo;
+    type node_net_NetConnectOpts = NetConnectOpts;
     type node_net_Server = Server;
     type node_net_Socket = Socket;
     type node_os_NetworkInterfaceInfo = NetworkInterfaceInfo;

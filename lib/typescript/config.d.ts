@@ -1,10 +1,10 @@
 
 interface config_createProxy {
-    body: Buffer | string;
-    domain: string;
+    callback: (proxy:websocket_client, headers:string[]) => void;
     headerList: string[];
+    host: string;
+    port: number;
     socket: websocket_client;
-    socketAddress: transmit_addresses_socket;
 }
 
 interface config_hash {
@@ -33,6 +33,7 @@ interface config_websocket_create {
     ip: string;
     port: number;
     proxy: boolean;
+    resource: string;
     socketType: socket_type;
 }
 

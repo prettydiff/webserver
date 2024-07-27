@@ -25,16 +25,17 @@ const create_socket = function transmit_createSocket(config:config_websocket_cre
                         host: config.ip,
                         port: config.port
                     }) as websocket_client,
+                resource:string = (config.resource === null || config.resource === "" || config.resource === "/")
+                    ? "GET / HTTP/1.1"
+                    : config.resource,
                 header:string[] = [
-                    "GET / HTTP/1.1",
+                    resource,
                     (config.ip.indexOf(":") > -1)
                         ? `Host: [${config.ip}]:${config.port}`
                         : `Host: ${config.ip}:${config.port}`,
                     "Upgrade: websocket",
                     "Connection: Upgrade",
                     "Sec-WebSocket-Version: 13",
-                    `type: ${config.socketType}`,
-                    `hash: ${config.hash}`,
                     `Sec-WebSocket-Key: ${hashOutput.hash}`
                 ],
                 callbackError = function transmit_createSocket_hash_error(errorMessage:node_error):void {
@@ -46,20 +47,16 @@ const create_socket = function transmit_createSocket(config:config_websocket_cre
                     header.push("");
                     header.push("");
                     client.write(header.join("\r\n"));
-                    if (config.proxy === true) {
-                        config.callback(client);
-                    } else {
-                        client.once("data", function transmit_createSocket_hash_ready_data():void {
-                            socket_extension({
-                                callback: config.callback,
-                                handler: config.handler,
-                                identifier: config.hash,
-                                role: "client",
-                                socket: client,
-                                type: config.socketType
-                            });
+                    client.once("data", function transmit_createSocket_hash_ready_data(data):void {
+                        socket_extension({
+                            callback: config.callback,
+                            handler: config.handler,
+                            identifier: config.hash,
+                            role: "client",
+                            socket: client,
+                            type: config.socketType
                         });
-                    }
+                    });
                 };
             if (len > 0) {
                 do {

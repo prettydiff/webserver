@@ -4,147 +4,153 @@ import error from "../utilities/error.js";
 import getAddress from "../utilities/getAddress.js";
 import hash from "../utilities/hash.js";
 import http from "./http.js";
-import messageHandler from "./messageHandler.js";
+import message_handler from "./messageHandler.js";
 import node from "../utilities/node.js";
-import socket_extension from "./socketExtension.js";
 import vars from "../utilities/vars.js";
+import socket_extension from "./socketExtension.js";
 
 const server = function transmit_server(config:config_websocket_server):node_net_Server {
+    let domain:string = "";
     const connection = function transmit_server_connection(TLS_socket:node_tls_TLSSocket):void {
             const socket:websocket_client = TLS_socket as websocket_client,
                 handshake = function transmit_server_connection_handshake(data:Buffer):void {
-                    let browserType:string = null,
-                        hashKey:string = null,
-                        userAgent:string = null,
-                        host:string = null,
-                        type:socket_type = null,
-                        ws:boolean = false;
+                    let hashKey:string = null,
+                        nonceHeader:string = null,
+                        port:number = 80,
+                        key:string = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11",
+                        self:boolean = null;
                     const dataString:string = data.toString(),
-                        testNonce:RegExp = (/^Sec-WebSocket-Protocol:\s*\w+-/),
                         headerIndex:number = dataString.indexOf("\r\n\r\n"),
                         headerList:string[] = (headerIndex > 0)
                             ? dataString.slice(0, headerIndex).split("\r\n")
                             : dataString.split("\r\n"),
                         bodyString:string = dataString.slice(headerIndex + 4),
-                        flags:store_flag = {
-                            key: false,
-                            type: true,
-                            userAgent: false
-                        },
-                        headers = function transmit_server_connection_handshake_headers():void {
-                            const clientRespond = function transmit_server_connection_handshake_headers_clientRespond():void {
-                                    const headers:string[] = [
-                                            "HTTP/1.1 101 Switching Protocols",
-                                            "Upgrade: websocket",
-                                            "Connection: Upgrade",
-                                            `Sec-WebSocket-Accept: ${hashKey}`,
-                                            "Access-Control-Allow-Origin: *",
-                                            "Server: webserver"
-                                        ];
-                                    if (type === "browser") {
-                                        // headers.push(nonceHeader);
-                                    }
-                                    headers.push("");
-                                    headers.push("");
-                                    socket.write(headers.join("\r\n"));
-                                };
-                            // some complexity is present because browsers will not have a "hash" heading
-                            if (flags.key === true && (flags.type === true || flags.userAgent === true)) {
-                                const headerComplete = function transmit_server_connection_handshake_headers_headerComplete():void {
-                                    /*
-                                    const identifier:string = (type === "browser")
-                                        ? `${userAgent}-${browserType}-${hashKey}`
-                                        : hashName;
-                                    if (getSocket(type, hashName) !== null) {
-                                        socket.destroy();
-                                        return;
-                                    }
-                                    */
-                                    socket_extension({
-                                        callback: clientRespond,
-                                        handler: messageHandler,
-                                        identifier: `${userAgent}-${browserType}-${hashKey}`,
-                                        role: "server",
-                                        socket: socket,
-                                        type: type
-                                    });
-                                };
-                                ws = true;
-                                headerComplete();
-                                if (host !== null && host !== "www.x") {
-                                    const socketAddress:transmit_addresses_socket = getAddress({
-                                            socket: socket,
-                                            type: "ws"
-                                        }),
-                                        config:config_createProxy = {
-                                            body: bodyString,
-                                            domain: host,
-                                            headerList: headerList,
-                                            socket: socket,
-                                            socketAddress: socketAddress
-                                        };
-                                    create_proxy(config);
-                                }
+                        testNonce:RegExp = (/^Sec-WebSocket-Protocol:\s*\w+-/),
+                        address:transmit_addresses_socket = getAddress({
+                            socket: socket,
+                            type: "ws"
+                        }),
+                        client_respond = function transmit_server_connection_handshake_headers_clientRespond():void {
+                            const headers:string[] = [
+                                    "HTTP/1.1 101 Switching Protocols",
+                                    "Upgrade: websocket",
+                                    "Connection: Upgrade",
+                                    `Sec-WebSocket-Accept: ${hashKey}`,
+                                    "Access-Control-Allow-Origin: *",
+                                    "Server: webserver"
+                                ];
+                            if (nonceHeader !== null) {
+                                headers.push(nonceHeader);
                             }
+                            headers.push("");
+                            headers.push("");
+                            socket.write(headers.join("\r\n"));
                         },
-                        headerEach = function transmit_server_connection_handshake_headerEach(header:string):void {
+                        proxy_http = function transmit_server_connection_handshake_proxyHTTP(proxy:websocket_client, headers:string[]):void {
+                            headers.push("");
+                            headers.push("");
+                            proxy.write(headers.join("\r\n"));
+                            if (bodyString !== null && bodyString !== "") {
+                                proxy.write(bodyString);
+                            }
+                            socket.pipe(proxy);
+                            proxy.pipe(socket);
+                        },
+                        proxy_handshake = function transmit_server_connection_handshake_proxyHandshake(proxy:websocket_client):void {
+                            proxy.once("data", function transmit_server_connection_handshake_proxyHandshake_data(data:Buffer):void {
+                                socket.write(data);
+                                socket.pipe(proxy);
+                                proxy.pipe(socket);
+                            });
+                            headerList.push("");
+                            headerList.push("");
+                            proxy.write(headerList.join("\r\n"));
+                        },
+                        proxy_socket = function transmit_server_connection_handshake_proxySocket(proxy:websocket_client):void {
+                            socket.pipe(proxy);
+                            proxy.pipe(socket);
+                        },
+                        headerEach = function transmit_server_connection_handshake_headerEach(header:string, arrIndex:number, arr:string[]):void {
                             if (header.indexOf("Sec-WebSocket-Key") === 0) {
-                                const key:string = header.slice(header.indexOf("-Key:") + 5).replace(/\s/g, "") + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-                                hash({
-                                    algorithm: "sha1",
-                                    callback: function transmit_server_connection_handshake_headerEach_callback(hashOutput:hash_output):void {
-                                        flags.key = true;
-                                        hashKey = hashOutput.hash;
-                                        headers();
-                                    },
-                                    digest: "base64",
-                                    hash_input_type: "direct",
-                                    source: key
-                                });
-                            } else if (header.indexOf("User-Agent:") === 0) {
-                                const subDec:RegExp = (/\s\w+\/\d+\.\d+\.\d+/g),
-                                    browserName = function transmit_server_connection_handshake_headerEach_browserName():string {
-                                        return "";
-                                    },
-                                    ua:string = (function transmit_server_connection_handshake_headerEach_ua():string {
-                                        let matches:string[] = null;
-                                        header = header.replace(/User-Agent:\s+/, "");
-                                        header = header.slice(header.lastIndexOf(")"));
-                                        matches = header.match(subDec);
-                                        if (matches === null) {
-                                            return null;
-                                        }
-                                        return matches[matches.length - 1];
-                                    }());
-                                if (ua === null) {
-                                    userAgent = header.replace(/\s\w+\/\d+\.\d+/, browserName);
-                                } else {
-                                    userAgent = ua.replace(ua, browserName);
-                                }
-                                flags.type = true;
-                                flags.userAgent = true;
-                                headers();
-                            } else if (header.indexOf("type:") === 0) {
-                                type = header.replace(/type:\s+/, "") as "browser";
-                                flags.type = true;
-                                headers();
-                            } else if (testNonce.test(header) === true) {
-                                flags.type = true;
-                                type = header.replace(/^Sec-WebSocket-Protocol:\s*/, "") as socket_type;
-                                header = header.slice(header.indexOf(":")).replace(/^:\s+/, "");
-                                browserType = header.slice(0, header.indexOf("-"));
-                                headers();
+                                key = header.slice(header.indexOf("-Key:") + 5).replace(/\s/g, "") + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
                             } else if (header.toLowerCase().indexOf("host:") === 0) {
-                                const domain:string = header.toLowerCase().replace("host:", "").replace(/\s+/g, ""),
-                                    index:number = domain.indexOf(":");
-                                host = (index > 0)
-                                    ? domain.slice(0, index)
-                                    : domain;
+                                const hostName:string = header.toLowerCase().replace("host:", "").replace(/\s+/g, ""),
+                                    index:number = domain.indexOf(":"),
+                                    host = (index > 0)
+                                        ? hostName.slice(0, index)
+                                        : hostName;
+                                domain = host.replace(`:${address.local.port}`, "");
+                                if (domain === "www.x" || domain === address.local.address) {
+                                    self = true;
+                                    port = address.local.port;
+                                } else {
+                                    arr[arrIndex] = `Host: ${address.local.address}:${port}`;
+                                    port = vars.portMap[domain];
+                                }
+                            } else if (testNonce.test(header) === true) {
+                                nonceHeader = header;
+                            } else if (header.toLowerCase().indexOf("connection:") === 0) {
+                                arr.splice(arrIndex, 1);
                             }
                         };
                     headerList.forEach(headerEach);
-                    if (ws === false) {
-                        http(headerList, bodyString, socket);
+                    if (headerList.length < 2 && headerList.indexOf("HTTP") < 0) {
+                        // proxy actual websocket
+                        if (vars.portMap[domain] === undefined) {
+                            socket.destroy();
+                        } else {
+                            create_proxy({
+                                callback: proxy_socket,
+                                headerList: [],
+                                host: address.local.address,
+                                port: vars.portMap[domain],
+                                socket: socket
+                            });
+                        }
+                    } else if (key === "258EAFA5-E914-47DA-95CA-C5AB0DC85B11") {
+                        // http response
+                        if (headerList[0].indexOf("GET") === 0 && domain === "www.x") {
+                            // local domain only uses GET method and local websocket for everything else
+                            http(headerList, bodyString, socket);
+                        } else {
+                            // http proxy
+                            headerList.push("Connection: close");
+                            create_proxy({
+                                callback: proxy_http,
+                                headerList: headerList,
+                                host: address.local.address,
+                                port: port,
+                                socket: socket
+                            });
+                        }
+                    } else if (self === true) {
+                        // local domain websocket support
+                        hash({
+                            algorithm: "sha1",
+                            callback: function transmit_server_connection_handshake_headerEach_callback(hashOutput:hash_output):void {
+                                hashKey = hashOutput.hash;
+                                socket_extension({
+                                    callback: client_respond,
+                                    handler: message_handler,
+                                    identifier: `browser-${hashKey}`,
+                                    role: "server",
+                                    socket: socket,
+                                    type: "browser-youtube-download"
+                                });
+                            },
+                            digest: "base64",
+                            hash_input_type: "direct",
+                            source: key
+                        });
+                    } else {
+                        // proxy websocket handshake
+                        create_proxy({
+                            callback: proxy_handshake,
+                            headerList: headerList,
+                            host: address.local.address,
+                            port: port,
+                            socket: socket
+                        });
                     }
                 };
             socket.on("error", function transmit_server_connection_handshake_socketError():void {

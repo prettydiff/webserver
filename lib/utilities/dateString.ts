@@ -45,7 +45,7 @@ const dateString =  function utilities_dateString(input:number):string {
     } else if (month === 10) {
         output.push("NOV");
     } else if (month === 11) {
-        output.push("DEc");
+        output.push("DEC");
     }
     output.push(`${date.getUTCFullYear()},`);
     output.push(`${hours}:${minutes}:${seconds}.${milliseconds}`);

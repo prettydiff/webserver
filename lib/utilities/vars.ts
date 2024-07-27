@@ -10,10 +10,11 @@ const vars:vars = {
         webRoot: "/appdata/apache/www"
     },
     port: {
-        open: 5000,
-        secure: 5001
+        open: 7000,
+        secure: 7001
     },
     portMap: {},
+    processes: {},
     secure: false,
     sep: node.path.sep,
     text: {

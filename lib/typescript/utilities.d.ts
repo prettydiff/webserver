@@ -25,6 +25,9 @@ interface vars {
         secure: number;
     };
     portMap: store_number;
+    processes: {
+        [key:string]: node_childProcess_ChildProcess;
+    };
     secure: boolean;
     sep: string;
     text: store_string;

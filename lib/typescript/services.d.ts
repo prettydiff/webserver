@@ -1,4 +1,8 @@
 
+interface services_processKill {
+    process: number;
+}
+
 interface services_youtubeDownload {
     address: string;
     options: string;
@@ -6,6 +10,7 @@ interface services_youtubeDownload {
 }
 
 interface services_youtubeStatus {
+    pid: number;
     status: string;
     time: string;
 }
