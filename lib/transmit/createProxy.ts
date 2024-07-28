@@ -15,7 +15,12 @@ const create_proxy = function transmit_createProxy(config:config_createProxy):vo
                 // this worthless error trapping prevents an "unhandled error" escalation that breaks the process
                 return null;
             });
-            config.callback(proxy, config.buffer);
+            config.socket.pipe(proxy);
+            proxy.pipe(config.socket);
+            proxy.write(config.buffer);
+            if (config.callback !== null) {
+                config.callback(proxy, config.buffer);
+            }
         };
     const opts:node_net_NetConnectOpts = {
         host: config.host,
