@@ -11,6 +11,7 @@ const youtube_download = function services_youtubeDownload(socketData:socket_dat
         types:string[] = type.split("-"),
         originalMediaType:youtubeDownload_mediaType = types[0] as youtubeDownload_mediaType,
         startTime:bigint = process.hrtime.bigint(),
+
         message = function services_youtubeDownload_message(item:string, pid:number):void {
             send({
                 data: {
@@ -56,9 +57,9 @@ const youtube_download = function services_youtubeDownload(socketData:socket_dat
                     ? ` ${data.options}`
                     : "",
                 name:string = (originalMediaType === "video" && mediaType === "audio")
-                    ? "yt-dlp-audio-video.conf"
-                    : `yt-dlp-${mediaType}-${types[1]}.conf`,
-                script:string = `yt-dlp --config-locations ${vars.path.project}lib${vars.sep}conf${vars.sep + name + options} ${data.address}`,
+                    ? "audio-video.conf"
+                    : `${mediaType}-${types[1]}.conf`,
+                script:string = `yt-dlp --config-locations ${vars.path.yt_dlp + name + options} ${data.address}`,
                 spawn:node_childProcess_ChildProcess = node.child_process.spawn(script, spawnOpts);
             vars.processes[spawn.pid] = spawn;
             message(`[COMMAND] ${script}`, spawn.pid);

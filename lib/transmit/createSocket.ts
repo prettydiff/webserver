@@ -15,7 +15,7 @@ const create_socket = function transmit_createSocket(config:config_websocket_cre
         callback: function transmit_createSocket_hash(hashOutput:hash_output):void {
             let a:number = 0;
             const len:number = config.headers.length,
-                client:websocket_client = (vars.secure === true)
+                client:websocket_client = (config.secure === true)
                     ? node.tls.connect({
                         host: config.ip,
                         port: config.port,
@@ -47,7 +47,7 @@ const create_socket = function transmit_createSocket(config:config_websocket_cre
                     header.push("");
                     header.push("");
                     client.write(header.join("\r\n"));
-                    client.once("data", function transmit_createSocket_hash_ready_data(data):void {
+                    client.once("data", function transmit_createSocket_hash_ready_data():void {
                         socket_extension({
                             callback: config.callback,
                             handler: config.handler,

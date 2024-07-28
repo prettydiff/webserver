@@ -21,12 +21,12 @@ const create_proxy = function transmit_createProxy(config:config_createProxy):vo
             if (config.callback !== null) {
                 config.callback(proxy, config.buffer);
             }
-        };
-    const opts:node_net_NetConnectOpts = {
-        host: config.host,
-        port: config.port
-    },
-    proxy:websocket_client = node.net.connect(opts) as websocket_client;
+        },
+        opts:node_net_NetConnectOpts = {
+            host: config.host,
+            port: config.port
+        },
+        proxy:websocket_client = node.net.connect(opts) as websocket_client;
     complete(proxy);
 };
 

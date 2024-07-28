@@ -1,6 +1,5 @@
 
 import create_proxy from "./createProxy.js";
-import error from "../utilities/error.js";
 import getAddress from "../utilities/getAddress.js";
 import hash from "../utilities/hash.js";
 import http from "./http.js";
@@ -30,7 +29,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
                         getDomain = function transmit_server_connection_handshake_getDomain(header:string):void {
                             const hostName:string = header.toLowerCase().replace("host:", "").replace(/\s+/g, ""),
                                 index:number = hostName.indexOf(":"),
-                                host = (index > 0)
+                                host:string = (index > 0)
                                     ? hostName.slice(0, index)
                                     : hostName;
                             domain = host.replace(`:${address.local.port}`, "");
@@ -53,10 +52,15 @@ const server = function transmit_server(config:config_websocket_server):node_net
 
                     // do not proxy primary domain
                     if (domain === vars.domain || domain === address.local.address) {
-                        if (headerList[0].indexOf("GET") === 0) {
-                            // local domain only uses GET method
-                            http(headerList, bodyString, socket);
-                        } else if (key !== "") {
+                        if (key === "") {
+                            if (headerList[0].indexOf("GET") === 0) {
+                                // local domain only uses GET method
+                                http(headerList, bodyString, socket);
+                            } else {
+                                // at this time the local domain only supports HTTP GET method as everything else should use WebSockets
+                                socket.destroy();
+                            }
+                        } else {
                             // local domain websocket support
                             hash({
                                 algorithm: "sha1",
@@ -90,18 +94,15 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                 hash_input_type: "direct",
                                 source: key
                             });
-                        } else {
-                            // at this time the local domain only supports HTTP GET method as everything else should use WebSockets
-                            socket.destroy();
                         }
                     } else {
                         create_proxy({
                             callback: null,
                             buffer: data,
                             host: address.local.address,
-                            port: (socket.tlsOptions !== undefined && vars.portMap[domain.replace(/\.\w+$/, ".secure")] !== undefined)
-                                ? vars.portMap[domain.replace(/\.\w+$/, ".secure")]
-                                : vars.portMap[domain],
+                            port: (socket.tlsOptions !== undefined && vars.port_map[domain.replace(/\.\w+$/, ".secure")] !== undefined)
+                                ? vars.port_map[domain.replace(/\.\w+$/, ".secure")]
+                                : vars.port_map[domain],
                             socket: socket
                         });
                     }
@@ -144,16 +145,6 @@ const server = function transmit_server(config:config_websocket_server):node_net
                 : vars.port.secure
         }, listenerCallback);
     }
-
-    // port map to proxy vanity domains
-    // if different ports for tls versus net socket then list the TLD as ".secure"
-    node.fs.readFile(`${vars.path.project}portMap.json`, function transmit_server_portMap(erp:node_error, fileContents:Buffer):void {
-        if (erp === null) {
-            vars.portMap = JSON.parse(fileContents.toString()) as store_number;
-            return;
-        }
-        error(["Error reading project file portMap.json, which maps vanity domains to port numbers for the HTTP proxy."], erp);
-    });
     return wsServer;
 };
 

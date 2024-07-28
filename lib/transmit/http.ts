@@ -13,7 +13,7 @@ const http = function transmit_http(headerList:string[], body:Buffer|string, soc
         fileFragment:string = (index0[1] === "/")
             ? `${vars.sep}index.html`
             : asset.join(vars.sep),
-        filePath:string = vars.path.webRoot + fileFragment.replace(/%\d{2}/g, function transmit_http_uriEscape(input:string):string {
+        filePath:string = vars.path.web_root + fileFragment.replace(/%\d{2}/g, function transmit_http_uriEscape(input:string):string {
             return String.fromCharCode(parseInt(`00${input.slice(1)}`, 16));
         }),
         html = function transmit_http_html(config:config_html):string {
@@ -189,9 +189,9 @@ const http = function transmit_http(headerList:string[], body:Buffer|string, soc
                                         `<h2>Directory List - ${index0[1]}</h2>`,
                                         "<table><thead><tr><th>object <button>⇅</button></th><th>type <button>⇅</button></th><th>modified date <button>⇅</button></th><th>modified time <button>⇅</button></th></tr></thead><tbody>"
                                     ],
-                                    scheme:"http"|"https" = (vars.secure === true)
-                                        ? "https"
-                                        : "http",
+                                    scheme:"http"|"https" = (socket.tlsOptions === undefined)
+                                        ? "http"
+                                        : "https",
                                     total:number = stat_list.length,
                                     icon:store_string = {
                                         "block_device": "\u2580",
@@ -218,7 +218,7 @@ const http = function transmit_http(headerList:string[], body:Buffer|string, soc
                                                 value = (colon > 0)
                                                     ? value.slice(0, colon)
                                                     : value;
-                                                headerList[index] = `Host: ${socketAddress.local.address}:${vars.portMap[value]}`;
+                                                headerList[index] = `Host: ${socketAddress.local.address}:${vars.port_map[value]}`;
                                             } else if (headerList[index].toLowerCase().indexOf("connection:") === 0) {
                                                 headerList.splice(index, 1);
                                                 index = index + 1;

@@ -34,6 +34,7 @@ interface config_websocket_create {
     port: number;
     proxy: boolean;
     resource: string;
+    secure: boolean;
     socketType: socket_type;
 }
 

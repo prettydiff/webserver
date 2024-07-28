@@ -1,4 +1,11 @@
 
+interface projectConfig {
+    path: {
+        storage: string;
+        web_root: string;
+    };
+    port_map: store_number;
+}
 
 interface hash_output {
     filePath: string;
@@ -20,12 +27,17 @@ interface store_string {
 interface vars {
     domain: string;
     host: string;
-    path: store_string;
+    path: {
+        project: string;
+        storage: string;
+        web_root: string;
+        yt_dlp: string;
+    };
     port: {
         open: number;
         secure: number;
     };
-    portMap: store_number;
+    port_map: store_number;
     processes: {
         [key:string]: node_childProcess_ChildProcess;
     };

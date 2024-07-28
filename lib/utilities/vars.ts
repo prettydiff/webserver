@@ -8,13 +8,15 @@ const vars:vars = {
     host: "",
     path: {
         project: "",
-        webRoot: "/appdata/apache/www"
+        storage: "",
+        web_root: "",
+        yt_dlp: ""
     },
     port: {
         open: 80,
         secure: 443
     },
-    portMap: {},
+    port_map: {},
     processes: {},
     sep: node.path.sep,
     text: {
