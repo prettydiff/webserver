@@ -4,18 +4,18 @@ import node from "./node.js";
 /* cspell: words appdata */
 
 const vars:vars = {
+    domain: "www.x",
     host: "",
     path: {
         project: "",
         webRoot: "/appdata/apache/www"
     },
     port: {
-        open: 7000,
-        secure: 7001
+        open: 80,
+        secure: 443
     },
     portMap: {},
     processes: {},
-    secure: false,
     sep: node.path.sep,
     text: {
         angry    : "\u001b[1m\u001b[31m",

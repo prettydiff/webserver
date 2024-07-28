@@ -1,7 +1,7 @@
 
 interface config_createProxy {
-    callback: (proxy:websocket_client, headers:string[]) => void;
-    headerList: string[];
+    buffer: Buffer;
+    callback: (proxy:websocket_client, buffer:Buffer) => void;
     host: string;
     port: number;
     socket: websocket_client;

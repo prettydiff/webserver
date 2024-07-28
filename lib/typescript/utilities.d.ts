@@ -18,6 +18,7 @@ interface store_string {
 }
 
 interface vars {
+    domain: string;
     host: string;
     path: store_string;
     port: {
@@ -28,7 +29,6 @@ interface vars {
     processes: {
         [key:string]: node_childProcess_ChildProcess;
     };
-    secure: boolean;
     sep: string;
     text: store_string;
     verbose: boolean;

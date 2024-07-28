@@ -16,9 +16,15 @@ const server = function transmit_server(config:config_websocket_server):node_net
                 handshake = function transmit_server_connection_handshake(data:Buffer):void {
                     let hashKey:string = null,
                         nonceHeader:string = null,
-                        port:number = 80,
-                        key:string = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11",
-                        self:boolean = null;
+                        secureTest:boolean = (socket.tlsOptions !== undefined && vars.portMap[domain.replace(".x", ".secure")] !== undefined),
+                        port:number = (domain === "" || vars.portMap[domain] === undefined)
+                            ? (socket.tlsOptions === undefined)
+                                ? vars.port.open
+                                : vars.port.secure
+                            : (secureTest === true)
+                                ? vars.portMap[domain.replace(".x", ".secure")]
+                                : vars.portMap[domain],
+                        key:string = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
                     const dataString:string = data.toString(),
                         headerIndex:number = dataString.indexOf("\r\n\r\n"),
                         headerList:string[] = (headerIndex > 0)
@@ -46,29 +52,10 @@ const server = function transmit_server(config:config_websocket_server):node_net
                             headers.push("");
                             socket.write(headers.join("\r\n"));
                         },
-                        proxy_http = function transmit_server_connection_handshake_proxyHTTP(proxy:websocket_client, headers:string[]):void {
-                            headers.push("");
-                            headers.push("");
-                            proxy.write(headers.join("\r\n"));
-                            if (bodyString !== null && bodyString !== "") {
-                                proxy.write(bodyString);
-                            }
+                        proxy_raw = function transmit_server_connection_handshake_proxyRaw(proxy:websocket_client, buf:Buffer):void {
                             socket.pipe(proxy);
                             proxy.pipe(socket);
-                        },
-                        proxy_handshake = function transmit_server_connection_handshake_proxyHandshake(proxy:websocket_client):void {
-                            proxy.once("data", function transmit_server_connection_handshake_proxyHandshake_data(data:Buffer):void {
-                                socket.write(data);
-                                socket.pipe(proxy);
-                                proxy.pipe(socket);
-                            });
-                            headerList.push("");
-                            headerList.push("");
-                            proxy.write(headerList.join("\r\n"));
-                        },
-                        proxy_socket = function transmit_server_connection_handshake_proxySocket(proxy:websocket_client):void {
-                            socket.pipe(proxy);
-                            proxy.pipe(socket);
+                            proxy.write(buf);
                         },
                         headerEach = function transmit_server_connection_handshake_headerEach(header:string, arrIndex:number, arr:string[]):void {
                             if (header.indexOf("Sec-WebSocket-Key") === 0) {
@@ -80,12 +67,13 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                         ? hostName.slice(0, index)
                                         : hostName;
                                 domain = host.replace(`:${address.local.port}`, "");
-                                if (domain === "www.x" || domain === address.local.address) {
-                                    self = true;
+                                if (domain === vars.domain || domain === address.local.address) {
                                     port = address.local.port;
                                 } else {
                                     arr[arrIndex] = `Host: ${address.local.address}:${port}`;
-                                    port = vars.portMap[domain];
+                                    port = (socket.tlsOptions !== undefined && vars.portMap[domain.replace(".x", ".secure")] !== undefined)
+                                        ? vars.portMap[domain.replace(".x", ".secure")]
+                                        : vars.portMap[domain];
                                 }
                             } else if (testNonce.test(header) === true) {
                                 nonceHeader = header;
@@ -94,59 +82,34 @@ const server = function transmit_server(config:config_websocket_server):node_net
                             }
                         };
                     headerList.forEach(headerEach);
-                    if (headerList.length < 2 && headerList.indexOf("HTTP") < 0) {
-                        // proxy actual websocket
-                        if (vars.portMap[domain] === undefined) {
-                            socket.destroy();
-                        } else {
-                            create_proxy({
-                                callback: proxy_socket,
-                                headerList: [],
-                                host: address.local.address,
-                                port: vars.portMap[domain],
-                                socket: socket
-                            });
-                        }
-                    } else if (key === "258EAFA5-E914-47DA-95CA-C5AB0DC85B11") {
-                        // http response
-                        if (headerList[0].indexOf("GET") === 0 && domain === "www.x") {
+                    if (domain === vars.domain) {
+                        if (headerList[0].indexOf("GET") === 0 && key === "258EAFA5-E914-47DA-95CA-C5AB0DC85B11") {
                             // local domain only uses GET method and local websocket for everything else
                             http(headerList, bodyString, socket);
                         } else {
-                            // http proxy
-                            headerList.push("Connection: close");
-                            create_proxy({
-                                callback: proxy_http,
-                                headerList: headerList,
-                                host: address.local.address,
-                                port: port,
-                                socket: socket
+                            // local domain websocket support
+                            hash({
+                                algorithm: "sha1",
+                                callback: function transmit_server_connection_handshake_headerEach_callback(hashOutput:hash_output):void {
+                                    hashKey = hashOutput.hash;
+                                    socket_extension({
+                                        callback: client_respond,
+                                        handler: message_handler,
+                                        identifier: `browser-${hashKey}`,
+                                        role: "server",
+                                        socket: socket,
+                                        type: "browser-youtube-download"
+                                    });
+                                },
+                                digest: "base64",
+                                hash_input_type: "direct",
+                                source: key
                             });
                         }
-                    } else if (self === true) {
-                        // local domain websocket support
-                        hash({
-                            algorithm: "sha1",
-                            callback: function transmit_server_connection_handshake_headerEach_callback(hashOutput:hash_output):void {
-                                hashKey = hashOutput.hash;
-                                socket_extension({
-                                    callback: client_respond,
-                                    handler: message_handler,
-                                    identifier: `browser-${hashKey}`,
-                                    role: "server",
-                                    socket: socket,
-                                    type: "browser-youtube-download"
-                                });
-                            },
-                            digest: "base64",
-                            hash_input_type: "direct",
-                            source: key
-                        });
                     } else {
-                        // proxy websocket handshake
                         create_proxy({
-                            callback: proxy_handshake,
-                            headerList: headerList,
+                            callback: proxy_raw,
+                            buffer: data,
                             host: address.local.address,
                             port: port,
                             socket: socket
@@ -157,7 +120,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
                 // this worthless error trapping prevents an "unhandled error" escalation that breaks the process
                 return null;
             });
-            socket.on("data", handshake);
+            socket.once("data", handshake);
         },
         wsServer:node_net_Server = (config.options === null)
             // options are of type TlsOptions
