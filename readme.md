@@ -13,8 +13,7 @@ Currently only HTTP method GET is supported.
 For my own use all other traffic will be sent as WebSocket messages for the default domain.
 For other domains all traffic is pushed through a proxy to a separate unrelated service regardless of protocol or message description.
 
-## Usage
-### TLS support
+## TLS support
 This application provides support for TLS to all locally administered domain names.
 It does not install the generated certificates into either the operating system or installed web browsers.
 This means the server works perfectly well to send and receive TLS encrypted traffic, but it also means web browsers will complain about untrusted certificates the first time they access a supported domain.
