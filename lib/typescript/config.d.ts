@@ -1,4 +1,10 @@
 
+interface config_certificate {
+    callback: () => void;
+    days: number;
+    selfSign: boolean;
+}
+
 interface config_createProxy {
     buffer: Buffer;
     callback: (proxy:websocket_client, buffer:Buffer) => void;

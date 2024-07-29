@@ -131,20 +131,11 @@ const server = function transmit_server(config:config_websocket_server):node_net
     }
 
     // secure connection listener
-    if (vars.host === "") {
-        wsServer.listen({
-            port: (config.options === null)
-                ? vars.port.open
-                : vars.port.secure
-        }, listenerCallback);
-    } else {
-        wsServer.listen({
-            host: vars.host,
-            port: (config.options === null)
-                ? vars.port.open
-                : vars.port.secure
-        }, listenerCallback);
-    }
+    wsServer.listen({
+        port: (config.options === null)
+            ? vars.port.open
+            : vars.port.secure
+    }, listenerCallback);
     return wsServer;
 };
 

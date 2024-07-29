@@ -30,6 +30,7 @@
     },
     "scripts": {
         "build": "npx swc ./lib -d ./js",
+        "certificate": "node js/lib/index.js certificate",
         "lint": "npx eslint ./ --ext ts",
         "server": "node js/lib/index.js",
         "tsc": "npx tsc --pretty"

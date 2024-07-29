@@ -1,8 +1,13 @@
 
 interface projectConfig {
+    domain_default: string;
     path: {
         storage: string;
         web_root: string;
+    };
+    port: {
+        open: number;
+        secure: number;
     };
     port_map: store_number;
 }
@@ -26,12 +31,11 @@ interface store_string {
 
 interface vars {
     domain: string;
-    host: string;
     path: {
+        conf: string;
         project: string;
         storage: string;
         web_root: string;
-        yt_dlp: string;
     };
     port: {
         open: number;

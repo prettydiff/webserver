@@ -4,13 +4,12 @@ import node from "./node.js";
 /* cspell: words appdata */
 
 const vars:vars = {
-    domain: "www.x",
-    host: "",
+    domain: "",
     path: {
+        conf: "",
         project: "",
         storage: "",
-        web_root: "",
-        yt_dlp: ""
+        web_root: ""
     },
     port: {
         open: 80,

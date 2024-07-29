@@ -22,11 +22,16 @@ const create_proxy = function transmit_createProxy(config:config_createProxy):vo
                 config.callback(proxy, config.buffer);
             }
         },
-        opts:node_net_NetConnectOpts = {
-            host: config.host,
-            port: config.port
-        },
-        proxy:websocket_client = node.net.connect(opts) as websocket_client;
+        proxy:websocket_client = (config.socket.tlsOptions === undefined)
+            ? node.net.connect({
+                host: config.host,
+                port: config.port
+            }) as websocket_client
+            : node.tls.connect({
+                host: config.host,
+                port: config.port,
+                rejectUnauthorized: false
+            }) as websocket_client;
     complete(proxy);
 };
 
