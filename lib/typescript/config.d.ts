@@ -8,6 +8,7 @@ interface config_certificate {
 interface config_createProxy {
     buffer: Buffer;
     callback: (proxy:websocket_client, buffer:Buffer) => void;
+    domain: string;
     host: string;
     port: number;
     socket: websocket_client;

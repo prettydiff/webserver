@@ -59,7 +59,7 @@ const certificate = function utilities_certificate(config:config_certificate):vo
                     const mode:[string, string] = (config.selfSign === true)
                             ? ["server", vars.domain]
                             : ["root", vars.domain],
-                        org:string = `/O=home_server/OU=home_server`,
+                        org:string = "/O=home_server/OU=home_server",
                         // provides the path to the configuration file used for certificate signing
                         pathConf = function utilities_certificate_stat_cert_create_confPath(configName:"ca"|"selfSign"):string {
                             return `"${vars.path.conf}extensions.cnf" -extensions ${configName}`;

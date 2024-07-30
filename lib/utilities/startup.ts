@@ -15,8 +15,9 @@ const startup = function utilities_startup(callback:() => void):void {
     node.fs.readFile(`${vars.path.project}config.json`, function utilities_startup_config(erp:node_error, fileContents:Buffer):void {
         if (erp === null) {
             const instructions = function utilities_startup_config_instructions():void {
-                let confCount:number = 0;
-                const config:projectConfig = JSON.parse(fileContents.toString()) as projectConfig,
+                let confCount:number = 0,
+                    index:number = 0;
+                const config:project_config = JSON.parse(fileContents.toString()) as project_config,
                     confWritten = function utilities_startup_config_instructions_confWritten():void {
                         confCount = confCount + 1;
                         if (confCount === files_total) {
@@ -24,11 +25,18 @@ const startup = function utilities_startup(callback:() => void):void {
                         }
                     },
                     conf:store_string = (function utilities_startup_config_instructions_paths():store_string {
+                        const sep = function utilities_startup_config_instructions_paths_sep(input:string):string {
+                            if (input.charAt(input.length - 1) === vars.sep) {
+                                return input;
+                            }
+                            return input + vars.sep;
+                        };
                         vars.domain = config.domain_default;
-                        vars.port = config.port;
-                        vars.port_map = config.port_map;
-                        vars.path.storage = config.path.storage;
-                        vars.path.web_root = config.path.web_root;
+                        vars.service_port = config.service_port;
+                        vars.map_port = config.map_port;
+                        vars.map_redirect = config.map_redirect;
+                        vars.path.storage = sep(config.path.storage);
+                        vars.path.web_root = sep(config.path.web_root);
                         return {
                             "audio": `-f bestaudio -o ${vars.path.storage}%(title)sx.%(ext)s --audio-format mp3 --audio-quality 0 --extract-audio --no-mtime --no-playlist`,
                             "audio-file": `--exec "ffmpeg -i ${vars.path.storage}%(title)sx.%(ext)s -vn -ab 320k -ar 48000 -y ${vars.path.storage}%(artist)s-%(title)s.%(ext)s && rm ${vars.path.storage}%(title)sx.%(ext)s"`,
@@ -83,7 +91,7 @@ DNS.2 = 192.168.0.3`,
 # End Alt Names
 `
                             ],
-                            keys:string[] = Object.keys(config.port_map),
+                            keys:string[] = Object.keys(config.map_port),
                             total:number = keys.length,
                             list1:string[] = [],
                             list2:string[] = [];
@@ -112,7 +120,6 @@ DNS.2 = 192.168.0.3`,
                         [`${vars.path.conf}extensions.cnf`, cert_extensions]
                     ],
                     files_total:number = files.length;
-                let index:number = 0;
                 do {
                     node.fs.writeFile(files[index][0], files[index][1], confWritten);
                     index = index + 1;

@@ -20,7 +20,6 @@ const server = function transmit_server(config:config_websocket_server):node_net
                         headerList:string[] = (headerIndex > 0)
                             ? dataString.slice(0, headerIndex).split("\r\n")
                             : dataString.split("\r\n"),
-                        bodyString:string = dataString.slice(headerIndex + 4),
                         testNonce:RegExp = (/^Sec-WebSocket-Protocol:\s*\w+-/),
                         address:transmit_addresses_socket = getAddress({
                             socket: socket,
@@ -41,8 +40,8 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                 getDomain(header);
                                 if (domain !== vars.domain && domain !== address.local.address) {
                                     arr[arrIndex] = (socket.tlsOptions === undefined)
-                                        ? `Host: ${address.local.address}:${vars.port.open}`
-                                        : `Host: ${address.local.address}:${vars.port.secure}`;
+                                        ? `Host: ${address.local.address}:${vars.service_port.open}`
+                                        : `Host: ${address.local.address}:${vars.service_port.secure}`;
                                 }
                             } else if (testNonce.test(header) === true) {
                                 nonceHeader = header;
@@ -55,7 +54,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
                         if (key === "") {
                             if (headerList[0].indexOf("GET") === 0) {
                                 // local domain only uses GET method
-                                http(headerList, bodyString, socket);
+                                http(headerList, socket);
                             } else {
                                 // at this time the local domain only supports HTTP GET method as everything else should use WebSockets
                                 socket.destroy();
@@ -99,10 +98,11 @@ const server = function transmit_server(config:config_websocket_server):node_net
                         create_proxy({
                             callback: null,
                             buffer: data,
+                            domain: domain,
                             host: address.local.address,
-                            port: (socket.tlsOptions !== undefined && vars.port_map[domain.replace(/\.\w+$/, ".secure")] !== undefined)
-                                ? vars.port_map[domain.replace(/\.\w+$/, ".secure")]
-                                : vars.port_map[domain],
+                            port: (socket.tlsOptions !== undefined && vars.map_port[domain.replace(/\.\w+$/, ".secure")] !== undefined)
+                                ? vars.map_port[domain.replace(/\.\w+$/, ".secure")]
+                                : vars.map_port[domain],
                             socket: socket
                         });
                     }
@@ -133,8 +133,8 @@ const server = function transmit_server(config:config_websocket_server):node_net
     // secure connection listener
     wsServer.listen({
         port: (config.options === null)
-            ? vars.port.open
-            : vars.port.secure
+            ? vars.service_port.open
+            : vars.service_port.secure
     }, listenerCallback);
     return wsServer;
 };

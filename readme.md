@@ -1,6 +1,8 @@
 # Web Server
 Serves and proxies HTTP over WebSockets for both TCP and TLS.
 
+<!-- cspell: words pihole -->
+
 ## About
 This application defaults all transmissions to TCP socket streams without further assumption.
 Upon first data of a new socket the application will first determine if the socket represents the default domain and everything else is supported as a proxy.
@@ -30,54 +32,69 @@ This means the server works perfectly well to send and receive TLS encrypted tra
 A `config.json` file is required at project root that conforms to:
 
 ```typescript
-interface projectConfig {
+interface project_config {
     domain_default: string;
+    map_port: {
+        [key:string]: number;
+    };
+    map_redirect: {
+        [key:string]: {
+            [key:string]: string;
+        };
+    };
     path: {
         storage: string;
         web_root: string;
     };
-    port: {
+    service_port: {
         open: 80;
         secure: 443;
-    };
-    port_map: {
-        [key:string]: number;
     };
 }
 ```
 
-* The *domain_default* property provides a single domain name that will not redirect traffic via proxy.
+* The *domain_default* property provides a single domain name that will not redirect traffic at the domain level.
+* The *map_port* stores a object of domain names as key names and port numbers as values.
+   * If a service at a given vanity domain requires separate ports for secure and insecure services then specify the secure port with `secure` as the top level domain, as demonstrated in the following code example.
+* The *map_redirect* stores an object where each key name is a supported domain name.  Each value is an object storing HTTP request destination and redirection pairs for within the domain.
+   * Wildcard support exists if a HTTP request destination terminates with an asterisk, as demonstrated in the following code example. Static HTTP request destinations are evaluated before wildcard requests.
 * The *path.storage* property is an absolute file system path where applications should download resources to.
 * The *path.web_root* property is an absolute file system path where web pages/assets are served from.
-* The *port_map* stores a object of domain names as key names and port numbers as values.
-* If a service at a given vanity domain requires separate ports for secure and insecure services then specify the secure port with `secure` as the top level domain.
 
 Here is an example `config.json` file:
 
 ```json
 {
     "domain_default": "www.x",
+    "map_path": {
+        "pihole.x": 3001,
+        "minecraft.x": 3002,
+        "linux.x": 3003,
+        "linux.secure": 3004
+    },
+    "map_redirect": {
+        "pihole.x": {
+            "/*": "/admin/"
+        }
+    },
     "path": {
         "storage": "/myWebSite/downloads/",
         "web_root": "/var/httpd/www/"
     },
-    "port": {
+    "service_port": {
         "open": 80,
         "secure": 443
-    },
-    "port_map": {
-        "youtube.x": 3001,
-        "minecraft.x": 3002,
-        "linux.x": 3003,
-        "linux.secure": 3004
     }
 }
 ```
 
-Please note:
-* Each path specified must terminate with the given operating system's file system separator, such as: `/`.
-* Notice in the example the port mapping for `linux.x` and `linux.secure`.
-   The application will not consider `linux.secure` to be a domain, but will correctly proxy TLS traffic, WSS and HTTPS, to the port specified.
+#### Please Note
+* Notice in the example the port mapping for `linux.x` and `linux.secure`. The application will not consider `linux.secure` to be a domain, but will correctly proxy TLS traffic, WSS and HTTPS, to the port specified.
+   * In this case http://linux.x/ would redirect to http://127.0.0.1:3003 or http://[::1]:3003.
+   * https://linux.x/ would redirect to https://127.0.0.1:3004 or https://[::1]:3004.
+* Notice in the example the intra-domain redirects for the example *pihole.x* domain.
+   * http://pihole.x/ would redirect to http://pihole.x/admin/.
+   * http://pihole.x/login.php would redirect to http://pihole.x/admin/login.php.
 
 ### Certificates
 This application provides a configuration file to generate TLS certificates using OpenSSL.

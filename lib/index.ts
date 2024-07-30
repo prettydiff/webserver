@@ -5,7 +5,7 @@ import server from "./transmit/server.js";
 import startup from "./utilities/startup.js";
 import vars from "./utilities/vars.js";
 
-// eslint-disable-next-line no-restricted-syntax
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, no-console
 const log:(...data:any[]) => void = console.log;
 let count:number = 0;
 
@@ -27,7 +27,7 @@ startup(function index():void {
                         log({
                             address: addressInfo.address,
                             family: addressInfo.family,
-                            port: vars.port
+                            port: vars.service_port
                         });
                     }
                 },
@@ -41,7 +41,7 @@ startup(function index():void {
                     log({
                         address: addressInfo.address,
                         family: addressInfo.family,
-                        port: vars.port
+                        port: vars.service_port
                     });
                 }
             },

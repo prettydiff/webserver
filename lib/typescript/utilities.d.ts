@@ -1,15 +1,18 @@
 
-interface projectConfig {
+interface project_config {
     domain_default: string;
+    map_port: store_number;
+    map_redirect: {
+        [key:string]: store_string;
+    };
     path: {
         storage: string;
         web_root: string;
     };
-    port: {
+    service_port: {
         open: number;
         secure: number;
     };
-    port_map: store_number;
 }
 
 interface hash_output {
@@ -31,21 +34,24 @@ interface store_string {
 
 interface vars {
     domain: string;
+    map_port: store_number;
+    map_redirect: {
+        [key:string]: store_string;
+    };
     path: {
         conf: string;
         project: string;
         storage: string;
         web_root: string;
     };
-    port: {
-        open: number;
-        secure: number;
-    };
-    port_map: store_number;
     processes: {
         [key:string]: node_childProcess_ChildProcess;
     };
     sep: string;
+    service_port: {
+        open: number;
+        secure: number;
+    };
     text: store_string;
     verbose: boolean;
 }

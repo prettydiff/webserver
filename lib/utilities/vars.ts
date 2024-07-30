@@ -11,13 +11,14 @@ const vars:vars = {
         storage: "",
         web_root: ""
     },
-    port: {
+    map_port: {},
+    map_redirect: {},
+    processes: {},
+    sep: node.path.sep,
+    service_port: {
         open: 80,
         secure: 443
     },
-    port_map: {},
-    processes: {},
-    sep: node.path.sep,
     text: {
         angry    : "\u001b[1m\u001b[31m",
         blue     : "\u001b[34m",
