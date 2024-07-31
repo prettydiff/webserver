@@ -39,9 +39,9 @@ const server = function transmit_server(config:config_websocket_server):node_net
                             } else if (header.toLowerCase().indexOf("host:") === 0) {
                                 getDomain(header);
                                 if (domain !== vars.domain && domain !== address.local.address) {
-                                    arr[arrIndex] = (socket.tlsOptions === undefined)
-                                        ? `Host: ${address.local.address}:${vars.service_port.open}`
-                                        : `Host: ${address.local.address}:${vars.service_port.secure}`;
+                                    arr[arrIndex] = (socket.encrypted === true)
+                                        ? `Host: ${address.local.address}:${vars.service_port.secure}`
+                                        : `Host: ${address.local.address}:${vars.service_port.open}`;
                                 }
                             } else if (testNonce.test(header) === true) {
                                 nonceHeader = header;
@@ -100,7 +100,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
                             buffer: data,
                             domain: domain,
                             host: address.local.address,
-                            port: (socket.tlsOptions !== undefined && vars.map_port[domain.replace(/\.\w+$/, ".secure")] !== undefined)
+                            port: (socket.encrypted === true && vars.map_port[domain.replace(/\.\w+$/, ".secure")] !== undefined)
                                 ? vars.map_port[domain.replace(/\.\w+$/, ".secure")]
                                 : vars.map_port[domain],
                             socket: socket

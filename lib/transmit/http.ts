@@ -193,9 +193,9 @@ const http = function transmit_http(headerList:string[], socket:websocket_client
                                                 `<h2>Directory List - ${index0[1]}</h2>`,
                                                 "<table><thead><tr><th>object <button>⇅</button></th><th>type <button>⇅</button></th><th>modified date <button>⇅</button></th><th>modified time <button>⇅</button></th></tr></thead><tbody>"
                                             ],
-                                            scheme:"http"|"https" = (socket.tlsOptions === undefined)
-                                                ? "http"
-                                                : "https",
+                                            scheme:"http"|"https" = (socket.encrypted === true)
+                                                ? "https"
+                                                : "http",
                                             total:number = stat_list.length,
                                             icon:store_string = {
                                                 "block_device": "\u2580",

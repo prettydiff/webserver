@@ -4,15 +4,15 @@ import vars from "../utilities/vars.js";
 import redirection from "./redirection.js";
 
 const create_proxy = function transmit_createProxy(config:config_createProxy):void {
-    const proxy:websocket_client = (config.socket.tlsOptions === undefined)
-        ? node.net.connect({
-            host: config.host,
-            port: config.port
-        }) as websocket_client
-        : node.tls.connect({
+    const proxy:websocket_client = (config.socket.encrypted === true)
+        ?  node.tls.connect({
             host: config.host,
             port: config.port,
             rejectUnauthorized: false
+        }) as websocket_client
+        : node.net.connect({
+            host: config.host,
+            port: config.port
         }) as websocket_client;
     config.socket.once("close", function transmit_createProxy_complete_socketClose():void {
         proxy.destroy();

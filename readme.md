@@ -112,7 +112,7 @@ Second, look at file `/lib/transmit/server.ts` to see the flow control.
 Third, look at file `/lib/transmit/createProxy.ts` to see how a proxy socket is created.
 
 ### TLS Identification
-Incoming sockets are identified as secure or open due to the presence of a `tlsOptions` property.
+Incoming sockets are identified as secure or open due to the presence of property `encrypted` from the core Node TLS library.
 The socket's corresponding proxy socket will either be a TCP or TLS socket accordingly.
 
 ### Socket Management
