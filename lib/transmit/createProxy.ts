@@ -28,7 +28,7 @@ const create_proxy = function transmit_createProxy(config:config_createProxy):vo
     });
     proxy.pipe(config.socket);
 
-    if (vars.map_redirect[config.domain] === undefined) {
+    if (vars.redirect_internal[config.domain] === undefined) {
         config.socket.pipe(proxy);
         proxy.write(config.buffer);
     } else {

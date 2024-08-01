@@ -33,8 +33,8 @@ const startup = function utilities_startup(callback:() => void):void {
                         };
                         vars.domain = config.domain_default;
                         vars.service_port = config.service_port;
-                        vars.map_port = config.map_port;
-                        vars.map_redirect = config.map_redirect;
+                        vars.redirect_domain = config.redirect_domain;
+                        vars.redirect_internal = config.redirect_internal;
                         vars.path.storage = sep(config.path.storage);
                         vars.path.web_root = sep(config.path.web_root);
                         return {
@@ -91,7 +91,7 @@ DNS.2 = 192.168.0.3`,
 # End Alt Names
 `
                             ],
-                            keys:string[] = Object.keys(config.map_port),
+                            keys:string[] = Object.keys(config.redirect_domain),
                             total:number = keys.length,
                             list1:string[] = [],
                             list2:string[] = [];

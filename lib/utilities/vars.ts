@@ -11,9 +11,9 @@ const vars:vars = {
         storage: "",
         web_root: ""
     },
-    map_port: {},
-    map_redirect: {},
     processes: {},
+    redirect_domain: {},
+    redirect_internal: {},
     sep: node.path.sep,
     service_port: {
         open: 80,

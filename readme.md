@@ -34,17 +34,17 @@ A `config.json` file is required at project root that conforms to:
 ```typescript
 interface project_config {
     domain_default: string;
-    map_port: {
-        [key:string]: number;
-    };
-    map_redirect: {
-        [key:string]: {
-            [key:string]: string;
-        };
-    };
     path: {
         storage: string;
         web_root: string;
+    };
+    redirect_domain: {
+        [key:string]: [string, number];
+    };
+    redirect_internal: {
+        [key:string]: {
+            [key:string]: string;
+        };
     };
     service_port: {
         open: 80;
@@ -54,32 +54,34 @@ interface project_config {
 ```
 
 * The *domain_default* property provides a single domain name that will not redirect traffic at the domain level.
-* The *map_port* stores a object of domain names as key names and port numbers as values.
+* The *redirecT_domain* stores a object of domain names as key names and an array as a value. That array expects two values where the first is a string representing a host value and the second is a number representing a port value.
+   * If the host value is undefined, null, or an empty string it will resolve to the IP of the given server.
    * If a service at a given vanity domain requires separate ports for secure and insecure services then specify the secure port with `secure` as the top level domain, as demonstrated in the following code example.
-* The *map_redirect* stores an object where each key name is a supported domain name.  Each value is an object storing HTTP request destination and redirection pairs for within the domain.
+* The *redirect_internal* stores an object where each key name is a supported domain name.  Each value is an object storing HTTP request destination and redirection pairs for within the domain.
    * Wildcard support exists if a HTTP request destination terminates with an asterisk, as demonstrated in the following code example. Static HTTP request destinations are evaluated before wildcard requests.
 * The *path.storage* property is an absolute file system path where applications should download resources to.
 * The *path.web_root* property is an absolute file system path where web pages/assets are served from.
+* The *service_port* stores port numbers each representing the listener for insecure and encrypted connections.
 
 Here is an example `config.json` file:
 
 ```json
 {
     "domain_default": "www.x",
-    "map_path": {
-        "pihole.x": 3001,
-        "minecraft.x": 3002,
-        "linux.x": 3003,
-        "linux.secure": 3004
-    },
-    "map_redirect": {
-        "pihole.x": {
-            "/*": "/admin/"
-        }
-    },
     "path": {
         "storage": "/myWebSite/downloads/",
         "web_root": "/var/httpd/www/"
+    },
+    "redirect_domain": {
+        "pihole.x": ["", 3001],
+        "minecraft.x": ["", 3002],
+        "linux.x": ["", 3003],
+        "linux.x.secure": ["", 3004]
+    },
+    "redirect_internal": {
+        "pihole.x": {
+            "/*": "/admin/"
+        }
     },
     "service_port": {
         "open": 80,
@@ -89,9 +91,10 @@ Here is an example `config.json` file:
 ```
 
 #### Please Note
-* Notice in the example the port mapping for `linux.x` and `linux.secure`. The application will not consider `linux.secure` to be a domain, but will correctly proxy TLS traffic, WSS and HTTPS, to the port specified.
+* Notice in the example the *redirect_domain* instance for `linux.x` and `linux.x.secure`. The application will not consider `linux.x.secure` to be a domain, but will correctly proxy TLS traffic, WSS and HTTPS, to the port specified.
    * In this case http://linux.x/ would redirect to http://127.0.0.1:3003 or http://[::1]:3003.
    * https://linux.x/ would redirect to https://127.0.0.1:3004 or https://[::1]:3004.
+   * Since the host name value for all domains in this example is an empty string they will resolve to any address representing the local server.
 * Notice in the example the intra-domain redirects for the example *pihole.x* domain.
    * http://pihole.x/ would redirect to http://pihole.x/admin/.
    * http://pihole.x/login.php would redirect to http://pihole.x/admin/login.php.

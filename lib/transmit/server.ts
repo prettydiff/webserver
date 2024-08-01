@@ -95,14 +95,27 @@ const server = function transmit_server(config:config_websocket_server):node_net
                             });
                         }
                     } else {
+                        const pair:[string, number] = ((socket.encrypted === true && vars.redirect_domain[`${domain}.secure`] !== undefined))
+                                ? vars.redirect_domain[`${domain}.secure`]
+                                : (vars.redirect_domain[domain] === undefined)
+                                    ? (socket.encrypted === true)
+                                        ? [address.local.address, vars.service_port.secure]
+                                        : [address.local.address, vars.service_port.open]
+                                    : vars.redirect_domain[domain],
+                            host:string = (pair[0] === undefined || pair[0] === null || pair[0] === "")
+                                ? address.local.address
+                                : pair[0],
+                            port:number = (typeof pair[1] === "number")
+                                ? pair[1]
+                                : (socket.encrypted === true)
+                                    ? vars.service_port.secure
+                                    : vars.service_port.open;
                         create_proxy({
                             callback: null,
                             buffer: data,
                             domain: domain,
-                            host: address.local.address,
-                            port: (socket.encrypted === true && vars.map_port[domain.replace(/\.\w+$/, ".secure")] !== undefined)
-                                ? vars.map_port[domain.replace(/\.\w+$/, ".secure")]
-                                : vars.map_port[domain],
+                            host: host,
+                            port: port,
                             socket: socket
                         });
                     }

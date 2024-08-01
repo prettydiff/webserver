@@ -1,13 +1,15 @@
 
 interface project_config {
     domain_default: string;
-    map_port: store_number;
-    map_redirect: {
-        [key:string]: store_string;
-    };
     path: {
         storage: string;
         web_root: string;
+    };
+    redirect_domain: {
+        [key:string]: [string, number];
+    };
+    redirect_internal: {
+        [key:string]: store_string;
     };
     service_port: {
         open: number;
@@ -34,10 +36,6 @@ interface store_string {
 
 interface vars {
     domain: string;
-    map_port: store_number;
-    map_redirect: {
-        [key:string]: store_string;
-    };
     path: {
         conf: string;
         project: string;
@@ -46,6 +44,12 @@ interface vars {
     };
     processes: {
         [key:string]: node_childProcess_ChildProcess;
+    };
+    redirect_domain: {
+        [key:string]: [string, number];
+    };
+    redirect_internal: {
+        [key:string]: store_string;
     };
     sep: string;
     service_port: {
