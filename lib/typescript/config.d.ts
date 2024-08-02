@@ -9,9 +9,17 @@ interface config_createProxy {
     buffer: Buffer;
     callback: (proxy:websocket_client, buffer:Buffer) => void;
     domain: string;
-    host: string;
-    port: number;
     socket: websocket_client;
+}
+
+interface config_directory {
+    callback: (dir:directory_list | string[]) => void;
+    depth: number;
+    exclusions: string[];
+    mode: directory_mode;
+    path: string;
+    search: string;
+    symbolic: boolean;
 }
 
 interface config_hash {

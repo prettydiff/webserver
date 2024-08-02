@@ -1,6 +1,6 @@
 
 import create_proxy from "./createProxy.js";
-import getAddress from "../utilities/getAddress.js";
+import get_address from "../utilities/getAddress.js";
 import hash from "../utilities/hash.js";
 import http from "./http.js";
 import message_handler from "./messageHandler.js";
@@ -21,28 +21,36 @@ const server = function transmit_server(config:config_websocket_server):node_net
                             ? dataString.slice(0, headerIndex).split("\r\n")
                             : dataString.split("\r\n"),
                         testNonce:RegExp = (/^Sec-WebSocket-Protocol:\s*\w+-/),
-                        address:transmit_addresses_socket = getAddress({
+                        address:transmit_addresses_socket = get_address({
                             socket: socket,
                             type: "ws"
                         }),
-                        getDomain = function transmit_server_connection_handshake_getDomain(header:string):void {
+                        local:string[] = [
+                            vars.domain,
+                            address.local.address,
+                            "127.0.0.1",
+                            "::1",
+                            "[::1]"
+                        ],
+                        getDomain = function transmit_server_connection_handshake_getDomain(header:string, arrIndex:number, arr:string[]):void {
                             const hostName:string = header.toLowerCase().replace("host:", "").replace(/\s+/g, ""),
                                 index:number = hostName.indexOf(":"),
                                 host:string = (index > 0)
                                     ? hostName.slice(0, index)
                                     : hostName;
                             domain = host.replace(`:${address.local.port}`, "");
+                            // ensures HTTP requests pushed through the proxy are identified as originating from the proxy
+                            if (local.includes(domain) === false) {
+                                arr[arrIndex] = (socket.encrypted === true)
+                                    ? `Host: ${address.local.address}:${vars.service_port.secure}`
+                                    : `Host: ${address.local.address}:${vars.service_port.open}`;
+                            }
                         },
                         headerEach = function transmit_server_connection_handshake_headerEach(header:string, arrIndex:number, arr:string[]):void {
                             if (header.indexOf("Sec-WebSocket-Key") === 0) {
                                 key = header.slice(header.indexOf("-Key:") + 5).replace(/\s/g, "") + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
                             } else if (header.toLowerCase().indexOf("host:") === 0) {
-                                getDomain(header);
-                                if (domain !== vars.domain && domain !== address.local.address) {
-                                    arr[arrIndex] = (socket.encrypted === true)
-                                        ? `Host: ${address.local.address}:${vars.service_port.secure}`
-                                        : `Host: ${address.local.address}:${vars.service_port.open}`;
-                                }
+                                getDomain(header, arrIndex, arr);
                             } else if (testNonce.test(header) === true) {
                                 nonceHeader = header;
                             }
@@ -50,7 +58,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
                     headerList.forEach(headerEach);
 
                     // do not proxy primary domain
-                    if (domain === vars.domain || domain === address.local.address) {
+                    if (local.includes(domain) === true) {
                         if (key === "") {
                             if (headerList[0].indexOf("GET") === 0) {
                                 // local domain only uses GET method
@@ -61,61 +69,45 @@ const server = function transmit_server(config:config_websocket_server):node_net
                             }
                         } else {
                             // local domain websocket support
+                            const callback = function transmit_server_connection_handshake_hash(hashOutput:hash_output):void {
+                                const client_respond = function transmit_server_connection_handshake_hash_clientRespond():void {
+                                    const headers:string[] = [
+                                            "HTTP/1.1 101 Switching Protocols",
+                                            "Upgrade: websocket",
+                                            "Connection: Upgrade",
+                                            `Sec-WebSocket-Accept: ${hashOutput.hash}`,
+                                            "Access-Control-Allow-Origin: *",
+                                            "Server: webserver"
+                                        ];
+                                    if (nonceHeader !== null) {
+                                        headers.push(nonceHeader);
+                                    }
+                                    headers.push("");
+                                    headers.push("");
+                                    socket.write(headers.join("\r\n"));
+                                };
+                                socket_extension({
+                                    callback: client_respond,
+                                    handler: message_handler,
+                                    identifier: `browser-${hashOutput.hash}`,
+                                    role: "server",
+                                    socket: socket,
+                                    type: "browser-youtube-download"
+                                });
+                            };
                             hash({
                                 algorithm: "sha1",
-                                callback: function transmit_server_connection_handshake_hash(hashOutput:hash_output):void {
-                                    const client_respond = function transmit_server_connection_handshake_hash_clientRespond():void {
-                                        const headers:string[] = [
-                                                "HTTP/1.1 101 Switching Protocols",
-                                                "Upgrade: websocket",
-                                                "Connection: Upgrade",
-                                                `Sec-WebSocket-Accept: ${hashOutput.hash}`,
-                                                "Access-Control-Allow-Origin: *",
-                                                "Server: webserver"
-                                            ];
-                                        if (nonceHeader !== null) {
-                                            headers.push(nonceHeader);
-                                        }
-                                        headers.push("");
-                                        headers.push("");
-                                        socket.write(headers.join("\r\n"));
-                                    };
-                                    socket_extension({
-                                        callback: client_respond,
-                                        handler: message_handler,
-                                        identifier: `browser-${hashOutput.hash}`,
-                                        role: "server",
-                                        socket: socket,
-                                        type: "browser-youtube-download"
-                                    });
-                                },
+                                callback: callback,
                                 digest: "base64",
                                 hash_input_type: "direct",
                                 source: key
                             });
                         }
                     } else {
-                        const pair:[string, number] = ((socket.encrypted === true && vars.redirect_domain[`${domain}.secure`] !== undefined))
-                                ? vars.redirect_domain[`${domain}.secure`]
-                                : (vars.redirect_domain[domain] === undefined)
-                                    ? (socket.encrypted === true)
-                                        ? [address.local.address, vars.service_port.secure]
-                                        : [address.local.address, vars.service_port.open]
-                                    : vars.redirect_domain[domain],
-                            host:string = (pair[0] === undefined || pair[0] === null || pair[0] === "")
-                                ? address.local.address
-                                : pair[0],
-                            port:number = (typeof pair[1] === "number")
-                                ? pair[1]
-                                : (socket.encrypted === true)
-                                    ? vars.service_port.secure
-                                    : vars.service_port.open;
                         create_proxy({
                             callback: null,
                             buffer: data,
                             domain: domain,
-                            host: host,
-                            port: port,
                             socket: socket
                         });
                     }

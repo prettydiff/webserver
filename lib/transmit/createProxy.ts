@@ -1,19 +1,39 @@
 
+import get_address from "../utilities/getAddress.js";
 import node from "../utilities/node.js";
 import vars from "../utilities/vars.js";
 import redirection from "./redirection.js";
 
 const create_proxy = function transmit_createProxy(config:config_createProxy):void {
-    const proxy:websocket_client = (config.socket.encrypted === true)
-        ?  node.tls.connect({
-            host: config.host,
-            port: config.port,
-            rejectUnauthorized: false
-        }) as websocket_client
-        : node.net.connect({
-            host: config.host,
-            port: config.port
-        }) as websocket_client;
+    const  address:transmit_addresses_socket = get_address({
+            socket: config.socket,
+            type: "ws"
+        }),
+        pair:[string, number] = ((config.socket.encrypted === true && vars.redirect_domain[`${config.domain}.secure`] !== undefined))
+            ? vars.redirect_domain[`${config.domain}.secure`]
+            : (vars.redirect_domain[config.domain] === undefined)
+                ? (config.socket.encrypted === true)
+                    ? [address.local.address, vars.service_port.secure]
+                    : [address.local.address, vars.service_port.open]
+                : vars.redirect_domain[config.domain],
+        host:string = (pair[0] === undefined || pair[0] === null || pair[0] === "")
+            ? address.local.address
+            : pair[0],
+        port:number = (typeof pair[1] === "number")
+            ? pair[1]
+            : (config.socket.encrypted === true)
+                ? vars.service_port.secure
+                : vars.service_port.open,
+        proxy:websocket_client = (config.socket.encrypted === true)
+            ?  node.tls.connect({
+                host: host,
+                port: port,
+                rejectUnauthorized: false
+            }) as websocket_client
+            : node.net.connect({
+                host: host,
+                port: port
+            }) as websocket_client;
     config.socket.once("close", function transmit_createProxy_complete_socketClose():void {
         proxy.destroy();
         config.socket.destroy();

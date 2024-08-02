@@ -1,6 +1,5 @@
 
 import dateString from "../utilities/dateString.js";
-import getAddress from "../utilities/getAddress.js";
 import node from "../utilities/node.js";
 import redirection from "./redirection.js";
 import vars from "../utilities/vars.js";
@@ -150,10 +149,6 @@ const http = function transmit_http(headerList:string[], socket:websocket_client
                                                         "socket": "\ud83d\udd0c",
                                                         "symbolic_link": "\ud83d\udd17"
                                                     },
-                                                    socketAddress:transmit_addresses_socket = getAddress({
-                                                        socket: socket,
-                                                        type: "ws"
-                                                    }),
                                                     host:string = (function transmit_http_host():string {
                                                         let index:number = headerList.length,
                                                             colon:number = -1,
@@ -166,7 +161,6 @@ const http = function transmit_http(headerList:string[], socket:websocket_client
                                                                 value = (colon > 0)
                                                                     ? value.slice(0, colon)
                                                                     : value;
-                                                                headerList[index] = `Host: ${socketAddress.local.address}:${vars.redirect_domain[value][1]}`;
                                                             } else if (headerList[index].toLowerCase().indexOf("connection:") === 0) {
                                                                 headerList.splice(index, 1);
                                                                 index = index + 1;

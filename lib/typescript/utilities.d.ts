@@ -1,20 +1,17 @@
 
-interface project_config {
-    domain_default: string;
-    path: {
-        storage: string;
-        web_root: string;
-    };
-    redirect_domain: {
-        [key:string]: [string, number];
-    };
-    redirect_internal: {
-        [key:string]: store_string;
-    };
-    service_port: {
-        open: number;
-        secure: number;
-    };
+interface directory_data {
+    atimeMs: number;
+    ctimeMs: number;
+    linkPath: string;
+    linkType: "" | "directory" | "file";
+    mode: number;
+    mtimeMs: number;
+    size: number;
+}
+
+interface directory_list extends Array<directory_item> {
+    failures?: string[];
+    [index:number]: directory_item;
 }
 
 interface hash_output {
@@ -32,6 +29,24 @@ interface store_number {
 
 interface store_string {
     [key:string]: string;
+}
+
+interface project_config {
+    domain_default: string;
+    path: {
+        storage: string;
+        web_root: string;
+    };
+    redirect_domain: {
+        [key:string]: [string, number];
+    };
+    redirect_internal: {
+        [key:string]: store_string;
+    };
+    service_port: {
+        open: number;
+        secure: number;
+    };
 }
 
 interface vars {

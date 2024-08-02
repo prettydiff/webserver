@@ -1,13 +1,8 @@
 
+import core from "./core.js";
+
 (function youtube():void {
-    const port:string = (location.protocol === "http:")
-            ? "80"
-            : "443",
-        address:string = (location.host.includes(":") === true)
-            ? location.origin
-            : `${location.origin}:${port}`,
-        socket:WebSocket = new WebSocket(address, ["browser-youtube-download"]),
-        inputs:HTMLCollectionOf<HTMLInputElement> = document.getElementsByTagName("input"),
+    const inputs:HTMLCollectionOf<HTMLInputElement> = document.getElementsByTagName("input"),
         download:HTMLButtonElement = document.getElementsByTagName("button")[0],
         cancel:HTMLButtonElement = document.getElementsByTagName("button")[1],
         message = function youtube_message(event:websocket_event):void {
@@ -128,9 +123,6 @@
                 };
             }
         },
-        close = function youtube_close():void {
-            closed = true;
-        },
         radioToggle = function youtube_radioToggle(event:MouseEvent):void {
             let index:number = inputs.length,
                 parent:HTMLElement,
@@ -150,19 +142,16 @@
                 child.setAttribute("class", "checked");
                 mediaType = target.value as "audio"|"video";
             }
-        };
+        },
+        socket:WebSocket = core("browser-youtube-download", open, message);
     let index:number = inputs.length,
         pid:number = 0,
-        mediaType:"audio"|"video" = "audio",
-        closed:boolean = false;
+        mediaType:"audio"|"video" = "audio";
     document.getElementsByTagName("body")[0].onclick = function youtube_body():void {
         if (closed === true) {
             location.reload();
         }
     };
-    socket.onclose = close;
-    socket.onmessage = message;
-    socket.onopen = open;
     do {
         index = index - 1;
         if (inputs[index].type === "radio") {
