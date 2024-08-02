@@ -4,7 +4,7 @@ import node from "../utilities/node.js";
 import redirection from "./redirection.js";
 import vars from "../utilities/vars.js";
 
-/* cspell: words nofollow, onnection, prettydiff */
+/* cspell: words msvideo, nofollow, onnection, prettydiff */
 
 const http = function transmit_http(headerList:string[], socket:websocket_client):void {
     const index0:string[] = (vars.redirect_internal[vars.domain] === undefined)
@@ -35,7 +35,7 @@ const http = function transmit_http(headerList:string[], socket:websocket_client
                     "",
                     ""
                 ];
-            if (config.template === true && config.binary === false) {
+            if (config.template === true) {
                 const templateText:string[] = [
                     "<!doctype html>",
                     "<html lang=\"en\">",
@@ -73,10 +73,6 @@ const http = function transmit_http(headerList:string[], socket:websocket_client
                 headerText[2] = `content-length: ${Buffer.from(bodyText).length}`;
                 return headerText.join("\r\n") + bodyText;
             }
-            if (config.binary === true) {
-                headerText[2] = `content-length: ${config.content.length}`;
-                return headerText.join("\r\n");
-            }
             headerText[2] = `content-length: ${Buffer.from(bodyText).length}`;
             return headerText.join("\r\n") + bodyText;
         },
@@ -87,7 +83,6 @@ const http = function transmit_http(headerList:string[], socket:websocket_client
             node.fs.stat(input, function transmit_http_statTest_stat(ers:node_error, stat:node_fs_Stats):void {
                 const notFound = function transmit_http_statTest_stat_notFound():void {
                         write(html({
-                            binary: false,
                             content: [`<p>Resource not found: <strong>${asset.join("/")}</strong></p>`],
                             content_type: "text/html; utf8",
                             page_title: "404",
@@ -98,7 +93,6 @@ const http = function transmit_http(headerList:string[], socket:websocket_client
                     },
                     serverError = function transmit_http_statTest_stat_serverError(errorObject:node_error, errorText:string):void {
                         write(html({
-                            binary: false,
                             content: [
                                 errorText,
                                 JSON.stringify(errorObject)
@@ -203,7 +197,6 @@ const http = function transmit_http(headerList:string[], socket:websocket_client
                                                 } while (index_item < total);
                                                 content.push("</tbody></table>");
                                                 write(html({
-                                                    binary: false,
                                                     content: content,
                                                     content_type: "text/html; utf8",
                                                     page_title: index0[1],
@@ -267,65 +260,55 @@ const http = function transmit_http(headerList:string[], socket:websocket_client
                         });
                     },
                     file = function transmit_http_statTest_stat_file():void {
-                        node.fs.readFile(input, function transmit_http_statTest_stat_file_readFile(erf:node_error, fileContents:Buffer):void {
-                            if (erf === null) {
-                                const content_type:string = (function transmit_http_statTest_stat_file_readFile_status():string {
-                                    const extension:string = input.slice(input.lastIndexOf(".") + 1);
-                                    if (extension === "html") {
-                                        return "text/html; utf8";
-                                    }
-                                    if (extension === "xml") {
-                                        return "application/xml; utf8";
-                                    }
-                                    if (extension === "xhtml") {
-                                        return "application/xml+html; utf8";
-                                    }
-                                    if (extension === "css") {
-                                        return "text/css; utf8";
-                                    }
-                                    if (extension === "js") {
-                                        return "application/javascript; utf8";
-                                    }
-                                    if (extension === "png") {
-                                        return "image/png";
-                                    }
-                                    if (extension === "jpg" || extension === "jpeg") {
-                                        return "image/jpeg";
-                                    }
-                                    if (extension === "mp3") {
-                                        return "audio/mpeg";
-                                    }
-                                    if (extension === "mp4" || extension === "mpeg4" || extension === "mkv") {
-                                        return "video/mp4";
-                                    }
-                                }()),
-                                binary:boolean = (content_type.indexOf("; utf8") < 0);
-                                if (binary === true) {
-                                    socket.write(html({
-                                        binary: binary,
-                                        content: fileContents,
-                                        content_type: content_type,
-                                        page_title: null,
-                                        script: null,
-                                        status: 200,
-                                        template: false
-                                    }));
-                                    write(fileContents);
-                                } else {
-                                    write(html({
-                                        binary: binary,
-                                        content: [fileContents.toString()],
-                                        content_type: content_type,
-                                        page_title: null,
-                                        script: null,
-                                        status: 200,
-                                        template: false
-                                    }));
+                        const content_type:string = (function transmit_http_statTest_stat_file_contentType():string {
+                                const extension:string = input.slice(input.lastIndexOf(".") + 1);
+                                if (extension === "avi") {
+                                    return "video/x-msvideo";
                                 }
-                            } else {
-                                serverError(erf, `<p>Error attempting to read from requested file at: <strong>${input}</strong></p>`);
-                            }
-                        });
+                                if (extension === "css") {
+                                    return "text/css; utf8";
+                                }
+                                if (extension === "flv") {
+                                    return "video/x-flv";
+                                }
+                                if (extension === "html") {
+                                    return "text/html; utf8";
+                                }
+                                if (extension === "jpg" || extension === "jpeg") {
+                                    return "image/jpeg";
+                                }
+                                if (extension === "js") {
+                                    return "application/javascript; utf8";
+                                }
+                                if (extension === "mp3") {
+                                    return "audio/mpeg";
+                                }
+                                if (extension === "mp4" || extension === "mpeg4" || extension === "mkv") {
+                                    return "video/mp4";
+                                }
+                                if (extension === "png") {
+                                    return "image/png";
+                                }
+                                if (extension === "wmv") {
+                                    return "video/x-ms-wmv";
+                                }
+                                if (extension === "xhtml") {
+                                    return "application/xml+html; utf8";
+                                }
+                                if (extension === "xml") {
+                                    return "application/xml; utf8";
+                                }
+                            }()),
+                            headerText:string[] = [
+                                `HTTP/1.1 200`,
+                                `content-type: ${content_type}`,
+                                `content-length: ${stat.size}`,
+                                "server: prettydiff/webserver",
+                                "",
+                                ""
+                            ];
+                        socket.write(headerText.join("\r\n"));
+                        node.fs.createReadStream(input).pipe(socket);
                     };
                 if (ers === null) {
                     if (stat.isFile() === true) {
