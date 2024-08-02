@@ -3,7 +3,7 @@ const dom = function browser_utilities_dom():void {
     // addClass - adds a new class value to an element's class attribute if not already present
     // * className:string - The name of the class to add.
     const addClass = function browser_utilities_dom_addClass(className:string):void {
-            // eslint-disable-next-line
+            // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
             const element:HTMLElement = this,
                 classy:string = element.getAttribute("class"),
                 classes:string[] = (classy === null)
@@ -22,10 +22,10 @@ const dom = function browser_utilities_dom():void {
         // * text: string - The text string to append.
         // * empty: boolean (optional) - if true all child nodes will be removed before appending the text string.
         appendText = function browser_utilities_dom_appendText(text:string, empty?:boolean):void {
-            // eslint-disable-next-line
+            // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
             const element:HTMLElement = this;
             if (empty === true) {
-                // eslint-disable-next-line
+                // eslint-disable-next-line no-restricted-syntax
                 element.innerHTML = "";
             }
             if (text !== "") {
@@ -36,7 +36,7 @@ const dom = function browser_utilities_dom():void {
         // * identifier: string - The string value to search for.
         // * selector: "class", "id", "name" - The part of the element to compare the identifier against.
         getAncestor = function browser_utilities_dom_getAncestor(identifier:string, selector:selector_type):HTMLElement {
-            // eslint-disable-next-line
+            // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
             let start:HTMLElement = (this === document) ? document.documentElement : this;
             const test = function browser_utilities_dom_getAncestor_test():boolean {
                     if (selector === "class") {
@@ -78,7 +78,7 @@ const dom = function browser_utilities_dom():void {
         // * name: string - The name of the attribute to search for.  An empty string means accept every attribute name.
         // * value: string - The attribute value to search for.  An empty string means accept any attribute value.
         getElementsByAttribute = function browser_utilities_dom_getElementsByAttribute(name:string, value:string):HTMLElement[] {
-            // eslint-disable-next-line
+            // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
             const start:HTMLElement = (this === document) ? document.documentElement : this,
                 attrs:Attr[]    = start.getNodesByType(2) as Attr[],
                 out:HTMLElement[]   = [];
@@ -101,7 +101,7 @@ const dom = function browser_utilities_dom():void {
         // * textValue: string - The text to match.  The value must exactly match the complete text node value after trimming white space.
         // * castSensitive: boolean - Whether case sensitivity should apply.
         getElementsByText = function browser_utilities_dom_getElementsByText(textValue:string, caseSensitive?:boolean):HTMLElement[] {
-            // eslint-disable-next-line
+            // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
             const start:HTMLElement = (this === document) ? document.documentElement : this,
                 texts:Text[]    = start.getNodesByType(3) as Text[],
                 out:HTMLElement[]   = [];
@@ -135,6 +135,8 @@ const dom = function browser_utilities_dom():void {
                     ? Math.round(Number(typeValue))
                     : null,
                 output:Node[] = [],
+                // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
+                start:Document|HTMLElement = this,
                 child = function browser_utilities_dom_getNodesByType_child(recurse:HTMLElement):void {
                     const children:NodeListOf<ChildNode> = recurse.childNodes,
                         len:number              = children.length,
@@ -205,17 +207,16 @@ const dom = function browser_utilities_dom():void {
                     return 0;
                 }());
 
-            // eslint-disable-next-line
-            child((this === document) ? document.documentElement : this);
+            child((start === document) ? document.documentElement : start as HTMLElement);
             return output;
         },
         // highlight - Adds a class name to an element where that class name results in a CSS animated outline and focuses the element
         // * element: HTMLElement (optional) - A specified element to modify, default is the "this" value executed on an element.
         highlight = function browser_utilities_dom_highlight(element?:HTMLElement):void {
-            // eslint-disable-next-line
+            // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
             const item:HTMLElement = (this === document)
                     ? element
-                    // eslint-disable-next-line
+                    // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
                     : this,
                 classy:string = (item === element)
                     ? null
@@ -244,13 +245,14 @@ const dom = function browser_utilities_dom():void {
         },
         // return a tag's lowercase name.  XML is case sensitive, but HTML returns uppercase tag names
         lowName = function browser_utilities_dom_lowName():string {
-            // eslint-disable-next-line
-            return this.tagName.toLowerCase();
+            // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
+            const el:HTMLElement = this;
+            return el.tagName.toLowerCase();
         },
         // removes a single class name from an element's class attribute value
         // * className: string - The name of the class to remove.
         removeClass = function browser_utilities_dom_removeClass(className:string):void {
-            // eslint-disable-next-line
+            // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
             const element:HTMLElement = this,
                 classy:string = element.getAttribute("class"),
                 classes:string[] = (classy === null)
@@ -270,10 +272,10 @@ const dom = function browser_utilities_dom():void {
         // removes the "highlight" class name from a given element
         // * element: HTMLElement (optional) - A specified element to modify, default is the "this" value executed on an element.
         removeHighlight = function browser_utilities_dom_removeHighlight(element?:HTMLElement):void {
-            // eslint-disable-next-line
+            // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
             const item:HTMLElement = (this === document)
                     ? element
-                    // eslint-disable-next-line
+                    // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
                     : this,
                 el:HTMLElement = (item === undefined)
                     ? null

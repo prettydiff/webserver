@@ -131,13 +131,13 @@ import core from "./core.js";
             do {
                 index = index - 1;
                 if (inputs[index].type === "radio") {
-                    parent = inputs[index].parentNode  as HTMLElement;
+                    parent = inputs[index].parentNode;
                     child = parent.firstChild as HTMLElement;
                     child.removeAttribute("class");
                 }
             } while (index > 0);
             if (target.checked === true) {
-                parent = target.parentNode as HTMLElement;
+                parent = target.parentNode;
                 child = parent.firstChild as HTMLElement;
                 child.setAttribute("class", "checked");
                 mediaType = target.value as "audio"|"video";

@@ -4,12 +4,12 @@
         recordLength:number = records.length,
         recordList:Element[] = [],
         sortEvent = function fileList_sortEvent(event:MouseEvent):void {
-            const target:HTMLElement = event.target as HTMLElement,
-                parent:HTMLElement = target.parentNode as HTMLElement,
-                grandParent:HTMLElement = parent.parentNode as HTMLElement,
+            const target:HTMLElement = event.target,
+                parent:HTMLElement = target.parentNode,
+                grandParent:HTMLElement = parent.parentNode,
                 tbodyOld:HTMLElement = document.getElementsByTagName("tbody")[0],
                 tbodyNew:HTMLElement = document.createElement("tbody"),
-                table:HTMLElement = tbodyOld.parentNode as HTMLElement,
+                table:HTMLElement = tbodyOld.parentNode,
                 parentList:HTMLCollectionOf<Element> = grandParent.getElementsByTagName(parent.nodeName),
                 direction:"down"|"up" = (target.getAttribute("data-direction") === null)
                     ? "down"

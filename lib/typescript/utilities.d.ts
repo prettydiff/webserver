@@ -10,8 +10,8 @@ interface directory_data {
 }
 
 interface directory_list extends Array<directory_item> {
-    failures?: string[];
     [index:number]: directory_item;
+    failures?: string[];
 }
 
 interface hash_output {
