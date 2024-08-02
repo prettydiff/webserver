@@ -2,11 +2,11 @@
 // cspell: words RSAPSS
 import { ChildProcess, ExecException, ExecOptions, SpawnOptions } from "node:child_process";
 import { ECDH, Hash, KeyObject, RSAKeyPairOptions } from "node:crypto";
-import { ReadStream, Stats, WriteStream } from "node:fs";
+import { BigIntStats, ReadStream, Stats, WriteStream } from "node:fs";
 import { ClientRequest, IncomingMessage, OutgoingHttpHeaders, Server as httpServer, ServerResponse } from "node:http";
 import { RequestOptions } from "node:https";
 import { AddressInfo, NetConnectOpts, Server, Socket } from "node:net";
-import { NetworkInterfaceInfo, NetworkInterfaceInfoIPv4, NetworkInterfaceInfoIPv6 } from "node:os";
+import { NetworkInterfaceInfo, NetworkInterfaceInfoIPv4, NetworkInterfaceInfoIPv6, type } from "node:os";
 import { Readable } from "node:stream";
 import { StringDecoder } from "node:string_decoder";
 import { TLSSocket, TLSSocketOptions } from "node:tls";
@@ -22,6 +22,7 @@ declare global {
     type node_crypto_KeyObject = KeyObject;
     type node_crypto_RSAKeyPairOptions = RSAKeyPairOptions<"pem", "pem">;
     type node_error = NodeJS.ErrnoException;
+    type node_fs_BigIntStats = BigIntStats;
     type node_fs_ReadStream = ReadStream;
     type node_fs_Stats = Stats;
     type node_fs_WriteStream = WriteStream;

@@ -80,7 +80,9 @@ const http = function transmit_http(headerList:string[], socket:websocket_client
             input = vars.path.web_root + fileFragment.replace(/%\d{2}/g, function transmit_http_statTest_uriEscape(input:string):string {
                 return String.fromCharCode(parseInt(`00${input.slice(1)}`, 16));
             }).replace(/^\\|\//, "");
-            node.fs.stat(input, function transmit_http_statTest_stat(ers:node_error, stat:node_fs_Stats):void {
+            node.fs.stat(input, {
+                bigint: true
+            }, function transmit_http_statTest_stat(ers:node_error, stat:node_fs_BigIntStats):void {
                 const notFound = function transmit_http_statTest_stat_notFound():void {
                         write(html({
                             content: [`<p>Resource not found: <strong>${asset.join("/")}</strong></p>`],
@@ -302,13 +304,29 @@ const http = function transmit_http(headerList:string[], socket:websocket_client
                             headerText:string[] = [
                                 `HTTP/1.1 200`,
                                 `content-type: ${content_type}`,
-                                `content-length: ${stat.size}`,
+                                `content-length: ${Number(stat.size)}`,
                                 "server: prettydiff/webserver",
                                 "",
                                 ""
                             ];
-                        socket.write(headerText.join("\r\n"));
-                        node.fs.createReadStream(input).pipe(socket);
+                        // sometimes stat.size reports the wrong file size
+                        if (stat.size === stat.blksize && content_type.includes("utf8") === true) {
+                            node.fs.readFile(input, function transmit_http_statTest_stat_file_read(err:node_error, file:Buffer):void {
+                                if (err === null) {
+                                    headerText[2] = `content-length: ${file.length}`;
+                                    write(headerText.join("\r\n") + file.toString());
+                                } else {
+                                    serverError(err, `Error attempting to read file: ${index0[1]}`);
+                                }
+                            });
+                        } else {
+                            const stream:node_fs_ReadStream = node.fs.createReadStream(input);
+                            socket.write(headerText.join("\r\n"));
+                            stream.pipe(socket);
+                            stream.on("close", function transmit_http_statTest_stat_file_close():void {
+                                socket.destroy();
+                            });
+                        }
                     };
                 if (ers === null) {
                     if (stat.isFile() === true) {
