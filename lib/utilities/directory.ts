@@ -54,14 +54,6 @@ const directory = function utilities_directory(args:config_directory):void {
                 }
                 return null;
             }()),
-            relative:boolean = (function utilities_directory_relative():boolean {
-                const relIndex:number = process.argv.indexOf("relative");
-                if (relIndex < 0) {
-                    return false;
-                }
-                process.argv.splice(relIndex, 1);
-                return true;
-            }()),
             list:directory_list = [],
             fileList:string[] = [],
             output = function utilities_directory_output():void {
@@ -178,7 +170,7 @@ const directory = function utilities_directory(args:config_directory):void {
                         driveLetter = function utilities_directory_statWrapper_stat_driveLetter(input:string):string {
                             return `${input}\\`;
                         },
-                        relPath:string = (relative === true)
+                        relPath:string = (args.relative === true)
                             ? filePath.replace(args.path + vars.sep, "")
                             : filePath,
                         search = function utilities_directory_statWrapper_stat_search(searchItem:string):boolean {
@@ -202,7 +194,7 @@ const directory = function utilities_directory(args:config_directory):void {
                                 const index:number = (args.mode === "array" || args.mode === "list")
                                         ? fileList.length
                                         : list.length,
-                                    relItem:string = (relative === true)
+                                    relItem:string = (args.relative === true)
                                         ? item.replace(args.path + vars.sep, "")
                                         : item;
                                 if (args.mode === "array") {

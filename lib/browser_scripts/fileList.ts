@@ -14,14 +14,25 @@
                 direction:"down"|"up" = (target.getAttribute("data-direction") === null)
                     ? "down"
                     : target.getAttribute("data-direction") as "down"|"up",
-                getText = function fileList_sortEvent_getText(record:Element):string {
+                getText = function fileList_sortEvent_getText(record:Element):number|string {
                     if (column === 0) {
                         return record.getElementsByTagName("a")[0].firstChild.textContent;
                     }
                     if (column === 1) {
                         return record.getElementsByTagName("td")[1].firstChild.textContent;
                     }
-                    return record.getElementsByTagName("td")[2].getAttribute("data-time");
+                    if (column === 2) {
+                        return Number(record.getElementsByTagName("td")[2].getAttribute("data-raw"));
+                    }
+                    if (column === 3) {
+                        return Number(record.getElementsByTagName("td")[3].getAttribute("data-raw"));
+                    }
+                    if (column === 4) {
+                        return Number(record.getElementsByTagName("td")[3].getAttribute("data-raw"));
+                    }
+                    if (column === 5) {
+                        return Number(record.getElementsByTagName("td")[5].getAttribute("data-raw"));
+                    }
                 };
             let count:number = parentList.length,
                 column:number = 0;
@@ -39,8 +50,8 @@
             } while (count > 0);
 
             recordList.sort(function fileList_sortEvent_sort(a:Element, b:Element):-1|1 {
-                const valueA:string = getText(a),
-                    valueB:string = getText(b);
+                const valueA:number|string = getText(a),
+                    valueB:number|string = getText(b);
                 if (valueA < valueB) {
                     if (direction === "down") {
                         return -1;
@@ -72,10 +83,12 @@
         counter = counter - 1;
         th[counter].getElementsByTagName("button")[0].onclick = sortEvent;
     } while (counter > 0);
-
     counter = 0;
     do {
         recordList.push(records[counter]);
         counter = counter + 1;
     } while (counter < recordLength);
+    document.getElementsByTagName("button")[0].click();
+    document.getElementsByTagName("button")[0].click();
+    document.getElementsByTagName("button")[1].click();
 }());

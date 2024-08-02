@@ -18,6 +18,7 @@ interface config_directory {
     exclusions: string[];
     mode: directory_mode;
     path: string;
+    relative: boolean;
     search: string;
     symbolic: boolean;
 }

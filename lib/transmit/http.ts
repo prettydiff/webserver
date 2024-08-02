@@ -1,5 +1,7 @@
 
+import commas from "../browser_scripts/commas.js";
 import dateString from "../utilities/dateString.js";
+import directory from "../utilities/directory.js";
 import node from "../utilities/node.js";
 import redirection from "./redirection.js";
 import vars from "../utilities/vars.js";
@@ -111,150 +113,81 @@ const http = function transmit_http(headerList:string[], socket:websocket_client
                             socket.destroy();
                         });
                     },
-                    directory = function transmit_http_statTest_stat_directory():void {
+                    directory_item = function transmit_http_statTest_stat_directoryItem():void {
                         const indexFile:string = `${input.replace(/\\|\/$/, "") + vars.sep}index.html`;
-                        node.fs.stat(indexFile, function transmit_http_statTest_stat_directory_index(eri:node_error):void {
+                        node.fs.stat(indexFile, function transmit_http_statTest_stat_directoryItem_index(eri:node_error):void {
                             if (eri === null) {
                                 input = indexFile;
                                 file();
                             } else if (eri.code === "ENOENT") {
-                                node.fs.readdir(input, function transmit_http_statTest_stat_directory_index_readDir(erd:node_error, dirList:string[]):void {
-                                    if (erd === null) {
-                                        let index:number = 0;
-                                        const stat_list:statList = [],
-                                            total:number = dirList.length,
-                                            stat_complete = function transmit_http_statTest_stat_directory_index_readDir_statComplete():void {
-                                                let index_item:number = 0,
-                                                    item:stat_item = null,
-                                                    dtg:string[] = null,
-                                                    address:string = "";
-                                                const content:string[] = [
-                                                        `<h2>Directory List - ${index0[1]}</h2>`,
-                                                        "<table><thead><tr><th>object <button>⇅</button></th><th>type <button>⇅</button></th><th>modified date <button>⇅</button></th><th>modified time <button>⇅</button></th></tr></thead><tbody>"
-                                                    ],
-                                                    scheme:"http"|"https" = (socket.encrypted === true)
-                                                        ? "https"
-                                                        : "http",
-                                                    total:number = stat_list.length,
-                                                    icon:store_string = {
-                                                        "block_device": "\u2580",
-                                                        "character_device": "\u0258",
-                                                        "directory": "\ud83d\udcc1",
-                                                        "fifo_pipe": "\u275a",
-                                                        "file": "\ud83d\uddce",
-                                                        "socket": "\ud83d\udd0c",
-                                                        "symbolic_link": "\ud83d\udd17"
-                                                    },
-                                                    host:string = (function transmit_http_host():string {
-                                                        let index:number = headerList.length,
-                                                            colon:number = -1,
-                                                            value:string = "";
-                                                        do {
-                                                            index = index - 1;
-                                                            if (headerList[index].toLowerCase().indexOf("host:") === 0) {
-                                                                value = headerList[index].slice(headerList[index].indexOf(":") + 1).replace(/\s+/g, "");
-                                                                colon = value.indexOf(":");
-                                                                value = (colon > 0)
-                                                                    ? value.slice(0, colon)
-                                                                    : value;
-                                                            } else if (headerList[index].toLowerCase().indexOf("connection:") === 0) {
-                                                                headerList.splice(index, 1);
-                                                                index = index + 1;
-                                                            }
-                                                        } while (index > 0);
-                                                        return value;
-                                                    }());
-                                                stat_list.sort(function transmit_http_statTest_stat_directory_index_readDir_statComplete_sort(a:stat_item, b:stat_item):-1|1 {
-                                                    if (a.type === "directory" && b.type !== "directory") {
-                                                        return -1;
-                                                    }
-                                                    if (a.type !== "directory" && b.type === "directory") {
-                                                        return 1;
-                                                    }
-                                                    if (a.type === "file" && b.type !== "directory" && b.type !== "file") {
-                                                        return -1;
-                                                    }
-                                                    if (a.type !== "directory" && a.type !== "file" && b.type === "directory") {
-                                                        return 1;
-                                                    }
-                                                    if (a.type < b.type) {
-                                                        return -1;
-                                                    }
-                                                    if (a.type > b.type) {
-                                                        return 1;
-                                                    }
-                                                    if (a.type === b.type) {
-                                                        if (a.path < b.path) {
-                                                            return -1;
-                                                        }
-                                                    }
-                                                    return 1;
-                                                });
-                                                do {
-                                                    item = stat_list[index_item];
-                                                    address = `${scheme}://${host + index0[1] + vars.sep + item.path.replace(/\\/g, "/")}`;
-                                                    dtg = dateString(item.mtimeMs).split(", ");
-                                                    content.push(`<tr class="${(index_item % 2 === 0) ? "even" : "odd"}"><td>${icon[item.type]} <a href="${address}">${item.path}</a></td><td>${item.type}</td><td data-time="${item.mtimeMs}">${dtg[0]}</td><td>${dtg[1]}</td></tr>`);
-                                                    index_item = index_item + 1;
-                                                } while (index_item < total);
-                                                content.push("</tbody></table>");
-                                                write(html({
-                                                    content: content,
-                                                    content_type: "text/html; utf8",
-                                                    page_title: index0[1],
-                                                    status: 200,
-                                                    template: true,
-                                                    script: "/browser_scripts/fileList.js"
-                                                }));
-                                            },
-                                            stat_step = function transmit_http_statTest_stat_directory_readDir_statStep():void {
-                                                node.fs.lstat(input + vars.sep + dirList[index], function transmit_http_statTest_stat_directory_index_readDir_statStep_lstat(efs:node_error, stat:node_fs_Stats):void {
-                                                    if (stat.isFile() === true) {
-                                                        populate("file", stat);
-                                                        return;
-                                                    }
-                                                    if (stat.isDirectory() === true) {
-                                                        populate("directory", stat);
-                                                        return;
-                                                    }
-                                                    if (stat.isSymbolicLink() === true) {
-                                                        populate("symbolic_link", stat);
-                                                        return;
-                                                    }
-                                                    if (stat.isBlockDevice() === true) {
-                                                        populate("block_device", stat);
-                                                        return;
-                                                    }
-                                                    if (stat.isCharacterDevice() === true) {
-                                                        populate("character_device", stat);
-                                                        return;
-                                                    }
-                                                    if (stat.isFIFO() === true) {
-                                                        populate("fifo_pipe", stat);
-                                                        return;
-                                                    }
-                                                    if (stat.isSocket() === true) {
-                                                        populate("socket", stat);
-                                                        return;
-                                                    }
-                                                });
-                                            },
-                                            populate = function transmit_http_statTest_stat_directory_index_readDir_populate(type:file_type, stat:node_fs_Stats):void {
-                                                const stat_item:stat_item = stat as stat_item;
-                                                stat_item.type = type;
-                                                stat_item.path = dirList[index];
-                                                stat_list.push(stat_item);
-                                                index = index + 1;
-                                                if (index === total) {
-                                                    stat_complete();
-                                                } else {
-                                                    stat_step();
+                                const callback = function transmit_http_statTest_stat_directoryItem_directory(dir:string[]|directory_list):void {
+                                    let index_item:number = 0,
+                                        dtg:string[] = null,
+                                        address:string = "";
+                                    const list:directory_list = dir as directory_list,
+                                        content:string[] = [
+                                            `<h2>Directory List - ${index0[1]}</h2>`,
+                                            "<table><thead><tr><th>object <button>⇅</button></th><th>type <button>⇅</button></th><th>size <button>⇅</button></th><th>modified date <button>⇅</button></th><th>modified time <button>⇅</button></th><th>children <button>⇅</button></th></tr></thead><tbody>"
+                                        ],
+                                        total:number = list.length,
+                                        icon:store_string = {
+                                            "block_device": "\u2580",
+                                            "character_device": "\u0258",
+                                            "directory": "\ud83d\udcc1",
+                                            "fifo_pipe": "\u275a",
+                                            "file": "\ud83d\uddce",
+                                            "socket": "\ud83d\udd0c",
+                                            "symbolic_link": "\ud83d\udd17"
+                                        },
+                                        scheme:"http"|"https" = (socket.encrypted === true)
+                                            ? "https"
+                                            : "http",
+                                        host:string = (function transmit_http_host():string {
+                                            let index:number = headerList.length,
+                                                colon:number = -1,
+                                                value:string = "";
+                                            do {
+                                                index = index - 1;
+                                                if (headerList[index].toLowerCase().indexOf("host:") === 0) {
+                                                    value = headerList[index].slice(headerList[index].indexOf(":") + 1).replace(/\s+/g, "");
+                                                    colon = value.indexOf(":");
+                                                    value = (colon > 0)
+                                                        ? value.slice(0, colon)
+                                                        : value;
+                                                } else if (headerList[index].toLowerCase().indexOf("connection:") === 0) {
+                                                    headerList.splice(index, 1);
+                                                    index = index + 1;
                                                 }
-                                            };
-                                        stat_step();
-                                    } else {
-                                        serverError(erd, `<p>Error attempting to read directory list at: <strong>${input}</strong></p>`);
-                                    }
+                                            } while (index > 0);
+                                            return value;
+                                        }());
+                                    do {
+                                        if (list[index_item][3] === 0 && list[index_item][0].indexOf(input) !== list[index_item][0].length - input.length) {
+                                            address = `${scheme}://${host + index0[1].replace(/\/$/, "") + vars.sep + list[index_item][0]}`;
+                                            dtg = dateString(list[index_item][5].mtimeMs).split(", ");
+                                            content.push(`<tr class="${(index_item % 2 === 0) ? "even" : "odd"}"><td><span class="icon">${icon[list[index_item][1]]}</span> <a href="${address}">${list[index_item][0]}</a></td><td>${list[index_item][1]}</td><td data-raw="${list[index_item][5].size}">${commas(list[index_item][5].size)}</td><td data-raw="${list[index_item][5].mtimeMs}">${dtg[0]}</td><td>${dtg[1]}</td><td data-raw="${list[index_item][4]}">${commas(list[index_item][4])}</td></tr>`);
+                                        }
+                                        index_item = index_item + 1;
+                                    } while (index_item < total);
+                                    content.push("</tbody></table>");
+                                    write(html({
+                                        content: content,
+                                        content_type: "text/html; utf8",
+                                        page_title: index0[1],
+                                        status: 200,
+                                        template: true,
+                                        script: "/browser_scripts/fileList.js"
+                                    }));
+                                };
+                                directory({
+                                    callback: callback,
+                                    depth: 2,
+                                    exclusions: [],
+                                    mode: "read",
+                                    path: input,
+                                    relative: true,
+                                    search: "",
+                                    symbolic: false
                                 });
                             } else {
                                 serverError(eri, `Error accessing file path: ${indexFile}`);
@@ -332,7 +265,7 @@ const http = function transmit_http(headerList:string[], socket:websocket_client
                     if (stat.isFile() === true) {
                         file();
                     } else if (stat.isDirectory() === true) {
-                        directory();
+                        directory_item();
                     } else {
                         notFound();
                     }
