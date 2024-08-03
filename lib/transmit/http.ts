@@ -121,7 +121,7 @@ const http = function transmit_http(headerList:string[], socket:websocket_client
                                 input = indexFile;
                                 file();
                             } else if (eri.code === "ENOENT") {
-                                const callback = function transmit_http_statTest_stat_directoryItem_directory(dir:string[]|directory_list):void {
+                                const callback = function transmit_http_statTest_stat_directoryItem_directory(dir:directory_list|string[]):void {
                                     let index_item:number = 0,
                                         dtg:string[] = null,
                                         address:string = "";
@@ -236,7 +236,7 @@ const http = function transmit_http(headerList:string[], socket:websocket_client
                                 }
                             }()),
                             headerText:string[] = [
-                                `HTTP/1.1 200`,
+                                "HTTP/1.1 200",
                                 `content-type: ${content_type}`,
                                 `content-length: ${Number(stat.size)}`,
                                 "server: prettydiff/webserver",

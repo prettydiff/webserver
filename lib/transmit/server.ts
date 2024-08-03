@@ -5,8 +5,9 @@ import hash from "../utilities/hash.js";
 import http from "./http.js";
 import message_handler from "./messageHandler.js";
 import node from "../utilities/node.js";
-import vars from "../utilities/vars.js";
+import redirection from "./redirection.js";
 import socket_extension from "./socketExtension.js";
+import vars from "../utilities/vars.js";
 
 const server = function transmit_server(config:config_websocket_server):node_net_Server {
     const connection = function transmit_server_connection(TLS_socket:node_tls_TLSSocket):void {
@@ -58,7 +59,11 @@ const server = function transmit_server(config:config_websocket_server):node_net
                     headerList.forEach(headerEach);
 
                     // do not proxy primary domain
-                    if (local.includes(domain) === true) {
+                    if (local.includes(domain) === true || vars.redirect_domain[domain] === undefined) {
+                        if (vars.redirect_internal[domain] !== undefined) {
+                            data = redirection(domain, data) as Buffer;
+                            headerList[0] = data.toString().split("\r\n")[0];
+                        }
                         if (key === "") {
                             if (headerList[0].indexOf("GET") === 0) {
                                 // local domain only uses GET method

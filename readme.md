@@ -4,9 +4,16 @@ Serves and proxies HTTP over WebSockets for both TCP and TLS.
 <!-- cspell: words pihole -->
 
 ## About
+
+* Built in proxy and redirection
+* Single port for both HTTP and WebSocket service
+* Simple TLS server with certificate generator
+* Stream any supported media through the browser no matter the size
+* More intelligent HTTP file system directory list
+
 This application defaults all transmissions to TCP socket streams without further assumption.
 Upon first data of a new socket the application will first determine if the socket represents the default domain and everything else is supported as a proxy.
-TLS sockets remain end-to-end encrypted even through the proxy.
+TLS sockets remain fully encrypted even through the proxy.
 
 Local domains are further evaluated to determine if the given socket represents HTTP traffic or WebSocket traffic.
 Because the server provides HTTP and WebSocket support over raw TCP sockets both HTTP and WebSocket traffic are supported over the same port to the server.
