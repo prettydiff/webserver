@@ -79,9 +79,10 @@ const http = function transmit_http(headerList:string[], socket:websocket_client
             return headerText.join("\r\n") + bodyText;
         },
         statTest = function transmit_http_statTest(input:string):void {
-            input = vars.path.web_root + fileFragment.replace(/%\d{2}/g, function transmit_http_statTest_uriEscape(input:string):string {
+            const decode = function transmit_http_statTest_decode(input:string):string {
                 return String.fromCharCode(parseInt(`00${input.slice(1)}`, 16));
-            }).replace(/^\\|\//, "");
+            };
+            input = vars.path.web_root + fileFragment.replace(/%\d{2}/g, decode).replace(/^\\|\//, "");
             node.fs.stat(input, {
                 bigint: true
             }, function transmit_http_statTest_stat(ers:node_error, stat:node_fs_BigIntStats):void {
@@ -126,7 +127,7 @@ const http = function transmit_http(headerList:string[], socket:websocket_client
                                         address:string = "";
                                     const list:directory_list = dir as directory_list,
                                         content:string[] = [
-                                            `<h2>Directory List - ${index0[1]}</h2>`,
+                                            `<h2>Directory List - ${index0[1].replace(/%\d{2}/g, decode)}</h2>`,
                                             "<table><thead><tr><th>object <button>⇅</button></th><th>type <button>⇅</button></th><th>size <button>⇅</button></th><th>modified date <button>⇅</button></th><th>modified time <button>⇅</button></th><th>children <button>⇅</button></th></tr></thead><tbody>"
                                         ],
                                         total:number = list.length,
