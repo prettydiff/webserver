@@ -26,15 +26,23 @@ const startup = function utilities_startup(callback:() => void):void {
                     },
                     conf:store_string = (function utilities_startup_config_instructions_paths():store_string {
                         const sep = function utilities_startup_config_instructions_paths_sep(input:string):string {
-                            if (input.charAt(input.length - 1) === vars.sep) {
-                                return input;
-                            }
-                            return input + vars.sep;
-                        };
-                        vars.domain = config.domain_default;
-                        vars.service_port = config.service_port;
-                        vars.redirect_domain = config.redirect_domain;
-                        vars.redirect_internal = config.redirect_internal;
+                                if (input.charAt(input.length - 1) === vars.sep) {
+                                    return input;
+                                }
+                                return input + vars.sep;
+                            },
+                            assignment = function utilities_startup_config_instructions_paths_assignment(key:vars_type):void {
+                                // @ts-expect-error - TypeScript cannot infer a named object property from a typed value of a union.
+                                vars[key] = (config[key] === undefined || config[key] === null)
+                                    ? vars[key]
+                                    : config[key];
+                            };
+                        assignment("block_list");
+                        assignment("domain_default");
+                        assignment("redirect_domain");
+                        assignment("redirect_internal");
+                        assignment("server_name");
+                        assignment("service_port");
                         vars.path.storage = sep(config.path.storage);
                         vars.path.web_root = sep(config.path.web_root);
                         return {
@@ -105,8 +113,8 @@ DNS.2 = 192.168.0.3`,
                             }
                             cert_index = cert_index + 1;
                         } while (cert_index < total);
-                        list1.push(`permitted;DNS.${line_index} = ${vars.domain}`);
-                        list2.push(`DNS.${line_index} = ${vars.domain}`);
+                        list1.push(`permitted;DNS.${line_index} = ${vars.domain_default}`);
+                        list2.push(`DNS.${line_index} = ${vars.domain_default}`);
                         output[1] = list1.join("\n");
                         output[3] = list2.join("\n");
                         return output.join("\n");

@@ -32,6 +32,11 @@ interface store_string {
 }
 
 interface project_config {
+    block_list: {
+        host: string[];
+        ip: string[];
+        referer: string[];
+    };
     domain_default: string;
     path: {
         storage: string;
@@ -43,14 +48,14 @@ interface project_config {
     redirect_internal: {
         [key:string]: store_string;
     };
+    server_name: string;
     service_port: {
         open: number;
         secure: number;
     };
 }
 
-interface vars {
-    domain: string;
+interface vars extends project_config {
     path: {
         conf: string;
         project: string;
@@ -60,17 +65,7 @@ interface vars {
     processes: {
         [key:string]: node_childProcess_ChildProcess;
     };
-    redirect_domain: {
-        [key:string]: [string, number];
-    };
-    redirect_internal: {
-        [key:string]: store_string;
-    };
     sep: string;
-    service_port: {
-        open: number;
-        secure: number;
-    };
     text: store_string;
     verbose: boolean;
 }

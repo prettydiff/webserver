@@ -114,6 +114,10 @@ These certificates are required to run a TLS server.
 To generate the certificates simply run: `npm run certificate`.
 The required extensions.cnf file is dynamically created from the build command, `npm run build`, and includes all domains mentioned in the *port_map* object of the `config.json` file.
 
+## Defaults
+* The default content type, when unknown, is `text/plain; utf8`.
+* All relative paths are relative to `path.web_root` from the config file.
+
 ## How the Proxy Works
 ### Code
 To see how the proxy works simply read two files.

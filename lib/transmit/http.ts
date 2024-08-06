@@ -3,18 +3,15 @@ import commas from "../browser_scripts/commas.js";
 import dateString from "../utilities/dateString.js";
 import directory from "../utilities/directory.js";
 import node from "../utilities/node.js";
-import redirection from "./redirection.js";
 import vars from "../utilities/vars.js";
 
 /* cspell: words msvideo, nofollow, onnection, prettydiff */
 
 const http = function transmit_http(headerList:string[], socket:websocket_client):void {
-    const index0:string[] = (vars.redirect_internal[vars.domain] === undefined)
-            ? headerList[0].replace(/^\s+/, "").replace(/\s+/, " ").split(" ")
-            : redirection(vars.domain, headerList[0].replace(/^\s+/, "").replace(/\s+/, " ")).toString().split(" "),
+    const index0:string[] = headerList[0].replace(/^\s+/, "").replace(/\s+/, " ").split(" "),
         resource:string = index0[1],
         asset:string[] = resource.split("/"),
-        fileFragment:string = asset.join(vars.sep),
+        fileFragment:string = asset.join(vars.sep).replace(/^(\\|\/)/, ""),
         // a dynamically generated template for page HTML
         html = function transmit_http_html(config:config_html):string {
             const statusText:string = (function transmit_http_html_status():string {
@@ -44,8 +41,8 @@ const http = function transmit_http(headerList:string[], socket:websocket_client
                     "<head>",
                     "<meta charset=\"utf-8\"/>",
                     (config.page_title === null)
-                        ? "<title>Cheney</title>"
-                        : `<title>Cheney ${config.page_title}</title>`,
+                        ? `<title>${vars.server_name}</title>`
+                        : `<title>${vars.server_name} ${config.page_title}</title>`,
                     "<meta content=\"text/html;charset=UTF-8\" http-equiv=\"Content-Type\"/>",
                     "<meta content=\"width=device-width, initial-scale=1\" name=\"viewport\"/>",
                     "<meta content=\"noindex, nofollow\" name=\"robots\"/>",
@@ -61,7 +58,7 @@ const http = function transmit_http(headerList:string[], socket:websocket_client
                     "<link rel=\"icon\" type=\"image/png\" href=\"data:image/png;base64,iVBORw0KGgo=\"/>",
                     "</head>",
                     "<body>",
-                    "<h1>Cheney</h1>",
+                    `<h1>${vars.server_name}</h1>`,
                     (config.status === 200)
                         ? ""
                         : `<h2>${config.status}</h2>`
@@ -79,10 +76,7 @@ const http = function transmit_http(headerList:string[], socket:websocket_client
             return headerText.join("\r\n") + bodyText;
         },
         statTest = function transmit_http_statTest(input:string):void {
-            const decode = function transmit_http_statTest_decode(input:string):string {
-                return String.fromCharCode(parseInt(`00${input.slice(1)}`, 16));
-            };
-            input = vars.path.web_root + fileFragment.replace(/%\d{2}/g, decode).replace(/^\\|\//, "");
+            input = vars.path.web_root + decodeURI(fileFragment);
             node.fs.stat(input, {
                 bigint: true
             }, function transmit_http_statTest_stat(ers:node_error, stat:node_fs_BigIntStats):void {
@@ -127,7 +121,7 @@ const http = function transmit_http(headerList:string[], socket:websocket_client
                                         address:string = "";
                                     const list:directory_list = dir as directory_list,
                                         content:string[] = [
-                                            `<h2>Directory List - ${index0[1].replace(/%\d{2}/g, decode)}</h2>`,
+                                            `<h2>Directory List - ${decodeURI(index0[1])}</h2>`,
                                             "<table><thead><tr><th>object <button>⇅</button></th><th>type <button>⇅</button></th><th>size <button>⇅</button></th><th>modified date <button>⇅</button></th><th>modified time <button>⇅</button></th><th>children <button>⇅</button></th></tr></thead><tbody>"
                                         ],
                                         total:number = list.length,
@@ -207,14 +201,23 @@ const http = function transmit_http(headerList:string[], socket:websocket_client
                                 if (extension === "flv") {
                                     return "video/x-flv";
                                 }
+                                if (extension === "gif") {
+                                    return "image/gif";
+                                }
                                 if (extension === "html") {
                                     return "text/html; utf8";
+                                }
+                                if (extension === "ico") {
+                                    return "image/x-icon";
                                 }
                                 if (extension === "jpg" || extension === "jpeg") {
                                     return "image/jpeg";
                                 }
                                 if (extension === "js") {
                                     return "application/javascript; utf8";
+                                }
+                                if (extension === "json") {
+                                    return "application/json; utf8";
                                 }
                                 if (extension === "mp3") {
                                     return "audio/mpeg";
@@ -234,6 +237,7 @@ const http = function transmit_http(headerList:string[], socket:websocket_client
                                 if (extension === "xml") {
                                     return "application/xml; utf8";
                                 }
+                                return "text/plain; utf8";
                             }()),
                             headerText:string[] = [
                                 "HTTP/1.1 200",
@@ -244,7 +248,7 @@ const http = function transmit_http(headerList:string[], socket:websocket_client
                                 ""
                             ];
                         // sometimes stat.size reports the wrong file size
-                        if (stat.size === stat.blksize && content_type.includes("utf8") === true) {
+                        if (stat.size < (stat.blksize + 1n) && content_type.includes("utf8") === true) {
                             node.fs.readFile(input, function transmit_http_statTest_stat_file_read(err:node_error, file:Buffer):void {
                                 if (err === null) {
                                     headerText[2] = `content-length: ${file.length}`;

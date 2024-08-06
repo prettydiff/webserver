@@ -57,8 +57,8 @@ const certificate = function utilities_certificate(config:config_certificate):vo
                 //    - req           : use a certificate request as input opposed to an actual certificate
                 create = function utilities_certificate_stat_cert_create():void {
                     const mode:[string, string] = (config.selfSign === true)
-                            ? ["server", vars.domain]
-                            : ["root", vars.domain],
+                            ? ["server", vars.domain_default]
+                            : ["root", vars.domain_default],
                         org:string = "/O=home_server/OU=home_server",
                         // provides the path to the configuration file used for certificate signing
                         pathConf = function utilities_certificate_stat_cert_create_confPath(configName:"ca"|"selfSign"):string {
@@ -66,7 +66,7 @@ const certificate = function utilities_certificate(config:config_certificate):vo
                         },
                         // create a certificate signed by another certificate
                         actionCert = function utilities_certificate_stat_cert_create_cert(type:"int"|"server"):string {
-                            return `openssl req -new -sha512 -key ${type}.key -out ${type}.csr -subj "/CN=${vars.domain + org}"`;
+                            return `openssl req -new -sha512 -key ${type}.key -out ${type}.csr -subj "/CN=${vars.domain_default + org}"`;
                         },
                         // generates the key file associated with a given certificate
                         actionKey = function utilities_certificate_stat_cert_create_key(type:"int"|"root"|"server"):string {

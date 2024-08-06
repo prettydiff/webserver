@@ -4,7 +4,12 @@ import node from "./node.js";
 /* cspell: words appdata */
 
 const vars:vars = {
-    domain: "",
+    block_list: {
+        host: [],
+        ip: [],
+        referer: []
+    },
+    domain_default: "",
     path: {
         conf: "",
         project: "",
@@ -15,6 +20,7 @@ const vars:vars = {
     redirect_domain: {},
     redirect_internal: {},
     sep: node.path.sep,
+    server_name: "",
     service_port: {
         open: 80,
         secure: 443

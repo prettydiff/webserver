@@ -15,7 +15,8 @@ const server = function transmit_server(config:config_websocket_server):node_net
                 handshake = function transmit_server_connection_handshake(data:Buffer):void {
                     let nonceHeader:string = null,
                         domain:string = "",
-                        key:string = "";
+                        key:string = "",
+                        referer:boolean = null;
                     const dataString:string = data.toString(),
                         headerIndex:number = dataString.indexOf("\r\n\r\n"),
                         headerList:string[] = (headerIndex > 0)
@@ -27,13 +28,13 @@ const server = function transmit_server(config:config_websocket_server):node_net
                             type: "ws"
                         }),
                         local:string[] = [
-                            vars.domain,
+                            vars.domain_default,
                             address.local.address,
                             "127.0.0.1",
                             "::1",
                             "[::1]"
                         ],
-                        getDomain = function transmit_server_connection_handshake_getDomain(header:string, arrIndex:number, arr:string[]):void {
+                        get_domain = function transmit_server_connection_handshake_getDomain(header:string, arrIndex:number, arr:string[]):void {
                             const hostName:string = header.toLowerCase().replace("host:", "").replace(/\s+/g, ""),
                                 index:number = hostName.indexOf(":"),
                                 host:string = (index > 0)
@@ -47,74 +48,96 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                     : `Host: ${address.local.address}:${vars.service_port.open}`;
                             }
                         },
+                        get_referer = function transmit_server_connection_handshake_getReferer(header:string):void {
+                            const refererName:string = header.toLowerCase().replace(/referer:\s*/, "");
+                            let index:number = vars.block_list.referer.length;
+                            if (index > 0) {
+                                do {
+                                    index = index - 1;
+                                    if (refererName.indexOf(vars.block_list.referer[index].toLowerCase()) === 0 || refererName.replace(/\w+:\/\//, "").indexOf(vars.block_list.referer[index].toLowerCase()) === 0) {
+                                        referer = true;
+                                        return;
+                                    }
+                                } while (index > 0);
+                            }
+                        },
                         headerEach = function transmit_server_connection_handshake_headerEach(header:string, arrIndex:number, arr:string[]):void {
                             if (header.indexOf("Sec-WebSocket-Key") === 0) {
                                 key = header.slice(header.indexOf("-Key:") + 5).replace(/\s/g, "") + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
                             } else if (header.toLowerCase().indexOf("host:") === 0) {
-                                getDomain(header, arrIndex, arr);
+                                get_domain(header, arrIndex, arr);
+                            } else if (header.toLowerCase().indexOf("referer:") === 0) {
+                                get_referer(header);
                             } else if (testNonce.test(header) === true) {
                                 nonceHeader = header;
+                            }
+                        },
+                        local_service = function transmit_server_connection_handshake_localService():void {
+                            if (vars.redirect_internal[domain] !== undefined) {
+                                data = redirection(domain, data) as Buffer;
+                                headerList[0] = data.toString().split("\r\n")[0];
+                            }
+                            if (key === "") {
+                                if (headerList[0].indexOf("GET") === 0) {
+                                    // local domain only uses GET method
+                                    http(headerList, socket);
+                                } else {
+                                    // at this time the local domain only supports HTTP GET method as everything else should use WebSockets
+                                    socket.destroy();
+                                }
+                            } else {
+                                // local domain websocket support
+                                const callback = function transmit_server_connection_handshake_hash(hashOutput:hash_output):void {
+                                    const client_respond = function transmit_server_connection_handshake_hash_clientRespond():void {
+                                        const headers:string[] = [
+                                                "HTTP/1.1 101 Switching Protocols",
+                                                "Upgrade: websocket",
+                                                "Connection: Upgrade",
+                                                `Sec-WebSocket-Accept: ${hashOutput.hash}`,
+                                                "Access-Control-Allow-Origin: *",
+                                                "Server: webserver"
+                                            ];
+                                        if (nonceHeader !== null) {
+                                            headers.push(nonceHeader);
+                                        }
+                                        headers.push("");
+                                        headers.push("");
+                                        socket.write(headers.join("\r\n"));
+                                    };
+                                    socket_extension({
+                                        callback: client_respond,
+                                        handler: message_handler,
+                                        identifier: `browser-${hashOutput.hash}`,
+                                        role: "server",
+                                        socket: socket,
+                                        type: "browser-youtube-download"
+                                    });
+                                };
+                                hash({
+                                    algorithm: "sha1",
+                                    callback: callback,
+                                    digest: "base64",
+                                    hash_input_type: "direct",
+                                    source: key
+                                });
                             }
                         };
                     headerList.forEach(headerEach);
 
-                    // do not proxy primary domain
-                    if (local.includes(domain) === true || vars.redirect_domain[domain] === undefined) {
-                        if (vars.redirect_internal[domain] !== undefined) {
-                            data = redirection(domain, data) as Buffer;
-                            headerList[0] = data.toString().split("\r\n")[0];
-                        }
-                        if (key === "") {
-                            if (headerList[0].indexOf("GET") === 0) {
-                                // local domain only uses GET method
-                                http(headerList, socket);
-                            } else {
-                                // at this time the local domain only supports HTTP GET method as everything else should use WebSockets
-                                socket.destroy();
-                            }
+                    if (referer === true || vars.block_list.host.includes(domain) === true || vars.block_list.ip.includes(address.remote.address) === true) {
+                        socket.destroy();
+                    } else {
+                        // do not proxy primary domain or unlisted domains
+                        if (local.includes(domain) === true || vars.redirect_domain[domain] === undefined) {
+                            local_service();
                         } else {
-                            // local domain websocket support
-                            const callback = function transmit_server_connection_handshake_hash(hashOutput:hash_output):void {
-                                const client_respond = function transmit_server_connection_handshake_hash_clientRespond():void {
-                                    const headers:string[] = [
-                                            "HTTP/1.1 101 Switching Protocols",
-                                            "Upgrade: websocket",
-                                            "Connection: Upgrade",
-                                            `Sec-WebSocket-Accept: ${hashOutput.hash}`,
-                                            "Access-Control-Allow-Origin: *",
-                                            "Server: webserver"
-                                        ];
-                                    if (nonceHeader !== null) {
-                                        headers.push(nonceHeader);
-                                    }
-                                    headers.push("");
-                                    headers.push("");
-                                    socket.write(headers.join("\r\n"));
-                                };
-                                socket_extension({
-                                    callback: client_respond,
-                                    handler: message_handler,
-                                    identifier: `browser-${hashOutput.hash}`,
-                                    role: "server",
-                                    socket: socket,
-                                    type: "browser-youtube-download"
-                                });
-                            };
-                            hash({
-                                algorithm: "sha1",
-                                callback: callback,
-                                digest: "base64",
-                                hash_input_type: "direct",
-                                source: key
+                            create_proxy({
+                                callback: null,
+                                buffer: data,
+                                domain: domain,
+                                socket: socket
                             });
                         }
-                    } else {
-                        create_proxy({
-                            callback: null,
-                            buffer: data,
-                            domain: domain,
-                            socket: socket
-                        });
                     }
                 };
             socket.on("error", function transmit_server_connection_handshake_socketError():void {
