@@ -37,7 +37,7 @@ interface project_config {
         ip: string[];
         referer: string[];
     };
-    domain_default: string;
+    domain_local: string[];
     path: {
         storage: string;
         web_root: string;

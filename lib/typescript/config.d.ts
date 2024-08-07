@@ -2,6 +2,7 @@
 interface config_certificate {
     callback: () => void;
     days: number;
+    domain_default: string;
     selfSign: boolean;
 }
 

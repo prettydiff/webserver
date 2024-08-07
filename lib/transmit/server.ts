@@ -27,13 +27,6 @@ const server = function transmit_server(config:config_websocket_server):node_net
                             socket: socket,
                             type: "ws"
                         }),
-                        local:string[] = [
-                            vars.domain_default,
-                            address.local.address,
-                            "127.0.0.1",
-                            "::1",
-                            "[::1]"
-                        ],
                         get_domain = function transmit_server_connection_handshake_getDomain(header:string, arrIndex:number, arr:string[]):void {
                             const hostName:string = header.toLowerCase().replace("host:", "").replace(/\s+/g, ""),
                                 index:number = hostName.indexOf(":"),
@@ -42,7 +35,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                     : hostName;
                             domain = host.replace(`:${address.local.port}`, "");
                             // ensures HTTP requests pushed through the proxy are identified as originating from the proxy
-                            if (local.includes(domain) === false) {
+                            if (vars.domain_local.includes(domain) === false) {
                                 arr[arrIndex] = (socket.encrypted === true)
                                     ? `Host: ${address.local.address}:${vars.service_port.secure}`
                                     : `Host: ${address.local.address}:${vars.service_port.open}`;
@@ -128,8 +121,10 @@ const server = function transmit_server(config:config_websocket_server):node_net
                         socket.destroy();
                     } else {
                         // do not proxy primary domain or unlisted domains
-                        if (local.includes(domain) === true || vars.redirect_domain[domain] === undefined) {
+                        if (vars.domain_local.includes(domain) === true) {
                             local_service();
+                        } else if (vars.redirect_domain[domain] === undefined) {
+                            socket.destroy();
                         } else {
                             create_proxy({
                                 callback: null,

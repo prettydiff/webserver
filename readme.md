@@ -10,6 +10,7 @@ Serves and proxies HTTP over WebSockets for both TCP and TLS.
 * Simple TLS server with certificate generator
 * Stream any supported media through the browser no matter the size
 * More intelligent HTTP file system directory list
+* Supports end-to-end encryption
 
 This application defaults all transmissions to TCP socket streams without further assumption.
 Upon first data of a new socket the application will first determine if the socket represents the default domain and everything else is supported as a proxy.
@@ -40,7 +41,7 @@ A `config.json` file is required at project root that conforms to:
 
 ```typescript
 interface project_config {
-    domain_default: string;
+    domain_local: string[];
     path: {
         storage: string;
         web_root: string;
@@ -53,28 +54,32 @@ interface project_config {
             [key:string]: string;
         };
     };
+    server_name: string;
     service_port: {
-        open: 80;
-        secure: 443;
+        open: number;
+        secure: number;
     };
 }
+
+type redirect_isolation: (proxy_init: () => void) => void;
 ```
 
-* The *domain_default* property provides a single domain name that will not redirect traffic at the domain level.
+* The *domain_local* property provides a list of domains that will be locally supported on the server without redirection.
+   The first domain in this list will be the primary identity used in certificate creation.
+* The *path.storage* property is an absolute file system path where applications should download resources to.
+* The *path.web_root* property is an absolute file system path where web pages/assets are served from.
 * The *redirecT_domain* stores a object of domain names as key names and an array as a value. That array expects two values where the first is a string representing a host value and the second is a number representing a port value.
    * If the host value is undefined, null, or an empty string it will resolve to the IP of the given server.
    * If a service at a given vanity domain requires separate ports for secure and insecure services then specify the secure port with `secure` as the top level domain, as demonstrated in the following code example.
 * The *redirect_internal* stores an object where each key name is a supported domain name.  Each value is an object storing HTTP request destination and redirection pairs for within the domain.
    * Wildcard support exists if a HTTP request destination terminates with an asterisk, as demonstrated in the following code example. Static HTTP request destinations are evaluated before wildcard requests.
-* The *path.storage* property is an absolute file system path where applications should download resources to.
-* The *path.web_root* property is an absolute file system path where web pages/assets are served from.
 * The *service_port* stores port numbers each representing the listener for insecure and encrypted connections.
 
 Here is an example `config.json` file:
 
 ```json
 {
-    "domain_default": "www.x",
+    "domain_local": ["pihole.x", "www.x"],
     "path": {
         "storage": "/myWebSite/downloads/",
         "web_root": "/var/httpd/www/"
@@ -90,6 +95,7 @@ Here is an example `config.json` file:
             "/*": "/admin/"
         }
     },
+    "server_name": "My Home Server",
     "service_port": {
         "open": 80,
         "secure": 443

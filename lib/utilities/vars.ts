@@ -4,12 +4,14 @@ import node from "./node.js";
 /* cspell: words appdata */
 
 const vars:vars = {
+    // destroy incoming sockets that exactly match criteria in these lists
     block_list: {
         host: [],
         ip: [],
         referer: []
     },
-    domain_default: "",
+    // locally supported domains that will not be redirected
+    domain_local: [],
     path: {
         conf: "",
         project: "",

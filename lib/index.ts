@@ -4,6 +4,7 @@ import readCerts from "./utilities/readCerts.js";
 import server from "./transmit/server.js";
 import startup from "./utilities/startup.js";
 import vars from "./utilities/vars.js";
+import yt_config from "./utilities/yt_config.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-console
 const log:(...data:any[]) => void = console.log;
@@ -16,7 +17,12 @@ startup(function index():void {
                 log("Certificates create.");
             },
             days: 65535,
+            domain_default: vars.domain_local[0],
             selfSign: false
+        });
+    } else if (process.argv.includes("yt_config") === true) {
+        yt_config(function index_ytConfig():void {
+            log("yt-dlp scripts written.");
         });
     } else {
         readCerts(function index_readCerts(tlsOptions:transmit_tlsOptions):void {

@@ -6,7 +6,7 @@ import { BigIntStats, ReadStream, Stats, WriteStream } from "node:fs";
 import { ClientRequest, IncomingMessage, OutgoingHttpHeaders, Server as httpServer, ServerResponse } from "node:http";
 import { RequestOptions } from "node:https";
 import { AddressInfo, NetConnectOpts, Server, Socket } from "node:net";
-import { NetworkInterfaceInfo, NetworkInterfaceInfoIPv4, NetworkInterfaceInfoIPv6, type } from "node:os";
+import { NetworkInterfaceInfo, NetworkInterfaceInfoIPv4, NetworkInterfaceInfoIPv6 } from "node:os";
 import { Readable } from "node:stream";
 import { StringDecoder } from "node:string_decoder";
 import { TLSSocket, TLSSocketOptions } from "node:tls";

@@ -11,7 +11,7 @@ type service_type = "process-kill" | "youtube-download-status" | "youtube-downlo
 type socket_data_type = services_processKill | services_youtubeDownload | services_youtubeStatus;
 type socket_status_type = "closed" | "end" | "open" | "pending";
 type socket_type = "browser-youtube-download" | "browser" | "proxy";
-type vars_type = "block_list" | "domain_default" | "redirect_domain" | "redirect_internal" | "server_name" | "service_port";
+type vars_type = "block_list" | "domain_local" | "redirect_domain" | "redirect_internal" | "server_name" | "service_port";
 type youtubeDownload_mediaType = "audio" | "video";
 type youtubeDownload_type = "audio-file" | "audio-playlist" | "video-file" | "video-playlist";
 
