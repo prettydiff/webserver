@@ -29,11 +29,16 @@ const server = function transmit_server(config:config_websocket_server):node_net
                         }),
                         get_domain = function transmit_server_connection_handshake_getDomain(header:string, arrIndex:number, arr:string[]):void {
                             const hostName:string = header.toLowerCase().replace("host:", "").replace(/\s+/g, ""),
+                                sIndex:number = hostName.indexOf("]"),
                                 index:number = hostName.indexOf(":"),
                                 host:string = (index > 0)
                                     ? hostName.slice(0, index)
                                     : hostName;
-                            domain = host.replace(`:${address.local.port}`, "");
+                            if (hostName.indexOf("[") === 0 && index > 4 && sIndex > 5) {
+                                domain = hostName.slice(1, sIndex);
+                            } else {
+                                domain = host.replace(`:${address.local.port}`, "");
+                            }
                             // ensures HTTP requests pushed through the proxy are identified as originating from the proxy
                             if (vars.domain_local.includes(domain) === false) {
                                 arr[arrIndex] = (socket.encrypted === true)
