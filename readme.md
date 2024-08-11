@@ -30,10 +30,11 @@ This means the server works perfectly well to send and receive TLS encrypted tra
 
 ## Commands
 * Build the application execute: `npm run build`
-* Generate TLS certificates: `nm run certificate`
+* Generate TLS certificates: `npm run certificate`
 * Execute the application: `npm run server`
 * Validate application logic: `npm run tsc`
 * Run the project lint rules: `npm run lint`
+* Build yt-dlp configuration files for downloading media from YouTube: `npm run yt_config`
 
 ## Configuration
 ### config.json

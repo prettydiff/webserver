@@ -34,7 +34,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                 host:string = (index > 0)
                                     ? hostName.slice(0, index)
                                     : hostName;
-                            if (hostName.indexOf("[") === 0 && index > 4 && sIndex > 5) {
+                            if (hostName.indexOf("[") === 0 && ((index > 4 && sIndex > 5) || hostName.indexOf("::") > -1)) {
                                 domain = hostName.slice(1, sIndex);
                             } else {
                                 domain = host.replace(`:${address.local.port}`, "");
