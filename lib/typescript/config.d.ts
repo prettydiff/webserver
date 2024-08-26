@@ -6,13 +6,6 @@ interface config_certificate {
     selfSign: boolean;
 }
 
-interface config_createProxy {
-    buffer: Buffer;
-    callback: (proxy:websocket_client, buffer:Buffer) => void;
-    domain: string;
-    socket: websocket_client;
-}
-
 interface config_directory {
     callback: (dir:directory_list | string[]) => void;
     depth: number;
@@ -58,8 +51,9 @@ interface config_websocket_extensions {
     callback: (socket:websocket_client) => void;
     handler: websocket_message_handler;
     identifier: string;
+    proxy: websocket_client;
     role: "client"|"server";
-    server: type_server;
+    server: type_socket_source;
     socket: websocket_client;
     type: type_socket;
 }

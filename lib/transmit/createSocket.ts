@@ -52,8 +52,9 @@ const create_socket = function transmit_createSocket(config:config_websocket_cre
                             callback: config.callback,
                             handler: config.handler,
                             identifier: config.hash,
+                            proxy: null,
                             role: "client",
-                            server: null,
+                            server: "client",
                             socket: client,
                             type: config.socketType
                         });

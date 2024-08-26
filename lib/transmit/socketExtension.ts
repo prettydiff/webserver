@@ -1,15 +1,14 @@
 
 import error from "../utilities/error.js";
 import getAddress from "../utilities/getAddress.js";
-import getSocket from "./getSocket.js";
 import receiver from "./receiver.js";
 import send from "./send.js";
-import store from "./store.js";
+import socket_end from "./socketEnd.js";
 import vars from "../utilities/vars.js";
 
 const socket_extension = function transmit_socketExtension(config:config_websocket_extensions):void {
     // permit if the socket is not already created
-    if (getSocket(config.type, config.identifier) === null) {
+    if (vars.sockets[config.server] === undefined || vars.sockets[config.server].includes(config.socket) === false) {
         const ping = function transmit_socketExtension_ping(ttl:number, callback:(err:node_error, roundtrip:bigint) => void):void {
                 const errorObject = function transmit_socketExtension_ping_errorObject(code:string, message:string):node_error {
                         const err:node_error = new Error();
@@ -35,9 +34,6 @@ const socket_extension = function transmit_socketExtension(config:config_websock
                     };
                 }
             },
-            socketEnd = function transmit_socketExtension_socketEnd():void {
-                config.socket.status = "end";
-            },
             socketError = function transmit_socketExtension_socketError(errorMessage:node_error):void {
                 if (vars.verbose === true) {
                     error([
@@ -50,27 +46,35 @@ const socket_extension = function transmit_socketExtension(config:config_websock
                     ], null);
                 }
             };
-        config.socket.fragment = Buffer.from([]); // storehouse of complete data frames, which will comprise a frame header and payload body that may be fragmented
-        config.socket.frame = Buffer.from([]);    // stores pieces of frames, which can be divided due to TLS decoding or header separation from some browsers
-        config.socket.frameExtended = 0;          // stores the payload size of a given message payload as derived from the extended size bytes of a frame header
+        if (vars.sockets[config.server] === undefined) {
+            vars.sockets[config.server] = [];
+        }
+        vars.sockets[config.server].push(config.socket);
+        if (config.type === "proxy") {
+            config.socket.on("error", function transmit_socketExtension_proxyError():void {
+                // this worthless error trapping prevents an "unhandled error" escalation that breaks the process
+                return;
+            });
+        } else {
+            config.socket.handler = config.handler;   // assigns an event handler to process incoming messages
+            config.socket.on("data", receiver);
+            config.socket.on("error", socketError);
+            config.socket.fragment = Buffer.from([]); // storehouse of complete data frames, which will comprise a frame header and payload body that may be fragmented
+            config.socket.frame = Buffer.from([]);    // stores pieces of frames, which can be divided due to TLS decoding or header separation from some browsers
+            config.socket.frameExtended = 0;          // stores the payload size of a given message payload as derived from the extended size bytes of a frame header
+            config.socket.ping = ping;                // provides a means to insert a ping control frame and measure the round trip time of the returned pong frame
+            config.socket.pong = {};                  // stores termination times and callbacks for pong handling
+            config.socket.queue = [];                 // stores messages for transmit, because websocket protocol cannot intermix messages
+            config.socket.setKeepAlive(true, 0);      // standard method to retain socket against timeouts from inactivity until a close frame comes in
+            config.socket.status = "open";            // sets the status flag for the socket
+        }
         config.socket.hash = config.identifier;   // assigns a unique identifier to the socket based upon the socket's credentials
-        config.socket.handler = config.handler;   // assigns an event handler to process incoming messages
-        config.socket.ping = ping;                // provides a means to insert a ping control frame and measure the round trip time of the returned pong frame
-        config.socket.pong = {};                  // stores termination times and callbacks for pong handling
-        config.socket.queue = [];                 // stores messages for transmit, because websocket protocol cannot intermix messages
+        config.socket.proxy = config.proxy;       // stores the relationship between two sockets when they are piped as a proxy
         config.socket.role = config.role;         // assigns socket creation location
         config.socket.server = config.server;     // identifies which local server the given socket is connected to
-        config.socket.setKeepAlive(true, 0);      // standard method to retain socket against timeouts from inactivity until a close frame comes in
-        config.socket.status = "open";            // sets the status flag for the socket
         config.socket.type = config.type;         // assigns the type name on the socket
-        config.socket.on("close", socketEnd);
-        config.socket.on("data", receiver);
-        config.socket.on("end", socketEnd);
-        config.socket.on("error", socketError);
-        if (store[config.type] === undefined) {
-            store[config.type] = {};
-        }
-        store[config.type][config.identifier] = config.socket;
+        config.socket.on("close", socket_end);
+        config.socket.on("end", socket_end);
         if (config.callback !== null && config.callback !== undefined) {
             config.callback(config.socket);
         }

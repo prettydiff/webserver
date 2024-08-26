@@ -10,6 +10,7 @@ type type_selector = "class" | "id" | "tag";
 type type_server = "dashboard" | "open" | "secure";
 type type_service = "process-kill" | "youtube-download-status" | "youtube-download";
 type type_socket_data = services_processKill | services_youtubeDownload | services_youtubeStatus;
+type type_socket_source = type_server | "client" | "proxy";
 type type_socket_status = "closed" | "end" | "open" | "pending";
 type type_socket = "browser-youtube-download" | "browser" | "proxy";
 type type_vars = "block_list" | "domain_local" | "redirect_domain" | "redirect_internal" | "server_name" | "service_port";

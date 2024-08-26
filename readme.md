@@ -67,7 +67,8 @@ type redirect_isolation: (proxy_init: () => void) => void;
 ```
 
 * The *domain_local* property provides a list of domains that will be locally supported on the server without redirection.
-   The first domain in this list will be the primary identity used in certificate creation.
+   * The first domain in this list will be the primary identity used in certificate creation.
+   * Loopback IP addresses and local device interface IP addresses are automatically added to the *domain_local* list.
 * The *path.storage* property is an absolute file system path where applications should download resources to.
 * The *path.web_root* property is an absolute file system path where web pages/assets are served from.
 * The *redirecT_domain* stores a object of domain names as key names and an array as a value. That array expects two values where the first is a string representing a host value and the second is a number representing a port value.
@@ -151,7 +152,7 @@ The most important piece of code for socket evaluation is:
             socket.once("data", handshake);
 ```
 
-Socket without an assigned event handler for the error event will crash the application when an error does occur, so always handle error events.
+Sockets without an assigned event handler for the error event will crash the application when an error does occur, so always handle error events.
 Secondly, notice the `once` listener for the data event.
 That must be `once` and not `on`, otherwise a new listener is assigned for each incoming network message, which also means a new proxy socket created per message as opposed to per socket.
 In the example above `handshake` just refers to an event handler to evaluate one of three things:

@@ -1,5 +1,4 @@
 
-import create_proxy from "./createProxy.js";
 import get_address from "../utilities/getAddress.js";
 import hash from "../utilities/hash.js";
 import http from "./http.js";
@@ -106,6 +105,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                         callback: client_respond,
                                         handler: message_handler,
                                         identifier: `browser-${hashOutput.hash}`,
+                                        proxy: null,
                                         role: "server",
                                         server: wsServer.type,
                                         socket: socket,
@@ -120,24 +120,93 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                     source: key
                                 });
                             }
+                        },
+                        create_proxy = function transmit_server_connection_handshake_createProxy():void {
+                            let count:number = 0;
+                            const  address:transmit_addresses_socket = get_address({
+                                    socket: socket,
+                                    type: "ws"
+                                }),
+                                pair:[string, number] = ((socket.encrypted === true && vars.redirect_domain[`${domain}.secure`] !== undefined))
+                                    ? vars.redirect_domain[`${domain}.secure`]
+                                    : (vars.redirect_domain[domain] === undefined)
+                                        ? (socket.encrypted === true)
+                                            ? [address.local.address, vars.service_port.secure]
+                                            : [address.local.address, vars.service_port.open]
+                                        : vars.redirect_domain[domain],
+                                host:string = (pair[0] === undefined || pair[0] === null || pair[0] === "")
+                                    ? address.local.address
+                                    : pair[0],
+                                port:number = (typeof pair[1] === "number")
+                                    ? pair[1]
+                                    : (socket.encrypted === true)
+                                        ? vars.service_port.secure
+                                        : vars.service_port.open,
+                                proxy:websocket_client = (socket.encrypted === true)
+                                    ?  node.tls.connect({
+                                        host: host,
+                                        port: port,
+                                        rejectUnauthorized: false
+                                    }) as websocket_client
+                                    : node.net.connect({
+                                        host: host,
+                                        port: port
+                                    }) as websocket_client,
+                                now:string = process.hrtime.bigint().toString(),
+                                callback = function transmit_server_connection_handshake_createProxy_callback():void {
+                                    count = count + 1;
+                                    if (count > 1) {
+                                        proxy.pipe(socket);
+                                        if (vars.redirect_internal[domain] === undefined) {
+                                            socket.pipe(proxy);
+                                            proxy.write(data);
+                                        } else {
+                                            // HTTP redirection support
+                                            socket.on("data", function transmit_server_connection_handshake_createProxy_redirect(message:Buffer):void {
+                                                proxy.write(redirection(domain, message));
+                                            });
+                                            proxy.write(redirection(domain, data));
+                                        }
+                                    }
+                                };
+                            // requested socket
+                            socket_extension({
+                                callback: callback,
+                                handler: null,
+                                identifier: `${domain}-${now}`,
+                                proxy: proxy,
+                                role: "server",
+                                server: wsServer.type,
+                                socket: socket,
+                                type: "proxy"
+                            });
+                            // proxy socket
+                            socket_extension({
+                                callback: callback,
+                                handler: null,
+                                identifier: `${domain}-${now}-proxy`,
+                                proxy: socket,
+                                role: "client",
+                                server: "proxy",
+                                socket: proxy,
+                                type: "proxy"
+                            });
                         };
                     headerList.forEach(headerEach);
 
-                    if (referer === true || vars.block_list.host.includes(domain) === true || vars.block_list.ip.includes(address.remote.address) === true) {
+                    if (
+                        referer === true ||
+                        vars.block_list.host.includes(domain) === true ||
+                        vars.block_list.ip.includes(address.remote.address) === true ||
+                        (vars.redirect_domain[domain] === undefined && vars.domain_local.includes(domain) === false)
+                    ) {
                         socket.destroy();
                     } else {
-                        // do not proxy primary domain or unlisted domains
+                        // do not proxy primary domain
                         if (vars.domain_local.includes(domain) === true) {
                             local_service();
-                        } else if (vars.redirect_domain[domain] === undefined) {
-                            socket.destroy();
                         } else {
-                            create_proxy({
-                                callback: null,
-                                buffer: data,
-                                domain: domain,
-                                socket: socket
-                            });
+                            create_proxy();
                         }
                     }
                 };
@@ -164,9 +233,6 @@ const server = function transmit_server(config:config_websocket_server):node_net
     // type identification assignment
     wsServer.type = config.type;
     vars.servers[config.type] = wsServer;
-    if (vars.sockets[config.type] === undefined) {
-        vars.sockets[config.type] = [];
-    }
 
     // insecure connection listener
     if (config.options === null) {

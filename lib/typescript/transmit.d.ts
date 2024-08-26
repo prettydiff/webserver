@@ -60,10 +60,11 @@ interface websocket_client extends node_tls_TLSSocket {
     pong: {
         [key:string]: websocket_pong;
     };
+    proxy: websocket_client;
     queue: Buffer[];
     role: "client"|"server";
     secure: boolean;
-    server: type_server;
+    server: type_socket_source;
     status: type_socket_status;
     type: type_socket;
 }
