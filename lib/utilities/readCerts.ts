@@ -32,7 +32,7 @@ const readCerts = function utilities_readCerts(callback:(options:transmit_tlsOpt
                 }
             }
         },
-        httpsRead = function utilities_readCerts_httpsRead(certType:certKey):void {
+        httpsRead = function utilities_readCerts_httpsRead(certType:type_certKey):void {
             const location:string = (certType === "ca")
                 ? `${certLocation + caName}.crt`
                 : `${certLocation + certName}.${certType}`;
@@ -48,7 +48,7 @@ const readCerts = function utilities_readCerts(callback:(options:transmit_tlsOpt
                 certCheck();
             });
         },
-        httpsFile = function utilities_readCerts_httpsFile(certType:certKey):void {
+        httpsFile = function utilities_readCerts_httpsFile(certType:type_certKey):void {
             const location:string = (certType === "ca")
                 ? `${certLocation + caName}.crt`
                 : `${certLocation + certName}.${certType}`;

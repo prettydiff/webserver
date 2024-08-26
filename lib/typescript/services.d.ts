@@ -6,7 +6,7 @@ interface services_processKill {
 interface services_youtubeDownload {
     address: string;
     options: string;
-    type: youtubeDownload_type;
+    type: type_youtubeDownload;
 }
 
 interface services_youtubeStatus {

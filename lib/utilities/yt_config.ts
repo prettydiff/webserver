@@ -2,7 +2,8 @@
 import node from "./node.js";
 import vars from "./vars.js";
 
-// cspell: words bestaudio, keyid, pathlen
+// cspell: words bestaudio, keyid, multistreams, pathlen
+
 const yt_config = function utilities_ytConfig(callback:() => void):void {
     const confWritten = function utilities_startup_config_instructions_confWritten():void {
             conf_count = conf_count + 1;

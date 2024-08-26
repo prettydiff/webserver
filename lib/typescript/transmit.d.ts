@@ -1,16 +1,20 @@
 
+interface server extends node_net_Server {
+    type?: type_server;
+}
+
+interface socket_data {
+    data: type_socket_data;
+    service: type_service;
+}
+
 interface stat_item extends node_fs_Stats {
     path: string;
-    type: file_type;
+    type: type_file;
 }
 
 interface statList extends Array<stat_item> {
     [index:number]: stat_item;
-}
-
-interface socket_data {
-    data: socket_data_type;
-    service: service_type;
 }
 
 interface transmit_addresses_socket {
@@ -59,8 +63,9 @@ interface websocket_client extends node_tls_TLSSocket {
     queue: Buffer[];
     role: "client"|"server";
     secure: boolean;
-    status: socket_status_type;
-    type: socket_type;
+    server: type_server;
+    status: type_socket_status;
+    type: type_socket;
 }
 
 interface websocket_event extends Event {

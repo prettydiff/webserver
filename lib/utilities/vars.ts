@@ -23,10 +23,13 @@ const vars:vars = {
     redirect_internal: {},
     sep: node.path.sep,
     server_name: "",
+    servers: {},
     service_port: {
+        dashboard: null,
         open: 80,
         secure: 443
     },
+    sockets: {},
     text: {
         angry    : "\u001b[1m\u001b[31m",
         blue     : "\u001b[34m",

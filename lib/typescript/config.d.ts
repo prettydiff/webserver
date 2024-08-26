@@ -17,7 +17,7 @@ interface config_directory {
     callback: (dir:directory_list | string[]) => void;
     depth: number;
     exclusions: string[];
-    mode: directory_mode;
+    mode: type_directory_mode;
     path: string;
     relative: boolean;
     search: string;
@@ -25,10 +25,10 @@ interface config_directory {
 }
 
 interface config_hash {
-    algorithm: hash_algorithm_type;
+    algorithm: type_hash_algorithm;
     callback: (hashOutput:hash_output) => void;
     digest: "base64" | "hex";
-    hash_input_type: hash_input_type;
+    hash_input_type: type_hash_input;
     source: Buffer | string;
 }
 
@@ -51,7 +51,7 @@ interface config_websocket_create {
     proxy: boolean;
     resource: string;
     secure: boolean;
-    socketType: socket_type;
+    socketType: type_socket;
 }
 
 interface config_websocket_extensions {
@@ -59,11 +59,13 @@ interface config_websocket_extensions {
     handler: websocket_message_handler;
     identifier: string;
     role: "client"|"server";
+    server: type_server;
     socket: websocket_client;
-    type: socket_type;
+    type: type_socket;
 }
 
 interface config_websocket_server {
-    callback: (addressInfo:node_net_AddressInfo) => void;
+    callback: (type:type_server, addressInfo:node_net_AddressInfo) => void;
     options: transmit_tlsOptions;
+    type: type_server;
 }

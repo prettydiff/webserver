@@ -8,7 +8,8 @@ import yt_config from "./utilities/yt_config.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-console
 const log:(...data:any[]) => void = console.log;
-let count:number = 0;
+let count:number = 0,
+    total:number = 2;
 
 startup(function index():void {
     if (process.argv.includes("certificate") === true) {
@@ -25,25 +26,10 @@ startup(function index():void {
             log("yt-dlp scripts written.");
         });
     } else {
-        readCerts(function index_readCerts(tlsOptions:transmit_tlsOptions):void {
-            server({
-                callback: function index_readCerts_serverCallback(addressInfo:node_net_AddressInfo):void {
-                    count = count + 1;
-                    if (count > 1) {
-                        log({
-                            address: addressInfo.address,
-                            family: addressInfo.family,
-                            port: vars.service_port
-                        });
-                    }
-                },
-                options: tlsOptions
-            });
-        });
-        server({
-            callback: function index_serverCallback(addressInfo:node_net_AddressInfo):void {
+        const config:config_websocket_server = {
+            callback: function index_serverCallback(type:type_server, addressInfo:node_net_AddressInfo):void {
                 count = count + 1;
-                if (count > 1) {
+                if (count === total) {
                     log({
                         address: addressInfo.address,
                         family: addressInfo.family,
@@ -51,7 +37,27 @@ startup(function index():void {
                     });
                 }
             },
-            options: null
+            options: null,
+            type: "open"
+        };
+        if (typeof vars.service_port.dashboard === "number") {
+            total = total + 1;
+        }
+
+        // TCP server
+        server(config);
+
+        readCerts(function index_readCerts(tlsOptions:transmit_tlsOptions):void {
+            config.options = tlsOptions;
+            if (typeof vars.service_port.dashboard === "number") {
+                // dashboard
+                config.type = "dashboard";
+                server(config);
+            }
+
+            // TLS server
+            config.type = "secure";
+            server(config);
         });
     }
 });

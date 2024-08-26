@@ -35,7 +35,7 @@ const dom = function browser_utilities_dom():void {
         // getAncestor - A method to walk up the DOM towards the documentElement.
         // * identifier: string - The string value to search for.
         // * selector: "class", "id", "name" - The part of the element to compare the identifier against.
-        getAncestor = function browser_utilities_dom_getAncestor(identifier:string, selector:selector_type):HTMLElement {
+        getAncestor = function browser_utilities_dom_getAncestor(identifier:string, selector:type_selector):HTMLElement {
             // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
             let start:HTMLElement = (this === document) ? document.documentElement : this;
             const test = function browser_utilities_dom_getAncestor_test():boolean {

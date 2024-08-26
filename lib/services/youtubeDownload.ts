@@ -7,9 +7,9 @@ import vars from "../utilities/vars.js";
 const youtube_download = function services_youtubeDownload(socketData:socket_data, transmit:transmit_socket):void {
     const data:services_youtubeDownload = socketData.data as services_youtubeDownload,
         socket:websocket_client = transmit.socket as websocket_client,
-        type:youtubeDownload_type = data.type,
+        type:type_youtubeDownload = data.type,
         types:string[] = type.split("-"),
-        originalMediaType:youtubeDownload_mediaType = types[0] as youtubeDownload_mediaType,
+        originalMediaType:type_youtubeDownload_media = types[0] as type_youtubeDownload_media,
         startTime:bigint = process.hrtime.bigint(),
 
         message = function services_youtubeDownload_message(item:string, pid:number):void {

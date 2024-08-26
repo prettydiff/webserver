@@ -57,6 +57,7 @@ interface project_config {
     };
     server_name: string;
     service_port: {
+        dashboard?: number;
         open: number;
         secure: number;
     };
@@ -74,7 +75,10 @@ type redirect_isolation: (proxy_init: () => void) => void;
    * If a service at a given vanity domain requires separate ports for secure and insecure services then specify the secure port with `secure` as the top level domain, as demonstrated in the following code example.
 * The *redirect_internal* stores an object where each key name is a supported domain name.  Each value is an object storing HTTP request destination and redirection pairs for within the domain.
    * Wildcard support exists if a HTTP request destination terminates with an asterisk, as demonstrated in the following code example. Static HTTP request destinations are evaluated before wildcard requests.
-* The *service_port* stores port numbers each representing the listener for insecure and encrypted connections.
+* The *service_port* stores port numbers.
+   * *service_port.dashboard* launches a TLS server to monitor connections, status, and a variety of other real time data. If this is absent or receives a non-numeric value it will not be used.
+   * *service_port.open* launches a TCP server for connections from protocols like HTTP and WS.
+   * *service_port.secure* launches a TLS server for encrypted connections like HTTPS and WSS.
 
 Here is an example `config.json` file:
 
@@ -98,6 +102,7 @@ Here is an example `config.json` file:
     },
     "server_name": "My Home Server",
     "service_port": {
+        "dashboard": 3010,
         "open": 80,
         "secure": 443
     }

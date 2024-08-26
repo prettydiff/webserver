@@ -107,6 +107,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                         handler: message_handler,
                                         identifier: `browser-${hashOutput.hash}`,
                                         role: "server",
+                                        server: wsServer.type,
                                         socket: socket,
                                         type: "browser-youtube-download"
                                     });
@@ -146,7 +147,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
             });
             socket.once("data", handshake);
         },
-        wsServer:node_net_Server = (config.options === null)
+        wsServer:server = (config.options === null)
             // options are of type TlsOptions
             ? node.net.createServer()
             : node.tls.createServer({
@@ -155,8 +156,17 @@ const server = function transmit_server(config:config_websocket_server):node_net
                 key: config.options.options.key
             }, connection),
         listenerCallback = function transmit_server_listenerCallback():void {
-            config.callback(wsServer.address() as node_net_AddressInfo);
+            // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
+            const server:server = this;
+            config.callback(server.type, wsServer.address() as node_net_AddressInfo);
         };
+
+    // type identification assignment
+    wsServer.type = config.type;
+    vars.servers[config.type] = wsServer;
+    if (vars.sockets[config.type] === undefined) {
+        vars.sockets[config.type] = [];
+    }
 
     // insecure connection listener
     if (config.options === null) {
@@ -165,9 +175,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
 
     // secure connection listener
     wsServer.listen({
-        port: (config.options === null)
-            ? vars.service_port.open
-            : vars.service_port.secure
+        port: vars.service_port[config.type]
     }, listenerCallback);
     return wsServer;
 };

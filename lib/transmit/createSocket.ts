@@ -53,6 +53,7 @@ const create_socket = function transmit_createSocket(config:config_websocket_cre
                             handler: config.handler,
                             identifier: config.hash,
                             role: "client",
+                            server: null,
                             socket: client,
                             type: config.socketType
                         });

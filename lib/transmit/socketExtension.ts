@@ -59,6 +59,7 @@ const socket_extension = function transmit_socketExtension(config:config_websock
         config.socket.pong = {};                  // stores termination times and callbacks for pong handling
         config.socket.queue = [];                 // stores messages for transmit, because websocket protocol cannot intermix messages
         config.socket.role = config.role;         // assigns socket creation location
+        config.socket.server = config.server;     // identifies which local server the given socket is connected to
         config.socket.setKeepAlive(true, 0);      // standard method to retain socket against timeouts from inactivity until a close frame comes in
         config.socket.status = "open";            // sets the status flag for the socket
         config.socket.type = config.type;         // assigns the type name on the socket

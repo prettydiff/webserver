@@ -33,15 +33,13 @@ const create_proxy = function transmit_createProxy(config:config_createProxy):vo
             : node.net.connect({
                 host: host,
                 port: port
-            }) as websocket_client;
-    config.socket.once("close", function transmit_createProxy_complete_socketClose():void {
-        proxy.destroy();
-        config.socket.destroy();
-    });
-    proxy.once("close", function transmit_createProxy_complete_proxyClose():void {
-        proxy.destroy();
-        config.socket.destroy();
-    });
+            }) as websocket_client,
+        close = function transmit_createProxy_close():void {
+            proxy.destroy();
+            config.socket.destroy();
+        };
+    config.socket.once("close", close);
+    proxy.once("close", close);
     proxy.on("error", function transmit_createProxy_complete_proxyError():void {
         // this worthless error trapping prevents an "unhandled error" escalation that breaks the process
         return null;

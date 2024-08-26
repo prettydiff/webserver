@@ -22,7 +22,7 @@ const startup = function utilities_startup(callback:() => void):void {
                         }
                         return input + vars.sep;
                     },
-                    assignment = function utilities_startup_config_instructions_paths_assignment(key:vars_type):void {
+                    assignment = function utilities_startup_config_instructions_paths_assignment(key:type_vars):void {
                         // @ts-expect-error - TypeScript cannot infer a named object property from a typed value of a union.
                         vars[key] = (config[key] === undefined || config[key] === null)
                             ? vars[key]

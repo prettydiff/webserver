@@ -36,7 +36,7 @@ const directory = function utilities_directory(args:config_directory):void {
             searchReg:RegExp = (args.search === null)
                 ? null
                 : new RegExp(args.search.slice(1, searchLast)),
-            searchType:search_type = (function utilities_directory_searchType():search_type {
+            searchType:type_search = (function utilities_directory_searchType():type_search {
                 if (args.mode === "search") {
                     const regString:string = args.search.slice(1, searchLast);
                     if (vars.sep === "\\") {

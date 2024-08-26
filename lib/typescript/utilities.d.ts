@@ -9,8 +9,8 @@ interface directory_data {
     size: number;
 }
 
-interface directory_list extends Array<directory_item> {
-    [index:number]: directory_item;
+interface directory_list extends Array<type_directory_item> {
+    [index:number]: type_directory_item;
     failures?: string[];
 }
 
@@ -50,6 +50,7 @@ interface project_config {
     };
     server_name: string;
     service_port: {
+        dashboard?: number;
         open: number;
         secure: number;
     };
@@ -66,6 +67,12 @@ interface vars extends project_config {
         [key:string]: node_childProcess_ChildProcess;
     };
     sep: string;
+    servers: {
+        [key:string]: server;
+    };
+    sockets: {
+        [key:string]: websocket_client[];
+    };
     text: store_string;
     verbose: boolean;
 }
