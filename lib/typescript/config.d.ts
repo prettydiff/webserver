@@ -44,7 +44,6 @@ interface config_websocket_create {
     proxy: boolean;
     resource: string;
     secure: boolean;
-    socketType: type_socket;
 }
 
 interface config_websocket_extensions {
@@ -55,7 +54,6 @@ interface config_websocket_extensions {
     role: "client"|"server";
     server: type_socket_source;
     socket: websocket_client;
-    type: type_socket;
 }
 
 interface config_websocket_server {

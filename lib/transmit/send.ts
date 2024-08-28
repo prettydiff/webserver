@@ -60,7 +60,7 @@ const send = function transmit_send(body:Buffer|socket_data, socketItem:websocke
     // * Mask bit is set as payload length (up to 127) + 128 assigned to frame header second byte.
     // * Mask key is first 4 bytes following payload length bytes (if any).
     if (opcode === 1 || opcode === 2 || opcode === 3 || opcode === 4 || opcode === 5 || opcode === 6 || opcode === 7) {
-        const fragmentSize:number = (socketItem.type === "browser")
+        const fragmentSize:number = (socketItem.hash.indexOf("browser") === 0 || socketItem.hash.indexOf("http") === 0)
                 ? 0
                 : 1e6,
             op:1|2 = (isBuffer === true)

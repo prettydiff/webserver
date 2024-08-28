@@ -55,8 +55,7 @@ const create_socket = function transmit_createSocket(config:config_websocket_cre
                             proxy: null,
                             role: "client",
                             server: "client",
-                            socket: client,
-                            type: config.socketType
+                            socket: client
                         });
                     });
                 };

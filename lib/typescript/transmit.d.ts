@@ -66,7 +66,6 @@ interface websocket_client extends node_tls_TLSSocket {
     secure: boolean;
     server: type_socket_source;
     status: type_socket_status;
-    type: type_socket;
 }
 
 interface websocket_event extends Event {

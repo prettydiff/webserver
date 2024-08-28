@@ -1,4 +1,5 @@
 
+import dashboard from "./dashboard.js";
 import get_address from "../utilities/getAddress.js";
 import hash from "../utilities/hash.js";
 import http from "./http.js";
@@ -75,13 +76,26 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                 headerList[0] = data.toString().split("\r\n")[0];
                             }
                             if (key === "") {
-                                if (headerList[0].indexOf("GET") === 0) {
-                                    // local domain only uses GET method
-                                    http(headerList, socket);
-                                } else {
-                                    // at this time the local domain only supports HTTP GET method as everything else should use WebSockets
-                                    socket.destroy();
-                                }
+                                const http_action = function transmit_server_connection_handshake_httpAction():void {
+                                    if (wsServer.type === "dashboard") {
+                                        dashboard(headerList, socket);
+                                    } else if (headerList[0].indexOf("GET") === 0) {
+                                        // local domain only uses GET method
+                                        http(headerList, socket);
+                                    } else {
+                                        // at this time the local domain only supports HTTP GET method as everything else should use WebSockets
+                                        socket.destroy();
+                                    }
+                                };
+                                socket_extension({
+                                    callback: http_action,
+                                    handler: message_handler,
+                                    identifier: `http-${process.hrtime.bigint().toString()}`,
+                                    proxy: null,
+                                    role: "server",
+                                    server: wsServer.type,
+                                    socket: socket
+                                });
                             } else {
                                 // local domain websocket support
                                 const callback = function transmit_server_connection_handshake_hash(hashOutput:hash_output):void {
@@ -104,12 +118,11 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                     socket_extension({
                                         callback: client_respond,
                                         handler: message_handler,
-                                        identifier: `browser-${hashOutput.hash}`,
+                                        identifier: `browserSocket-${hashOutput.hash}`,
                                         proxy: null,
                                         role: "server",
                                         server: wsServer.type,
-                                        socket: socket,
-                                        type: "browser-youtube-download"
+                                        socket: socket
                                     });
                                 };
                                 hash({
@@ -177,8 +190,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                 proxy: proxy,
                                 role: "server",
                                 server: wsServer.type,
-                                socket: socket,
-                                type: "proxy"
+                                socket: socket
                             });
                             // proxy socket
                             socket_extension({
@@ -188,8 +200,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                 proxy: socket,
                                 role: "client",
                                 server: "proxy",
-                                socket: proxy,
-                                type: "proxy"
+                                socket: proxy
                             });
                         };
                     headerList.forEach(headerEach);
