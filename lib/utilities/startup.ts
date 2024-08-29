@@ -39,10 +39,10 @@ const startup = function utilities_startup(callback:() => void):void {
                     sub:number = 0;
                 assignment("block_list");
                 assignment("domain_local");
+                assignment("port_service");
                 assignment("redirect_domain");
                 assignment("redirect_internal");
                 assignment("server_name");
-                assignment("service_port");
                 vars.path.storage = sep(config.path.storage);
                 vars.path.web_root = sep(config.path.web_root);
                 includes("127.0.0.1");

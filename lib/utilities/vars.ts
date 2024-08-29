@@ -18,17 +18,18 @@ const vars:vars = {
         storage: "",
         web_root: ""
     },
+    port_conflict: {},
+    port_service: {
+        dashboard: null,
+        open: 80,
+        secure: 443
+    },
     processes: {},
     redirect_domain: {},
     redirect_internal: {},
     sep: node.path.sep,
     server_name: "",
     servers: {},
-    service_port: {
-        dashboard: null,
-        open: 80,
-        secure: 443
-    },
     sockets: {},
     text: {
         angry    : "\u001b[1m\u001b[31m",

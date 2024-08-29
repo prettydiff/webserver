@@ -42,6 +42,11 @@ interface project_config {
         storage: string;
         web_root: string;
     };
+    port_service: {
+        dashboard?: number;
+        open: number;
+        secure: number;
+    };
     redirect_domain: {
         [key:string]: [string, number];
     };
@@ -49,11 +54,6 @@ interface project_config {
         [key:string]: store_string;
     };
     server_name: string;
-    service_port: {
-        dashboard?: number;
-        open: number;
-        secure: number;
-    };
 }
 
 interface vars extends project_config {
@@ -62,6 +62,9 @@ interface vars extends project_config {
         project: string;
         storage: string;
         web_root: string;
+    };
+    port_conflict: {
+        [key:string]: boolean;
     };
     processes: {
         [key:string]: node_childProcess_ChildProcess;

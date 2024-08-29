@@ -13,7 +13,7 @@ type type_socket_data = services_processKill | services_youtubeDownload | servic
 type type_socket_source = type_server | "client" | "proxy";
 type type_socket_status = "closed" | "end" | "open" | "pending";
 type type_socket = "browser-youtube-download" | "browser" | "proxy";
-type type_vars = "block_list" | "domain_local" | "redirect_domain" | "redirect_internal" | "server_name" | "service_port";
+type type_vars = "block_list" | "domain_local" | "port_service" | "redirect_domain" | "redirect_internal" | "server_name";
 type type_youtubeDownload_media = "audio" | "video";
 type type_youtubeDownload = "audio-file" | "audio-playlist" | "video-file" | "video-playlist";
 

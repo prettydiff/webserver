@@ -33,14 +33,14 @@ startup(function index():void {
                     log({
                         address: addressInfo.address,
                         family: addressInfo.family,
-                        port: vars.service_port
+                        port: vars.port_service
                     });
                 }
             },
             options: null,
             type: "open"
         };
-        if (typeof vars.service_port.dashboard === "number") {
+        if (typeof vars.port_service.dashboard === "number") {
             total = total + 1;
         }
 
@@ -49,10 +49,12 @@ startup(function index():void {
 
         readCerts(function index_readCerts(tlsOptions:transmit_tlsOptions):void {
             config.options = tlsOptions;
-            if (typeof vars.service_port.dashboard === "number") {
+            if (typeof vars.port_service.dashboard === "number") {
                 // dashboard
                 config.type = "dashboard";
                 server(config);
+            } else {
+                vars.port_conflict.dashboard = false;
             }
 
             // TLS server
