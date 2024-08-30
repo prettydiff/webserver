@@ -7,7 +7,8 @@ import vars from "../utilities/vars.js";
 
 /* cspell: words msvideo, nofollow, onnection, prettydiff */
 
-const http = function transmit_http(headerList:string[], socket:websocket_client):void {
+const http = function transmit_http(headerList:string[], socket:websocket_client, type_server:type_server):void {
+    let input:string = "";
     const index0:string[] = headerList[0].replace(/^\s+/, "").replace(/\s+/, " ").split(" "),
         resource:string = index0[1],
         asset:string[] = resource.split("/"),
@@ -75,8 +76,8 @@ const http = function transmit_http(headerList:string[], socket:websocket_client
             headerText[2] = `content-length: ${Buffer.from(bodyText).length}`;
             return headerText.join("\r\n") + bodyText;
         },
-        statTest = function transmit_http_statTest(input:string):void {
-            input = vars.path.web_root + decodeURI(fileFragment);
+        statTest = function transmit_http_statTest():void {
+
             node.fs.stat(input, {
                 bigint: true
             }, function transmit_http_statTest_stat(ers:node_error, stat:node_fs_BigIntStats):void {
@@ -275,15 +276,16 @@ const http = function transmit_http(headerList:string[], socket:websocket_client
                         notFound();
                     }
                 } else {
-                    if ((/index\.html$/).test(input) === true) {
-                        transmit_http_statTest(asset.join(vars.sep));
-                    } else {
-                        notFound();
-                    }
+                    notFound();
                 }
             });
         };
-    statTest(fileFragment);
+    if (type_server !== "service" && (fileFragment === "" || fileFragment.indexOf("index.html") === fileFragment.length - 10)) {
+        input = `${vars.path.web_root + type_server}.html`;
+    } else {
+        input = vars.path.web_root + decodeURI(fileFragment);
+    }
+    statTest();
 };
 
 export default http;

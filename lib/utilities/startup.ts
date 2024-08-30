@@ -39,7 +39,7 @@ const startup = function utilities_startup(callback:() => void):void {
                     sub:number = 0;
                 assignment("block_list");
                 assignment("domain_local");
-                assignment("port_service");
+                assignment("ports");
                 assignment("redirect_domain");
                 assignment("redirect_internal");
                 assignment("server_name");

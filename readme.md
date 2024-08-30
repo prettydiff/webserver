@@ -47,6 +47,10 @@ interface project_config {
         storage: string;
         web_root: string;
     };
+    ports: {
+        dashboard?: project_ports;
+        service: project_ports;
+    };
     redirect_domain: {
         [key:string]: [string, number];
     };
@@ -56,14 +60,12 @@ interface project_config {
         };
     };
     server_name: string;
-    service_port: {
-        dashboard?: number;
-        open: number;
-        secure: number;
-    };
 }
 
-type redirect_isolation: (proxy_init: () => void) => void;
+interface project_ports {
+    open: number;
+    secure: number;
+}
 ```
 
 * The *domain_local* property provides a list of domains that will be locally supported on the server without redirection.
@@ -76,10 +78,13 @@ type redirect_isolation: (proxy_init: () => void) => void;
    * If a service at a given vanity domain requires separate ports for secure and insecure services then specify the secure port with `secure` as the top level domain, as demonstrated in the following code example.
 * The *redirect_internal* stores an object where each key name is a supported domain name.  Each value is an object storing HTTP request destination and redirection pairs for within the domain.
    * Wildcard support exists if a HTTP request destination terminates with an asterisk, as demonstrated in the following code example. Static HTTP request destinations are evaluated before wildcard requests.
-* The *service_port* stores port numbers.
-   * *service_port.dashboard* launches a TLS server to monitor connections, status, and a variety of other real time data. If this is absent or receives a non-numeric value it will not be used.
-   * *service_port.open* launches a TCP server for connections from protocols like HTTP and WS.
-   * *service_port.secure* launches a TLS server for encrypted connections like HTTPS and WSS.
+* The *ports* stores port numbers for the respective spawned servers.
+   * *ports.dashboard* is completely optional and, if present, launches servers for a management dashboard.
+      * *ports.dashboard.open* is the port number for TCP dashboard server for access via HTTP and WS.
+      * *ports.dashboard.secure* is the port number for the TLS dashboard server for access via HTTPS and WSS.
+   * *ports.service* is required and stores the ports for the primary web server.
+      * *ports.service.open* launches a TCP server for connections from protocols like HTTP and WS.
+      * *ports.service.secure* launches a TLS server for encrypted connections like HTTPS and WSS.
 
 Here is an example `config.json` file:
 
@@ -89,6 +94,16 @@ Here is an example `config.json` file:
     "path": {
         "storage": "/myWebSite/downloads/",
         "web_root": "/var/httpd/www/"
+    },
+    "ports": {
+        "dashboard": {
+            "open": 3010,
+            "secure": 3011
+        },
+        "secure": {
+            "open": 80,
+            "secure": 443
+        }
     },
     "redirect_domain": {
         "pihole.x": ["", 3001],
@@ -101,12 +116,7 @@ Here is an example `config.json` file:
             "/*": "/admin/"
         }
     },
-    "server_name": "My Home Server",
-    "service_port": {
-        "dashboard": 3010,
-        "open": 80,
-        "secure": 443
-    }
+    "server_name": "My Home Server"
 }
 ```
 

@@ -8,8 +8,7 @@ import yt_config from "./utilities/yt_config.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-console
 const log:(...data:any[]) => void = console.log;
-let count:number = 0,
-    total:number = 2;
+let count:number = 0;
 
 startup(function index():void {
     if (process.argv.includes("certificate") === true) {
@@ -29,36 +28,41 @@ startup(function index():void {
         const config:config_websocket_server = {
             callback: function index_serverCallback(type:type_server, addressInfo:node_net_AddressInfo):void {
                 count = count + 1;
-                if (count === total) {
+                if (count === vars.server_count) {
                     log({
                         address: addressInfo.address,
                         family: addressInfo.family,
-                        port: vars.port_service
+                        port: vars.ports
                     });
                 }
             },
             options: null,
-            type: "open"
+            type: "service"
         };
-        if (typeof vars.port_service.dashboard === "number") {
-            total = total + 1;
+
+        // TCP dashboard
+        if (vars.ports.dashboard !== null && vars.ports.dashboard !== undefined && typeof vars.ports.dashboard.open === "number") {
+            config.type = "dashboard";
+            server(config);
+            vars.server_count = vars.server_count + 1;
         }
 
         // TCP server
+        config.type = "service";
         server(config);
 
         readCerts(function index_readCerts(tlsOptions:transmit_tlsOptions):void {
             config.options = tlsOptions;
-            if (typeof vars.port_service.dashboard === "number") {
-                // dashboard
+
+            // TLS dashboard
+            if (vars.ports.dashboard !== null && vars.ports.dashboard !== undefined && typeof vars.ports.dashboard.secure === "number") {
                 config.type = "dashboard";
                 server(config);
-            } else {
-                vars.port_conflict.dashboard = false;
+                vars.server_count = vars.server_count + 1;
             }
 
             // TLS server
-            config.type = "secure";
+            config.type = "service";
             server(config);
         });
     }

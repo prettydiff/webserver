@@ -19,18 +19,6 @@ interface hash_output {
     hash: string;
 }
 
-interface store_flag {
-    [key:string]: boolean;
-}
-
-interface store_number {
-    [key:string]: number;
-}
-
-interface store_string {
-    [key:string]: string;
-}
-
 interface project_config {
     block_list: {
         host: string[];
@@ -42,10 +30,9 @@ interface project_config {
         storage: string;
         web_root: string;
     };
-    port_service: {
-        dashboard?: number;
-        open: number;
-        secure: number;
+    ports: {
+        dashboard?: project_ports;
+        service: project_ports;
     };
     redirect_domain: {
         [key:string]: [string, number];
@@ -63,13 +50,12 @@ interface vars extends project_config {
         storage: string;
         web_root: string;
     };
-    port_conflict: {
-        [key:string]: boolean;
-    };
+    port_conflict: type_port_conflict[];
     processes: {
         [key:string]: node_childProcess_ChildProcess;
     };
     sep: string;
+    server_count: number;
     servers: {
         [key:string]: server;
     };
@@ -78,4 +64,21 @@ interface vars extends project_config {
     };
     text: store_string;
     verbose: boolean;
+}
+
+interface project_ports {
+    open: number;
+    secure: number;
+}
+
+interface store_flag {
+    [key:string]: boolean;
+}
+
+interface store_number {
+    [key:string]: number;
+}
+
+interface store_string {
+    [key:string]: string;
 }

@@ -18,16 +18,19 @@ const vars:vars = {
         storage: "",
         web_root: ""
     },
-    port_conflict: {},
-    port_service: {
+    port_conflict: [],
+    ports: {
         dashboard: null,
-        open: 80,
-        secure: 443
+        service: {
+            open: 80,
+            secure: 443
+        }
     },
     processes: {},
     redirect_domain: {},
     redirect_internal: {},
     sep: node.path.sep,
+    server_count: 2,
     server_name: "",
     servers: {},
     sockets: {},

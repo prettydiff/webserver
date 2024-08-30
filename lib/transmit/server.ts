@@ -1,5 +1,4 @@
 
-import dashboard from "./dashboard.js";
 import error from "../utilities/error.js";
 import get_address from "../utilities/getAddress.js";
 import hash from "../utilities/hash.js";
@@ -12,7 +11,9 @@ import vars from "../utilities/vars.js";
 
 const server = function transmit_server(config:config_websocket_server):node_net_Server {
     const connection = function transmit_server_connection(TLS_socket:node_tls_TLSSocket):void {
-            const socket:websocket_client = TLS_socket as websocket_client,
+            // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, no-restricted-syntax
+            const type_server:type_server = this.type,
+                socket:websocket_client = TLS_socket as websocket_client,
                 handshake = function transmit_server_connection_handshake(data:Buffer):void {
                     let nonceHeader:string = null,
                         domain:string = "",
@@ -43,8 +44,8 @@ const server = function transmit_server(config:config_websocket_server):node_net
                             // ensures HTTP requests pushed through the proxy are identified as originating from the proxy
                             if (vars.domain_local.includes(domain) === false) {
                                 arr[arrIndex] = (socket.encrypted === true)
-                                    ? `Host: ${address.local.address}:${vars.port_service.secure}`
-                                    : `Host: ${address.local.address}:${vars.port_service.open}`;
+                                    ? `Host: ${address.local.address}:${vars.ports.service.secure}`
+                                    : `Host: ${address.local.address}:${vars.ports.service.open}`;
                             }
                         },
                         get_referer = function transmit_server_connection_handshake_getReferer(header:string):void {
@@ -78,11 +79,9 @@ const server = function transmit_server(config:config_websocket_server):node_net
                             }
                             if (key === "") {
                                 const http_action = function transmit_server_connection_handshake_httpAction():void {
-                                    if (wsServer.type === "dashboard") {
-                                        dashboard(headerList, socket);
-                                    } else if (headerList[0].indexOf("GET") === 0) {
+                                    if (headerList[0].indexOf("GET") === 0) {
                                         // local domain only uses GET method
-                                        http(headerList, socket);
+                                        http(headerList, socket, type_server);
                                     } else {
                                         // at this time the local domain only supports HTTP GET method as everything else should use WebSockets
                                         socket.destroy();
@@ -145,8 +144,8 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                     ? vars.redirect_domain[`${domain}.secure`]
                                     : (vars.redirect_domain[domain] === undefined)
                                         ? (socket.encrypted === true)
-                                            ? [address.local.address, vars.port_service.secure]
-                                            : [address.local.address, vars.port_service.open]
+                                            ? [address.local.address, vars.ports.service.secure]
+                                            : [address.local.address, vars.ports.service.open]
                                         : vars.redirect_domain[domain],
                                 host:string = (pair[0] === undefined || pair[0] === null || pair[0] === "")
                                     ? address.local.address
@@ -154,8 +153,8 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                 port:number = (typeof pair[1] === "number")
                                     ? pair[1]
                                     : (socket.encrypted === true)
-                                        ? vars.port_service.secure
-                                        : vars.port_service.open,
+                                        ? vars.ports.service.secure
+                                        : vars.ports.service.open,
                                 proxy:websocket_client = (socket.encrypted === true)
                                     ?  node.tls.connect({
                                         host: host,
@@ -229,8 +228,10 @@ const server = function transmit_server(config:config_websocket_server):node_net
             socket.once("data", handshake);
         },
         server_error = function transmit_server_serverError(ser:node_error):void {
+            // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
+            const server:server = this;
             if (ser.code === "EADDRINUSE") {
-                port_conflict(true);
+                port_conflict(server.type, server.secure, true);
             }
         },
         wsServer:server = (config.options === null)
@@ -244,26 +245,27 @@ const server = function transmit_server(config:config_websocket_server):node_net
         listenerCallback = function transmit_server_listenerCallback():void {
             // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
             const server:server = this;
-            port_conflict(false);
+            port_conflict(server.type, server.secure, false);
             config.callback(server.type, wsServer.address() as node_net_AddressInfo);
         },
         // error messaging for port conflicts
-        port_conflict = function transmit_server_portConflict(input:boolean):void {
-            vars.port_conflict[wsServer.type] = input;
-            const keys:string[] = Object.keys(vars.port_conflict),
-                total:number = keys.length;
+        port_conflict = function transmit_server_portConflict(name:type_server, secure:boolean, input:boolean):void {
+            vars.port_conflict.push([name, secure, input]);
+            const total:number = vars.port_conflict.length;
             let index:number = 0,
                 test:boolean = false;
-            keys.sort(function transmit_server_portConflict_sort(a:string, b:string):-1|1 {
-                if (vars.port_service[a as type_server] < vars.port_service[b as type_server]) {
-                    return -1;
-                }
-                return 1;
-            })
-            if (keys.length === Object.keys(vars.port_service).length) {
+            if (total === vars.server_count) {
                 const errorText:string[] = ["Port conflict on the following ports:"];
+                vars.port_conflict.sort(function transmit_server_portConflict_sort(a:type_port_conflict, b:type_port_conflict):-1|1 {
+                    if (vars.ports[a[0]][(a[1] === true) ? "secure" : "open"] < vars.ports[b[0]][(b[1] === true) ? "secure" : "open"]) {
+                        return -1;
+                    }
+                    return 1;
+                });
+
+                // validate there are port conflicts
                 do {
-                    if (vars.port_conflict[keys[index]] === true) {
+                    if (vars.port_conflict[index][2] === true) {
                         test = true;
                         break;
                     }
@@ -273,19 +275,26 @@ const server = function transmit_server(config:config_websocket_server):node_net
                     return;
                 }
 
+                // write the messaging
                 index = 0;
                 do {
-                    if (vars.port_conflict[keys[index]] === true) {
-                        errorText.push(`${vars.text.angry}*${vars.text.none} Port ${vars.text.angry + vars.port_service[keys[index] as type_server].toString() + vars.text.none} for server ${vars.text.cyan + keys[index] + vars.text.none}.`);
+                    if (vars.port_conflict[index][2] === true) {
+                        errorText.push(`${vars.text.angry}*${vars.text.none} Port ${vars.text.angry + vars.ports[vars.port_conflict[index][0]][(vars.port_conflict[index][1] === true) ? "secure" : "open"].toString() + vars.text.none} for server ${vars.text.cyan + vars.port_conflict[index][0]}, ${((vars.port_conflict[index][1]) === true ? "secure" : "open") + vars.text.none}.`);
                     }
                     index = index + 1;
                 } while (index < total);
                 error(errorText, null, true);
                 process.exit(1);
             }
-        };
+        },
+        secureType:"open"|"secure" = (config.options === null)
+            ? "open"
+            : "secure";
 
     // type identification assignment
+    wsServer.secure = (config.options === null)
+        ? false
+        : true;
     wsServer.type = config.type;
     wsServer.on("error", server_error);
     vars.servers[config.type] = wsServer;
@@ -297,7 +306,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
 
     // secure connection listener
     wsServer.listen({
-        port: vars.port_service[config.type]
+        port: vars.ports[config.type][secureType]
     }, listenerCallback);
     return wsServer;
 };
