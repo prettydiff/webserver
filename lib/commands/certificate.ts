@@ -1,24 +1,24 @@
 
-import error from "./error.js";
-import node from "./node.js";
-import vars from "./vars.js";
+import error from "../utilities/error.js";
+import node from "../utilities/node.js";
+import vars from "../utilities/vars.js";
 
 // cspell:word addstore, CAcreateserial, certutil, delstore, extfile, genpkey
 
-const certificate = function utilities_certificate(config:config_certificate):void {
+const certificate = function commands_certificate(config:config_certificate):void {
     const cert_path:string = `${vars.path.project}lib${vars.sep}certs`;
-    node.fs.stat(cert_path, function utilities_certificate_stat(ers:node_error):void {
-        const cert = function utilities_certificate_stat_cert():void {
+    node.fs.stat(cert_path, function commands_certificate_stat(ers:node_error):void {
+        const cert = function commands_certificate_stat_cert():void {
             let index:number = 0;
             const commands:string[] = [],
-                crypto = function utilities_certificate_stat_cert_crypto():void {
+                crypto = function commands_certificate_stat_cert_crypto():void {
                     node.child_process.exec(commands[index], {
                         cwd: cert_path
-                    }, function utilities_certificate_stat_cert_crypto_child(erChild:node_childProcess_ExecException):void {
+                    }, function commands_certificate_stat_cert_crypto_child(erChild:node_childProcess_ExecException):void {
                         if (erChild === null) {
                             index = index + 1;
                             if (index < commands.length) {
-                                utilities_certificate_stat_cert_crypto();
+                                commands_certificate_stat_cert_crypto();
                             } else {
                             config.callback();
                             }
@@ -55,25 +55,25 @@ const certificate = function utilities_certificate(config:config_certificate):vo
                 //    - in            : specifies certificate request file path of certificate to sign
                 //    - out           : file location to output the signed certificate
                 //    - req           : use a certificate request as input opposed to an actual certificate
-                create = function utilities_certificate_stat_cert_create():void {
+                create = function commands_certificate_stat_cert_create():void {
                     const mode:[string, string] = (config.selfSign === true)
                             ? ["server", config.domain_default]
                             : ["root", config.domain_default],
                         org:string = "/O=home_server/OU=home_server",
                         // provides the path to the configuration file used for certificate signing
-                        pathConf = function utilities_certificate_stat_cert_create_confPath(configName:"ca"|"selfSign"):string {
+                        pathConf = function commands_certificate_stat_cert_create_confPath(configName:"ca"|"selfSign"):string {
                             return `"${vars.path.conf}extensions.cnf" -extensions ${configName}`;
                         },
                         // create a certificate signed by another certificate
-                        actionCert = function utilities_certificate_stat_cert_create_cert(type:"int"|"server"):string {
+                        actionCert = function commands_certificate_stat_cert_create_cert(type:"int"|"server"):string {
                             return `openssl req -new -sha512 -key ${type}.key -out ${type}.csr -subj "/CN=${config.domain_default + org}"`;
                         },
                         // generates the key file associated with a given certificate
-                        actionKey = function utilities_certificate_stat_cert_create_key(type:"int"|"root"|"server"):string {
+                        actionKey = function commands_certificate_stat_cert_create_key(type:"int"|"root"|"server"):string {
                             return `openssl genrsa -out ${type}.key 4096`;
                         },
                         // signs the certificate
-                        actionSign = function utilities_certificate_stat_cert_create_sign(cert:string, parent:string, path:"ca"|"selfSign"):string {
+                        actionSign = function commands_certificate_stat_cert_create_sign(cert:string, parent:string, path:"ca"|"selfSign"):string {
                             return `openssl x509 -req -sha512 -in ${cert}.csr -days ${config.days} -out ${cert}.crt -CA ${parent}.crt -CAkey ${parent}.key -CAcreateserial -extfile ${pathConf(path)}`;
                         },
                         root:string = `openssl req -x509 -new -newkey rsa:4096 -nodes -key ${mode[0]}.key -days ${config.days} -out ${mode[0]}.crt -subj "/CN=${mode[1] + org}"`;
@@ -106,7 +106,7 @@ const certificate = function utilities_certificate(config:config_certificate):vo
             cert();
         } else {
             if (ers.code === "ENOENT") {
-                node.fs.mkdir(cert_path, function utilities_certificate_mkdir(erm:node_error):void {
+                node.fs.mkdir(cert_path, function commands_certificate_mkdir(erm:node_error):void {
                     if (erm === null) {
                         cert();
                     } else {

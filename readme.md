@@ -1,10 +1,9 @@
 # Web Server
 Serves and proxies HTTP over WebSockets for both TCP and TLS.
 
-<!-- cspell: words pihole -->
+<!-- cspell: words pihole, webserver -->
 
 ## About
-
 * Built in proxy and redirection
 * Single port for both HTTP and WebSocket service
 * Simple TLS server with certificate generator
@@ -22,6 +21,13 @@ Because the server provides HTTP and WebSocket support over raw TCP sockets both
 Currently only HTTP method GET is supported.
 For my own use all other traffic will be sent as WebSocket messages for the default domain.
 For other domains all traffic is pushed through a proxy to a separate unrelated service regardless of protocol or message description.
+
+## Installation
+1. Install [Node.js](https://nodejs.org/)
+2. Install [git](https://git-scm.com/)
+3. Execute `git clone https://github.com/prettydiff/webserver.git`
+4. Execute `cd webserver`
+5. Execute `node install.js`
 
 ## TLS support
 This application provides support for TLS to all locally administered domain names.
@@ -45,7 +51,7 @@ interface project_config {
     domain_local: string[];
     path: {
         storage: string;
-        web_root: string;
+        web_root?: string;
     };
     ports: {
         dashboard?: project_ports;
@@ -72,7 +78,7 @@ interface project_ports {
    * The first domain in this list will be the primary identity used in certificate creation.
    * Loopback IP addresses and local device interface IP addresses are automatically added to the *domain_local* list.
 * The *path.storage* property is an absolute file system path where applications should download resources to.
-* The *path.web_root* property is an absolute file system path where web pages/assets are served from.
+* The *path.web_root* property is an absolute file system path where web pages/assets are served from.  This directory is optional and defaults to the project's *assets* directory.
 * The *redirecT_domain* stores a object of domain names as key names and an array as a value. That array expects two values where the first is a string representing a host value and the second is a number representing a port value.
    * If the host value is undefined, null, or an empty string it will resolve to the IP of the given server.
    * If a service at a given vanity domain requires separate ports for secure and insecure services then specify the secure port with `secure` as the top level domain, as demonstrated in the following code example.

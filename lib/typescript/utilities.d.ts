@@ -28,7 +28,7 @@ interface project_config {
     domain_local: string[];
     path: {
         storage: string;
-        web_root: string;
+        web_root?: string;
     };
     ports: {
         dashboard?: project_ports;
@@ -48,7 +48,7 @@ interface vars extends project_config {
         conf: string;
         project: string;
         storage: string;
-        web_root: string;
+        web_root?: string;
     };
     port_conflict: type_port_conflict[];
     processes: {

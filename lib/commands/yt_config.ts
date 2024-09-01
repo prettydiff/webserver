@@ -1,22 +1,22 @@
 
-import node from "./node.js";
-import vars from "./vars.js";
+import node from "../utilities/node.js";
+import vars from "../utilities/vars.js";
 
 // cspell: words bestaudio, keyid, multistreams, pathlen
 
-const yt_config = function utilities_ytConfig(callback:() => void):void {
-    const confWritten = function utilities_startup_config_instructions_confWritten():void {
+const yt_config = function commands_ytConfig(callback:() => void):void {
+    const confWritten = function commands_startup_config_instructions_confWritten():void {
             conf_count = conf_count + 1;
             if (conf_count === conf_total) {
                 callback();
             }
         },
-        conf:store_string = (function utilities_startup_config_instructions_paths():store_string {
+        conf:store_string = (function commands_startup_config_instructions_paths():store_string {
             return {
-                "audio": `-f bestaudio -o ${vars.path.storage}%(title)sx.%(ext)s --audio-format mp3 --audio-quality 0 --extract-audio --no-mtime --no-playlist`,
+                "audio": `-f bestaudio -o ${vars.path.storage}%(title)sx.%(ext)s --audio-format mp3 --audio-quality 0 --extract-audio --no-mtime --no-playlist --downloader aria2c`,
                 "audio-file": `--exec "ffmpeg -i ${vars.path.storage}%(title)sx.%(ext)s -vn -ab 320k -ar 48000 -y ${vars.path.storage}%(artist)s-%(title)s.%(ext)s && rm ${vars.path.storage}%(title)sx.%(ext)s"`,
                 "audio-playlist": `--exec "ffmpeg -i ${vars.path.storage}%(title)sx.%(ext)s -vn -ab 320k -ar 48000 -y ${vars.path.storage}%(artist)s-%(playlist_title)s-%(playlist_index)s%(title)s.%(ext)s && rm ${vars.path.storage}%(title)sx.%(ext)s"`,
-                "audio-video": `-f m4a -o ${vars.path.storage}%(artist)s-%(playlist_title)s-%(playlist_index)s%(title)s.%(ext)s --audio-multistreams --audio-quality 0 --extract-audio --no-mtime --no-playlist`,
+                "audio-video": `-f m4a -o ${vars.path.storage}%(artist)s-%(playlist_title)s-%(playlist_index)s%(title)s.%(ext)s --audio-multistreams --audio-quality 0 --extract-audio --no-mtime --no-playlist --downloader aria2c`,
                 "meta": `--replace-in-metadata artist " and " "And"
 --replace-in-metadata artist " of " "Of"
 --replace-in-metadata artist " is " "Is"
@@ -31,10 +31,10 @@ const yt_config = function utilities_ytConfig(callback:() => void):void {
 --replace-in-metadata title "^The" ""
 -u ""
 -p ""`,
-                "video": `-f mp4 -o ${vars.path.storage}%(artist)s-%(playlist_title)s-%(playlist_index)s%(title)s.%(ext)s --no-mtime --no-playlist --video-multistreams`
+                "video": `-f mp4 -o ${vars.path.storage}%(artist)s-%(playlist_title)s-%(playlist_index)s%(title)s.%(ext)s --no-mtime --no-playlist --video-multistreams --downloader aria2c`
             };
         }()),
-        cert_extensions:string = (function utilities_startup_config_instructions_certExtensions():string {
+        cert_extensions:string = (function commands_startup_config_instructions_certExtensions():string {
             const output:string[] = [
                 `[ ca ]
 basicConstraints       = CA:false
@@ -53,7 +53,7 @@ nameConstraints      = @name_constraints
 # Name constraints list is dynamically populated from vars.network.domain
 permitted;DNS.1 = localhost
 permitted;DNS.2 = 192.168.0.3`,
-"",
+                "",
                 `# permitted;IP.1 = 127.0.0.1/255.0.0.0
 # End Constraints
 
@@ -61,7 +61,7 @@ permitted;DNS.2 = 192.168.0.3`,
 # Alt names list is dynamically populated from vars.network.domain
 DNS.1 = localhost
 DNS.2 = 192.168.0.3`,
-"",
+                "",
                 `# IP.1 = 127.0.0.1/255.0.0.0
 # End Alt Names
 `

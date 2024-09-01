@@ -1,16 +1,18 @@
 
-import certificate from "./utilities/certificate.js";
+import certificate from "./commands/certificate.js";
+import create_config from "./commands/create_config.js";
 import readCerts from "./utilities/readCerts.js";
 import server from "./transmit/server.js";
 import startup from "./utilities/startup.js";
 import vars from "./utilities/vars.js";
-import yt_config from "./utilities/yt_config.js";
+import yt_config from "./commands/yt_config.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-console
 const log:(...data:any[]) => void = console.log;
 let count:number = 0;
 
 startup(function index():void {
+    // certificate command
     if (process.argv.includes("certificate") === true) {
         certificate({
             callback: function index_certificate():void {
@@ -20,10 +22,15 @@ startup(function index():void {
             domain_default: vars.domain_local[0],
             selfSign: false
         });
+    // create_config command
+    } else if (process.argv.includes("yt_config") === true) {
+        create_config();
+    // yt_config command
     } else if (process.argv.includes("yt_config") === true) {
         yt_config(function index_ytConfig():void {
             log("yt-dlp scripts written.");
         });
+    // service, default behavior
     } else {
         const config:config_websocket_server = {
             callback: function index_serverCallback(type:type_server, addressInfo:node_net_AddressInfo):void {

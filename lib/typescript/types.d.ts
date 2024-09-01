@@ -5,6 +5,7 @@ type type_directory_mode = "array" | "hash" | "list" | "read" | "search" | "type
 type type_file = "block_device" | "character_device" | "directory" | "fifo_pipe" | "file" | "socket" | "symbolic_link";
 type type_hash_algorithm = "blake2d512" | "blake2s256" | "sha1" | "sha3-224" | "sha3-256" | "sha3-384" | "sha3-512" | "sha384" | "sha512-224" | "sha512-256" | "sha512" | "shake128" | "shake256";
 type type_hash_input = "direct" | "file";
+type type_paths = "storage" | "web_root";
 type type_port_conflict = [type_server, boolean, boolean];
 type type_search = "fragment" | "negation" | "regex";
 type type_selector = "class" | "id" | "tag";
