@@ -28,6 +28,8 @@ For other domains all traffic is pushed through a proxy to a separate unrelated 
 3. Execute `git clone https://github.com/prettydiff/webserver.git`
 4. Execute `cd webserver`
 5. Execute `node install.js`
+6. Customize the `config.json` file to fit your preferences.
+7. Run the services according to your operating system's service management or as an application with command `npm run server`.
 
 ## TLS support
 This application provides support for TLS to all locally administered domain names.
