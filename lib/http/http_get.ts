@@ -1,4 +1,6 @@
 
+// this file supports HTTP methods GET and HEAD
+
 import commas from "../assets/browser_scripts/commas.js";
 import dateString from "../utilities/dateString.js";
 import directory from "../utilities/directory.js";
@@ -10,9 +12,18 @@ import vars from "../utilities/vars.js";
 const http_get = function transmit_httpGet(headerList:string[], socket:websocket_client, type_server:string):void {
     let input:string = "";
     const index0:string[] = headerList[0].replace(/^\s+/, "").replace(/\s+/, " ").split(" "),
+        method:"GET"|"HEAD" = (index0.indexOf("HEAD") === 0)
+            ? "HEAD"
+            : "GET",
         resource:string = index0[1],
         asset:string[] = resource.split("/"),
         fileFragment:string = asset.join(vars.sep).replace(/^(\\|\/)/, ""),
+        payload = function transmit_httpGet_payload(heading:string, body:string):string {
+            if (method === "HEAD") {
+                return heading;
+            }
+            return heading + body;
+        },
         // a dynamically generated template for page HTML
         html = function transmit_httpGet_html(config:config_html):string {
             const statusText:string = (function transmit_httpGet_html_status():string {
@@ -71,13 +82,12 @@ const http_get = function transmit_httpGet(headerList:string[], socket:websocket
                     ],
                 bodyText:string = templateText.join("\r\n") + config.content.join("\r\n") + templateEnd.join("\r\n");
                 headerText[2] = `content-length: ${Buffer.from(bodyText).length}`;
-                return headerText.join("\r\n") + bodyText;
+                return payload(headerText.join("\r\n"), bodyText);
             }
             headerText[2] = `content-length: ${Buffer.from(bodyText).length}`;
-            return headerText.join("\r\n") + bodyText;
+            return payload(headerText.join("\r\n"), bodyText);
         },
         statTest = function transmit_httpGet_statTest():void {
-
             node.fs.stat(input, {
                 bigint: true
             }, function transmit_httpGet_statTest_stat(ers:node_error, stat:node_fs_BigIntStats):void {
@@ -253,11 +263,13 @@ const http_get = function transmit_httpGet(headerList:string[], socket:websocket
                             node.fs.readFile(input, function transmit_httpGet_statTest_stat_file_read(err:node_error, file:Buffer):void {
                                 if (err === null) {
                                     headerText[2] = `content-length: ${file.length}`;
-                                    write(headerText.join("\r\n") + file.toString());
+                                    write(payload(headerText.join("\r\n"), file.toString()));
                                 } else {
                                     serverError(err, `Error attempting to read file: ${index0[1]}`);
                                 }
                             });
+                        } else if (method === "HEAD") {
+                            write(headerText.join("\r\n"));
                         } else {
                             const stream:node_fs_ReadStream = node.fs.createReadStream(input);
                             socket.write(headerText.join("\r\n"));

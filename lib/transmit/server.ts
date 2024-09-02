@@ -79,7 +79,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
                             }
                             if (key === "") {
                                 const http_action = function transmit_server_connection_handshake_httpAction():void {
-                                    if (headerList[0].indexOf("GET") === 0) {
+                                    if (headerList[0].indexOf("GET") === 0 || headerList[0].indexOf("HEAD") === 0) {
                                         // local domain only uses GET method
                                         http_get(headerList, socket, type_server);
                                     } else {
