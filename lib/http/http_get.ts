@@ -9,7 +9,7 @@ import vars from "../utilities/vars.js";
 
 /* cspell: words msvideo, nofollow, onnection, prettydiff */
 
-const http_get = function transmit_httpGet(headerList:string[], socket:websocket_client, type_server:string):void {
+const http_get:http_action = function http_get(headerList:string[], socket:websocket_client, type_server:string):void {
     let input:string = "";
     const index0:string[] = headerList[0].replace(/^\s+/, "").replace(/\s+/, " ").split(" "),
         method:"GET"|"HEAD" = (index0.indexOf("HEAD") === 0)
@@ -18,15 +18,15 @@ const http_get = function transmit_httpGet(headerList:string[], socket:websocket
         resource:string = index0[1],
         asset:string[] = resource.split("/"),
         fileFragment:string = asset.join(vars.sep).replace(/^(\\|\/)/, ""),
-        payload = function transmit_httpGet_payload(heading:string, body:string):string {
+        payload = function http_get_payload(heading:string[], body:string):string {
             if (method === "HEAD") {
-                return heading;
+                return heading.join("\r\n");
             }
-            return heading + body;
+            return heading.join("\r\n") + body;
         },
         // a dynamically generated template for page HTML
-        html = function transmit_httpGet_html(config:config_html):string {
-            const statusText:string = (function transmit_httpGet_html_status():string {
+        html = function http_get_html(config:config_html):string {
+            const statusText:string = (function http_get_html_status():string {
                     if (config.status === 200) {
                         return "200 OK";
                     }
@@ -82,16 +82,16 @@ const http_get = function transmit_httpGet(headerList:string[], socket:websocket
                     ],
                 bodyText:string = templateText.join("\r\n") + config.content.join("\r\n") + templateEnd.join("\r\n");
                 headerText[2] = `content-length: ${Buffer.from(bodyText).length}`;
-                return payload(headerText.join("\r\n"), bodyText);
+                return payload(headerText, bodyText);
             }
             headerText[2] = `content-length: ${Buffer.from(bodyText).length}`;
-            return payload(headerText.join("\r\n"), bodyText);
+            return payload(headerText, bodyText);
         },
-        statTest = function transmit_httpGet_statTest():void {
+        statTest = function http_get_statTest():void {
             node.fs.stat(input, {
                 bigint: true
-            }, function transmit_httpGet_statTest_stat(ers:node_error, stat:node_fs_BigIntStats):void {
-                const notFound = function transmit_httpGet_statTest_stat_notFound():void {
+            }, function http_get_statTest_stat(ers:node_error, stat:node_fs_BigIntStats):void {
+                const notFound = function http_get_statTest_stat_notFound():void {
                         write(html({
                             content: [`<p>Resource not found: <strong>${asset.join("/")}</strong></p>`],
                             content_type: "text/html; utf8",
@@ -101,7 +101,7 @@ const http_get = function transmit_httpGet(headerList:string[], socket:websocket
                             template: true
                         }));
                     },
-                    serverError = function transmit_httpGet_statTest_stat_serverError(errorObject:node_error, errorText:string):void {
+                    serverError = function http_get_statTest_stat_serverError(errorObject:node_error, errorText:string):void {
                         write(html({
                             content: [
                                 errorText,
@@ -114,19 +114,19 @@ const http_get = function transmit_httpGet(headerList:string[], socket:websocket
                             template: true
                         }));
                     },
-                    write = function transmit_httpGet_statTest_stat_write(payload:Buffer|string):void {
-                        socket.write(payload, function transmit_httpGet_statTest_stat_write_callback():void {
+                    write = function http_get_statTest_stat_write(payload:Buffer|string):void {
+                        socket.write(payload, function http_get_statTest_stat_write_callback():void {
                             socket.destroy();
                         });
                     },
-                    directory_item = function transmit_httpGet_statTest_stat_directoryItem():void {
+                    directory_item = function http_get_statTest_stat_directoryItem():void {
                         const indexFile:string = `${input.replace(/\\|\/$/, "") + vars.sep}index.html`;
-                        node.fs.stat(indexFile, function transmit_httpGet_statTest_stat_directoryItem_index(eri:node_error):void {
+                        node.fs.stat(indexFile, function http_get_statTest_stat_directoryItem_index(eri:node_error):void {
                             if (eri === null) {
                                 input = indexFile;
                                 file();
                             } else if (eri.code === "ENOENT") {
-                                const callback = function transmit_httpGet_statTest_stat_directoryItem_directory(dir:directory_list|string[]):void {
+                                const callback = function http_get_statTest_stat_directoryItem_directory(dir:directory_list|string[]):void {
                                     let index_item:number = 0,
                                         dtg:string[] = null,
                                         address:string = "";
@@ -148,7 +148,7 @@ const http_get = function transmit_httpGet(headerList:string[], socket:websocket
                                         scheme:"http"|"https" = (socket.encrypted === true)
                                             ? "https"
                                             : "http",
-                                        host:string = (function transmit_httpGet_host():string {
+                                        host:string = (function http_get_host():string {
                                             let index:number = headerList.length,
                                                 colon:number = -1,
                                                 value:string = "";
@@ -200,8 +200,8 @@ const http_get = function transmit_httpGet(headerList:string[], socket:websocket
                             }
                         });
                     },
-                    file = function transmit_httpGet_statTest_stat_file():void {
-                        const content_type:string = (function transmit_httpGet_statTest_stat_file_contentType():string {
+                    file = function http_get_statTest_stat_file():void {
+                        const content_type:string = (function http_get_statTest_stat_file_contentType():string {
                                 const extension:string = input.slice(input.lastIndexOf(".") + 1);
                                 if (extension === "avi") {
                                     return "video/x-msvideo";
@@ -260,10 +260,10 @@ const http_get = function transmit_httpGet(headerList:string[], socket:websocket
                             ];
                         // sometimes stat.size reports the wrong file size
                         if (stat.size < (stat.blksize + 1n) && content_type.includes("utf8") === true) {
-                            node.fs.readFile(input, function transmit_httpGet_statTest_stat_file_read(err:node_error, file:Buffer):void {
+                            node.fs.readFile(input, function http_get_statTest_stat_file_read(err:node_error, file:Buffer):void {
                                 if (err === null) {
                                     headerText[2] = `content-length: ${file.length}`;
-                                    write(payload(headerText.join("\r\n"), file.toString()));
+                                    write(payload(headerText, file.toString()));
                                 } else {
                                     serverError(err, `Error attempting to read file: ${index0[1]}`);
                                 }
@@ -274,7 +274,7 @@ const http_get = function transmit_httpGet(headerList:string[], socket:websocket
                             const stream:node_fs_ReadStream = node.fs.createReadStream(input);
                             socket.write(headerText.join("\r\n"));
                             stream.pipe(socket);
-                            stream.on("close", function transmit_httpGet_statTest_stat_file_close():void {
+                            stream.on("close", function http_get_statTest_stat_file_close():void {
                                 socket.destroy();
                             });
                         }

@@ -1,4 +1,9 @@
 
+interface services_http {
+    connect: http_action;
+    get: http_action;
+}
+
 interface services_processKill {
     process: number;
 }

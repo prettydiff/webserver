@@ -18,5 +18,6 @@ type type_vars = "block_list" | "domain_local" | "ports" | "redirect_domain" | "
 type type_youtubeDownload_media = "audio" | "video";
 type type_youtubeDownload = "audio-file" | "audio-playlist" | "video-file" | "video-playlist";
 
+type http_action = (headerList:string[], socket:websocket_client, type_server:string) => void;
 type receiver = (socketData:socket_data, transmit:transmit_socket) => void;
 type websocket_message_handler = (resultBuffer:Buffer) => void;

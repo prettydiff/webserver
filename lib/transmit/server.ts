@@ -2,7 +2,7 @@
 import error from "../utilities/error.js";
 import get_address from "../utilities/getAddress.js";
 import hash from "../utilities/hash.js";
-import http_get from "../http/http_get.js";
+import http from "../http/index.js";
 import message_handler from "./messageHandler.js";
 import node from "../utilities/node.js";
 import redirection from "./redirection.js";
@@ -81,7 +81,9 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                 const http_action = function transmit_server_connection_handshake_httpAction():void {
                                     if (headerList[0].indexOf("GET") === 0 || headerList[0].indexOf("HEAD") === 0) {
                                         // local domain only uses GET method
-                                        http_get(headerList, socket, type_server);
+                                        http.get(headerList, socket, type_server);
+                                    } else if (headerList[0].indexOf("CONNECT") === 0) {
+                                        http.connect(headerList, socket, type_server);
                                     } else {
                                         // at this time the local domain only supports HTTP GET method as everything else should use WebSockets
                                         socket.destroy();

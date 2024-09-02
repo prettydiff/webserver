@@ -206,6 +206,16 @@ In the example above `handshake` just refers to an event handler to evaluate one
 ```
 
 ## Limitations
-Currently this application only supports the **GET** method of HTTP.
+
+### HTTP Methods
+Currently this application only supports the **CONNECT**, **GET**, and **HEAD** methods of HTTP.
 Other method support will come in the future as this project matures.
 In the mean time save yourself great frustration and just use WebSockets instead.
+
+### HTTP Features
+Support for [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) and [keep-alive headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Keep-Alive) is not written yet.
+
+### HTTP Versions
+Currently only [HTTP 1.0](https://datatracker.ietf.org/doc/html/rfc1945) and [HTTP 1.1](https://datatracker.ietf.org/doc/html/rfc2616) versions of HTTP are supported.
+This application preferences [WebSockets](https://datatracker.ietf.org/doc/html/rfc6455) for asynchronous, real-time, streamed, and bi-directional communication.
+In most cases WebSockets provide greater flexibility and performance than HTTP for data messaging.
