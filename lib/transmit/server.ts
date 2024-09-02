@@ -2,7 +2,7 @@
 import error from "../utilities/error.js";
 import get_address from "../utilities/getAddress.js";
 import hash from "../utilities/hash.js";
-import http from "./http.js";
+import http_get from "../http/http_get.js";
 import message_handler from "./messageHandler.js";
 import node from "../utilities/node.js";
 import redirection from "./redirection.js";
@@ -12,7 +12,7 @@ import vars from "../utilities/vars.js";
 const server = function transmit_server(config:config_websocket_server):node_net_Server {
     const connection = function transmit_server_connection(TLS_socket:node_tls_TLSSocket):void {
             // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, no-restricted-syntax
-            const type_server:type_server = this.type,
+            const type_server:string = this.type,
                 socket:websocket_client = TLS_socket as websocket_client,
                 handshake = function transmit_server_connection_handshake(data:Buffer):void {
                     let nonceHeader:string = null,
@@ -81,7 +81,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                 const http_action = function transmit_server_connection_handshake_httpAction():void {
                                     if (headerList[0].indexOf("GET") === 0) {
                                         // local domain only uses GET method
-                                        http(headerList, socket, type_server);
+                                        http_get(headerList, socket, type_server);
                                     } else {
                                         // at this time the local domain only supports HTTP GET method as everything else should use WebSockets
                                         socket.destroy();
@@ -249,7 +249,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
             config.callback(server.type, wsServer.address() as node_net_AddressInfo);
         },
         // error messaging for port conflicts
-        port_conflict = function transmit_server_portConflict(name:type_server, secure:boolean, input:boolean):void {
+        port_conflict = function transmit_server_portConflict(name:string, secure:boolean, input:boolean):void {
             vars.port_conflict.push([name, secure, input]);
             const total:number = vars.port_conflict.length;
             let index:number = 0,

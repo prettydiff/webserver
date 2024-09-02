@@ -1,6 +1,7 @@
 
 import certificate from "./commands/certificate.js";
 import create_config from "./commands/create_config.js";
+import error from "./utilities/error.js";
 import readCerts from "./utilities/readCerts.js";
 import server from "./transmit/server.js";
 import startup from "./utilities/startup.js";
@@ -32,45 +33,54 @@ startup(function index():void {
         });
     // service, default behavior
     } else {
-        const config:config_websocket_server = {
-            callback: function index_serverCallback(type:type_server, addressInfo:node_net_AddressInfo):void {
-                count = count + 1;
-                if (count === vars.server_count) {
-                    log({
-                        address: addressInfo.address,
-                        family: addressInfo.family,
-                        port: vars.ports
-                    });
-                }
-            },
-            options: null,
-            type: "service"
-        };
-
-        // TCP dashboard
-        if (vars.ports.dashboard !== null && vars.ports.dashboard !== undefined && typeof vars.ports.dashboard.open === "number") {
-            config.type = "dashboard";
-            server(config);
-            vars.server_count = vars.server_count + 1;
-        }
-
-        // TCP server
-        config.type = "service";
-        server(config);
-
         readCerts(function index_readCerts(tlsOptions:transmit_tlsOptions):void {
-            config.options = tlsOptions;
-
-            // TLS dashboard
-            if (vars.ports.dashboard !== null && vars.ports.dashboard !== undefined && typeof vars.ports.dashboard.secure === "number") {
-                config.type = "dashboard";
-                server(config);
-                vars.server_count = vars.server_count + 1;
+            const keys:string[] = Object.keys(vars.ports),
+                config:config_websocket_server = {
+                    callback: function index_serverCallback(type:string, addressInfo:node_net_AddressInfo):void {
+                        count = count + 1;
+                        if (count === vars.server_count) {
+                            log({
+                                address: addressInfo.address,
+                                family: addressInfo.family,
+                                port: vars.ports
+                            });
+                        }
+                    },
+                    options: null,
+                    type: "service"
+                };
+            let index:number = keys.length;
+            if (index > 0) {
+                do {
+                    index = index - 1;
+                    if (typeof vars.ports[keys[index]].secure === "number") {
+                        config.options = tlsOptions;
+                        config.type = keys[index];
+                        vars.server_count = vars.server_count + 1;
+                        server(config);
+                    }
+                    if (typeof vars.ports[keys[index]].open === "number") {
+                        config.options = null;
+                        config.type = keys[index];
+                        vars.server_count = vars.server_count + 1;
+                        server(config);
+                    }
+                } while (index > 0);
             }
-
-            // TLS server
-            config.type = "service";
-            server(config);
+            if (vars.server_count < 1) {
+                error([
+                    `${vars.text.angry}No servers initiated.${vars.text.none}`,
+                    `Check the ${vars.text.cyan}ports${vars.text.none} property of config.json file. Example:`,
+                    "\"ports\": {",
+                    "    \"service\": {",
+                    "        \"open\": 0",
+                    "        \"secure\": 0",
+                    "    }",
+                    "}",
+                    "Ensure the port values are numbers between 0-65535. A value of 0 will assign any randomly available port."
+                ], null, false);
+                process.exit(1);
+            }
         });
     }
 });

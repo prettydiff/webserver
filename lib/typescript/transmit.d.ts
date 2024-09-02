@@ -1,7 +1,7 @@
 
 interface server extends node_net_Server {
     secure?: boolean;
-    type?: type_server;
+    type?: string;
 }
 
 interface socket_data {

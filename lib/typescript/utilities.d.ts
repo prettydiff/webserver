@@ -31,8 +31,7 @@ interface project_config {
         web_root?: string;
     };
     ports: {
-        dashboard?: project_ports;
-        service: project_ports;
+        [key:string]: project_ports;
     };
     redirect_domain: {
         [key:string]: [string, number];

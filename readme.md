@@ -56,8 +56,7 @@ interface project_config {
         web_root?: string;
     };
     ports: {
-        dashboard?: project_ports;
-        service: project_ports;
+        [key:string]: project_ports;
     };
     redirect_domain: {
         [key:string]: [string, number];
@@ -90,12 +89,9 @@ interface project_ports {
 * The *redirect_internal* stores an object where each key name is a supported domain name.  Each value is an object storing HTTP request destination and redirection pairs for within the domain.
    * Wildcard support exists if a HTTP request destination terminates with an asterisk, as demonstrated in the following code example. Static HTTP request destinations are evaluated before wildcard requests.
 * The *ports* stores port numbers for the respective spawned servers.
-   * *ports.dashboard* is completely optional and, if present, launches servers for a management dashboard.
-      * *ports.dashboard.open* is the port number for TCP dashboard server for access via HTTP and WS.
-      * *ports.dashboard.secure* is the port number for the TLS dashboard server for access via HTTPS and WSS.
-   * *ports.service* is required and stores the ports for the primary web server.
-      * *ports.service.open* launches a TCP server for connections from protocols like HTTP and WS.
-      * *ports.service.secure* launches a TLS server for encrypted connections like HTTPS and WSS.
+   * *ports* is required and stores the ports for a web server. Both open and secure ports are required for each server. A value of `0` allows Node to pick any random available port.
+      * *ports[server_name].open* launches a TCP server for connections from protocols like HTTP and WS.
+      * *ports[server_name].secure* launches a TLS server for encrypted connections like HTTPS and WSS.
 
 Here is an example `config.json` file:
 
@@ -149,8 +145,24 @@ To generate the certificates simply run: `npm run certificate`.
 The required extensions.cnf file is dynamically created from the build command, `npm run build`, and includes all domains mentioned in the *port_map* object of the `config.json` file.
 
 ## Defaults
+* Both HTTP and WS are served from the same port while HTTPS and WSS protocols are also served from the same port.
 * The default content type, when unknown, is `text/plain; utf8`.
 * All relative paths are relative to `path.web_root` from the config file.
+* The default HTML root file name for each server takes the server's name, example: `service.html` as opposed to `index.html`.
+
+## More Servers
+To add more servers follow these steps:
+
+1. Add a key/object to the `ports` object of the `config.json` file.  Example:
+   ```json
+   "my_new_server": {
+       "open": 4444,
+       "secure": 5555
+   }
+   ```
+2. Optionally add a new HTML file to the specified `paths.web_root` location using the new server's name, such as: `/lib/assets/my_new_server.html`.
+3. Rebuild the application: `npm run build`.
+4. Restart the application: `npm run server`.
 
 ## How the Proxy Works
 ### Code

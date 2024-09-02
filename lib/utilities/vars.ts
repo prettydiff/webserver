@@ -30,7 +30,7 @@ const vars:vars = {
     redirect_domain: {},
     redirect_internal: {},
     sep: node.path.sep,
-    server_count: 2,
+    server_count: 0,
     server_name: "",
     servers: {},
     sockets: {},
