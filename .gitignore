@@ -1,6 +1,10 @@
 **/node_modules
-/assets/**
-!/assets/index.txt
+/lib/assets/**
+!/lib/assets/index.txt
+!/lib/assets/browser_scripts/
+!/lib/assets/browser_scripts/commas.ts
+!/lib/assets/browser_scripts/core.ts
+!/lib/assets/browser_scripts/file_list.ts
 /config.json
 /js
 /lib/certs

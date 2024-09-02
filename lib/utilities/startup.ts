@@ -28,8 +28,8 @@ const startup = function utilities_startup(callback:() => void):void {
                         }
                     },
                     paths = function utilities_startup_read_instructions_paths(input:type_paths):void {
-                        if (config.path === undefined || config.path === null || config.path[input] === undefined || config.path[input] === null) {
-                            vars.path[input] = `${vars.path.project}assets/`;
+                        if (config.path === undefined || config.path === null || config.path[input] === undefined || config.path[input] === null || config.path[input] === "") {
+                            vars.path[input] = `${vars.path.project}lib/assets/`;
                         } else {
                             vars.path[input] = config.path[input];
                         }

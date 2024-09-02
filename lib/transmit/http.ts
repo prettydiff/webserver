@@ -1,5 +1,5 @@
 
-import commas from "../browser_scripts/commas.js";
+import commas from "../assets/browser_scripts/commas.js";
 import dateString from "../utilities/dateString.js";
 import directory from "../utilities/directory.js";
 import node from "../utilities/node.js";
@@ -172,7 +172,7 @@ const http = function transmit_http(headerList:string[], socket:websocket_client
                                         page_title: index0[1],
                                         status: 200,
                                         template: true,
-                                        script: "/browser_scripts/fileList.js"
+                                        script: "/browser_scripts/file_list.js"
                                     }));
                                 };
                                 directory({
@@ -280,9 +280,14 @@ const http = function transmit_http(headerList:string[], socket:websocket_client
                 }
             });
         };
-    if (type_server !== "service" && (fileFragment === "" || fileFragment.indexOf("index.html") === fileFragment.length - 10)) {
+    if (fileFragment === "") {
+        // server root html file takes the name of the server, not index.html
         input = `${vars.path.web_root + type_server}.html`;
+    } else if (fileFragment.indexOf(".js") === fileFragment.length - 3 && fileFragment.includes("/js/lib/assets/") === false && vars.path.web_root === `${vars.path.project}lib/assets/`) {
+        // normalizes compiled JS path to web_root path
+        input = vars.path.web_root.replace(/\/lib\/assets\/$/, "/js/lib/assets/") + decodeURI(fileFragment);
     } else {
+        // all other HTTP requests
         input = vars.path.web_root + decodeURI(fileFragment);
     }
     statTest();

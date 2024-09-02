@@ -80,7 +80,10 @@ interface project_ports {
    * The first domain in this list will be the primary identity used in certificate creation.
    * Loopback IP addresses and local device interface IP addresses are automatically added to the *domain_local* list.
 * The *path.storage* property is an absolute file system path where applications should download resources to.
-* The *path.web_root* property is an absolute file system path where web pages/assets are served from.  This directory is optional and defaults to the project's *assets* directory.
+* The *path.web_root* property is an absolute file system path where web pages/assets are served from.
+   * This directory is optional and defaults to the project's `/lib/assets` directory.
+   * A server's root HTML file must be the server's name instead of index, for example: `service.html` instead of `index.html` for the default web server.
+   * TypeScript files compiled from `/lib/assets` will be compiled to `/js/lib/assets`, but for simplicity the application will dynamically serve the rendered JavaScript files from `/lib/assets` and `/js/lib/assets`.
 * The *redirecT_domain* stores a object of domain names as key names and an array as a value. That array expects two values where the first is a string representing a host value and the second is a number representing a port value.
    * If the host value is undefined, null, or an empty string it will resolve to the IP of the given server.
    * If a service at a given vanity domain requires separate ports for secure and insecure services then specify the secure port with `secure` as the top level domain, as demonstrated in the following code example.
@@ -189,3 +192,8 @@ In the example above `handshake` just refers to an event handler to evaluate one
             proxy.pipe(config.socket);
             proxy.write(config.buffer);
 ```
+
+## Limitations
+Currently this application only supports the **GET** method of HTTP.
+Other method support will come in the future as this project matures.
+In the mean time save yourself great frustration and just use WebSockets instead.
