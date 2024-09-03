@@ -12,8 +12,14 @@ const http_connect:http_action = function http_connect(headerList:string[], sock
             ? destination
             : destination.split(`:${portString}`)[0],
         callback = function http_connect_callback(proxy:websocket_client):void {
+            const close = function http_connect_callback_close():void {
+                proxy.destroy();
+                socket.destroy();
+            };
             proxy.pipe(socket);
             socket.pipe(proxy);
+            proxy.on("close", close);
+            socket.on("close", close);
         };
     create_socket({
         callback: callback,
