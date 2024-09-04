@@ -4,36 +4,16 @@ import node from "./node.js";
 /* cspell: words appdata */
 
 const vars:vars = {
-    // destroy incoming sockets that exactly match criteria in these lists
-    block_list: {
-        host: [],
-        ip: [],
-        referer: []
-    },
-    // locally supported domains that will not be redirected
-    domain_local: [],
     path: {
         conf: "",
-        project: "",
-        storage: "",
-        web_root: ""
+        project: ""
     },
     port_conflict: [],
-    ports: {
-        dashboard: null,
-        service: {
-            open: 80,
-            secure: 443
-        }
-    },
     processes: {},
-    redirect_domain: {},
-    redirect_internal: {},
     sep: node.path.sep,
-    server_count: 0,
-    server_name: "",
     servers: {},
     sockets: {},
+    store_server: {},
     text: {
         angry    : "\u001b[1m\u001b[31m",
         blue     : "\u001b[34m",

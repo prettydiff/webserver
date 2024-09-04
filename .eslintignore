@@ -1,4 +1,6 @@
 **/js
+**/node_modules
+/lib/assets/**/files
+/lib/assets/files
 /lib/utilities/node.ts
 /lib/typescript/node.d.ts
-**/node_modules

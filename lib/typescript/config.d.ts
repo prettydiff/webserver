@@ -52,12 +52,12 @@ interface config_websocket_extensions {
     identifier: string;
     proxy: websocket_client;
     role: "client"|"server";
-    server: type_socket_source;
+    server: string;
     socket: websocket_client;
 }
 
 interface config_websocket_server {
-    callback: (type:string, addressInfo:node_net_AddressInfo) => void;
+    callback: (name:string, addressInfo:node_net_AddressInfo) => void;
+    name: string;
     options: transmit_tlsOptions;
-    type: string;
 }

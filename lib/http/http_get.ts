@@ -1,15 +1,16 @@
 
 // this file supports HTTP methods GET and HEAD
 
-import commas from "../assets/browser_scripts/commas.js";
+import commas from "../utilities/commas.js";
 import dateString from "../utilities/dateString.js";
 import directory from "../utilities/directory.js";
+import file_list from "../browser/file_list.js";
 import node from "../utilities/node.js";
 import vars from "../utilities/vars.js";
 
 /* cspell: words msvideo, nofollow, onnection, prettydiff */
 
-const http_get:http_action = function http_get(headerList:string[], socket:websocket_client, type_server:string):void {
+const http_get:http_action = function http_get(headerList:string[], socket:websocket_client, server_name:string):void {
     let input:string = "";
     const index0:string[] = headerList[0].replace(/^\s+/, "").replace(/\s+/, " ").split(" "),
         method:"GET"|"HEAD" = (index0.indexOf("HEAD") === 0)
@@ -53,8 +54,8 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                     "<head>",
                     "<meta charset=\"utf-8\"/>",
                     (config.page_title === null)
-                        ? `<title>${vars.server_name}</title>`
-                        : `<title>${vars.server_name} ${config.page_title}</title>`,
+                        ? `<title>${vars.servers[server_name].server_name}</title>`
+                        : `<title>${vars.servers[server_name].server_name} ${config.page_title}</title>`,
                     "<meta content=\"text/html;charset=UTF-8\" http-equiv=\"Content-Type\"/>",
                     "<meta content=\"width=device-width, initial-scale=1\" name=\"viewport\"/>",
                     "<meta content=\"noindex, nofollow\" name=\"robots\"/>",
@@ -70,7 +71,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                     "<link rel=\"icon\" type=\"image/png\" href=\"data:image/png;base64,iVBORw0KGgo=\"/>",
                     "</head>",
                     "<body>",
-                    `<h1>${vars.server_name}</h1>`,
+                    `<h1>${vars.servers[server_name].server_name}</h1>`,
                     (config.status === 200)
                         ? ""
                         : `<h2>${config.status}</h2>`
@@ -78,7 +79,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                 templateEnd:string[] = (config.script === null)
                     ? ["</body></html"]
                     : [
-                        `<script type="application/javascript" src="${config.script}"></script></body></html>`
+                        `<script type="application/javascript">${config.script}</script></body></html>`
                     ],
                 bodyText:string = templateText.join("\r\n") + config.content.join("\r\n") + templateEnd.join("\r\n");
                 headerText[2] = `content-length: ${Buffer.from(bodyText).length}`;
@@ -182,7 +183,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                                         page_title: index0[1],
                                         status: 200,
                                         template: true,
-                                        script: "/browser_scripts/file_list.js"
+                                        script: `(${file_list.toString()}());`
                                     }));
                                 };
                                 directory({
@@ -294,13 +295,13 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
         };
     if (fileFragment === "") {
         // server root html file takes the name of the server, not index.html
-        input = `${vars.path.web_root + type_server}.html`;
-    } else if (fileFragment.indexOf(".js") === fileFragment.length - 3 && fileFragment.includes("/js/lib/assets/") === false && vars.path.web_root === `${vars.path.project}lib/assets/`) {
+        input = `${vars.servers[server_name].path.web_root}index.html`;
+    } else if (fileFragment.indexOf(".js") === fileFragment.length - 3 && fileFragment.includes("/js/lib/assets/") === false && vars.servers[server_name].path.web_root === `${vars.path.project}lib/assets/${server_name}/`) {
         // normalizes compiled JS path to web_root path
-        input = vars.path.web_root.replace(/\/lib\/assets\/$/, "/js/lib/assets/") + decodeURI(fileFragment);
+        input = vars.servers[server_name].path.web_root.replace(/\/lib\/assets\//, "/js/lib/assets/") + decodeURI(fileFragment);
     } else {
         // all other HTTP requests
-        input = vars.path.web_root + decodeURI(fileFragment);
+        input = vars.servers[server_name].path.web_root + decodeURI(fileFragment);
     }
     statTest();
 };

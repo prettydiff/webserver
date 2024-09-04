@@ -1,12 +1,12 @@
 
-const core = function core(socket_type:type_socket, open:() => void, message:(event:websocket_event) => void):WebSocket {
+const core = function core(open:() => void, message:(event:websocket_event) => void):WebSocket {
     const port:string = (location.protocol === "http:")
             ? "80"
             : "443",
         address:string = (location.host.includes(":") === true)
             ? location.origin
             : `${location.origin}:${port}`,
-        socket:WebSocket = new WebSocket(address, [socket_type]),
+        socket:WebSocket = new WebSocket(address, ["browser"]),
         dom = function core_dom():void {
             // addClass - adds a new class value to an element's class attribute if not already present
             // * className:string - The name of the class to add.

@@ -139,7 +139,7 @@ const send = function transmit_send(body:Buffer|socket_data, socketItem:websocke
     } else {
         error([
             `Error queueing message for socket transmission. Opcode ${vars.text.angry + String(opcode) + vars.text.none} is not supported.`
-        ], null);
+        ], null, false);
     }
 };
 

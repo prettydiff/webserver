@@ -23,7 +23,7 @@ const certificate = function commands_certificate(config:config_certificate):voi
                             config.callback();
                             }
                         } else {
-                            error([`Error executing command: ${commands[index]}`], erChild);
+                            error([`Error executing command: ${commands[index]}`], erChild, true);
                         }
                     });
                 },
@@ -110,11 +110,11 @@ const certificate = function commands_certificate(config:config_certificate):voi
                     if (erm === null) {
                         cert();
                     } else {
-                        error([`Not able to create directory: ${cert_path}`], erm);
+                        error([`Not able to create directory: ${cert_path}`], erm, true);
                     }
                 });
             } else {
-                error([`Not able to create directory: ${cert_path}`], ers);
+                error([`Not able to create directory: ${cert_path}`], ers, true);
             }
         }
     });

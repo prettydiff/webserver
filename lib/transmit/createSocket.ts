@@ -40,7 +40,7 @@ const create_socket = function transmit_createSocket(config:config_websocket_cre
                 ],
                 callbackError = function transmit_createSocket_hash_error(errorMessage:node_error):void {
                     if (vars.verbose === true) {
-                        error(["Error attempting websocket connect from client side."], errorMessage);
+                        error(["Error attempting websocket connect from client side."], errorMessage, false);
                     }
                 },
                 callbackReady = function transmit_createSocket_hash_ready():void {

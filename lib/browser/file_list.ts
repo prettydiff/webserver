@@ -1,4 +1,4 @@
-(function fileList():void {
+const file_list = function fileList():void {
     const th:HTMLCollectionOf<HTMLTableCellElement> = document.getElementsByTagName("th"),
         records:HTMLCollectionOf<HTMLTableRowElement> = document.getElementsByTagName("tbody")[0].getElementsByTagName("tr"),
         recordLength:number = records.length,
@@ -91,4 +91,6 @@
     document.getElementsByTagName("button")[0].click();
     document.getElementsByTagName("button")[0].click();
     document.getElementsByTagName("button")[1].click();
-}());
+};
+
+export default file_list;

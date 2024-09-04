@@ -6,21 +6,18 @@ Serves and proxies HTTP over WebSockets for both TCP and TLS.
 ## About
 * Built in proxy and redirection
 * Single port for both HTTP and WebSocket service
-* Simple TLS server with certificate generator
+* Simple TLS service with certificate generator
+* Allows creation of multiple servers from a single simple config file
 * Stream any supported media through the browser no matter the size
 * More intelligent HTTP file system directory list
-* Supports end-to-end encryption
 
 This application defaults all transmissions to TCP socket streams without further assumption.
+In this browser this mostly means it serves HTTP over WebSockets.
 Upon first data of a new socket the application will first determine if the socket represents the default domain and everything else is supported as a proxy.
-TLS sockets remain fully encrypted even through the proxy.
+The proxies of TLS sockets are also TLS.
 
 Local domains are further evaluated to determine if the given socket represents HTTP traffic or WebSocket traffic.
 Because the server provides HTTP and WebSocket support over raw TCP sockets both HTTP and WebSocket traffic are supported over the same port to the server.
-
-Currently only HTTP method GET is supported.
-For my own use all other traffic will be sent as WebSocket messages for the default domain.
-For other domains all traffic is pushed through a proxy to a separate unrelated service regardless of protocol or message description.
 
 ## Installation
 1. Install [Node.js](https://nodejs.org/)
@@ -42,99 +39,113 @@ This means the server works perfectly well to send and receive TLS encrypted tra
 * Execute the application: `npm run server`
 * Validate application logic: `npm run tsc`
 * Run the project lint rules: `npm run lint`
-* Build yt-dlp configuration files for downloading media from YouTube: `npm run yt_config`
+* Build yt-dlp configuration files for downloading media from YouTube: `npm run yt_config name_of_server`
 
 ## Configuration
-### config.json
-A `config.json` file is required at project root that conforms to:
+A `config.json` file is required at project root.
+This configuration file is essentially an object listing one or more server configurations.
+
+### Schema and Syntax
+Here is the expected configuration schema as a TypeScript interface.
+* Property names ending with a question mark, **?**, are optional properties and may be ignored. All other property names are required. 
+* The `[key:string]` bit of code represents the name of your server in the code.  Any string will work.
+* The `string[]` bit of code represents a list of variable length whose values are only string types.
 
 ```typescript
 interface project_config {
-    domain_local: string[];
-    path: {
-        storage: string;
-        web_root?: string;
-    };
-    ports: {
-        [key:string]: project_ports;
-    };
-    redirect_domain: {
-        [key:string]: [string, number];
-    };
-    redirect_internal: {
-        [key:string]: {
-            [key:string]: string;
+    [key:string]: {
+        block_list?: {
+            host: string[];
+            ip: string[];
+            referrer: string[];
         };
-    };
-    server_name: string;
-}
-
-interface project_ports {
-    open: number;
-    secure: number;
+        domain_local?: string[];
+        http?: {
+            delete?: string;
+            post?: string;
+            put?: string;
+        };
+        path?: {
+            storage?: string;
+            web_root?: string;
+        };
+        ports: {
+            open: number;
+            secure: number;
+        };
+        redirect_domain?: {
+            [key:string]: [string, number];
+        };
+        redirect_internal?: {
+            [key:string]: store_string;
+        };
+        server_name: string;
+    }
 }
 ```
 
-* The *domain_local* property provides a list of domains that will be locally supported on the server without redirection.
-   * The first domain in this list will be the primary identity used in certificate creation.
-   * Loopback IP addresses and local device interface IP addresses are automatically added to the *domain_local* list.
-* The *path.storage* property is an absolute file system path where applications should download resources to.
-* The *path.web_root* property is an absolute file system path where web pages/assets are served from.
-   * This directory is optional and defaults to the project's `/lib/assets` directory.
-   * A server's root HTML file must be the server's name instead of index, for example: `service.html` instead of `index.html` for the default web server.
-   * TypeScript files compiled from `/lib/assets` will be compiled to `/js/lib/assets`, but for simplicity the application will dynamically serve the rendered JavaScript files from `/lib/assets` and `/js/lib/assets`.
-* The *redirecT_domain* stores a object of domain names as key names and an array as a value. That array expects two values where the first is a string representing a host value and the second is a number representing a port value.
-   * If the host value is undefined, null, or an empty string it will resolve to the IP of the given server.
-   * If a service at a given vanity domain requires separate ports for secure and insecure services then specify the secure port with `secure` as the top level domain, as demonstrated in the following code example.
-* The *redirect_internal* stores an object where each key name is a supported domain name.  Each value is an object storing HTTP request destination and redirection pairs for within the domain.
-   * Wildcard support exists if a HTTP request destination terminates with an asterisk, as demonstrated in the following code example. Static HTTP request destinations are evaluated before wildcard requests.
-* The *ports* stores port numbers for the respective spawned servers.
-   * *ports* is required and stores the ports for a web server. Both open and secure ports are required for each server. A value of `0` allows Node to pick any random available port.
-      * *ports[server_name].open* launches a TCP server for connections from protocols like HTTP and WS.
-      * *ports[server_name].secure* launches a TLS server for encrypted connections like HTTPS and WSS.
+### Property Definitions
+* **block_list** - Optional. Connections to the server originating from the given host, ip, or referrer will be destroyed. To the client it looks like no service is available.
+* **domain_local** - Optional. Domains and IP addresses provided in this list we be treated as destinations to an HTTP or WebSocket server. All other connections for domains or IP addresses not listed here or in the `redirect_domain` property will be dropped exactly as if they were identified by the block list.
+* **http** - Optional. This object stores command line instructions for how to handle HTTP methods *delete*, *post*, and *put*.  If these values are not provided the server will return an HTTP status of *403* for these request method types.
+* **path.storage** - Optional. An absolute file path where the server should store things it wishes to write to the file system.  When this is absent it will default to `/lib/assets/[server_name]` where `[server_name]` is the server's name.
+* **path.web_root** - Optional. An absolute file path where the server should serve client facing web assets like HTML, CSS, and JavaScript.  When this is absent it will default to `/lib/assets/[server_name]` where `[server_name]` is the server's name.
+* **ports.open** - Required. The port number to serve unencrypted protocols HTTP and WS.
+* **ports.secure** - Required. The port number to serve encrypted protocols HTTPS and WSS.
+* **redirect_domain** - Optional. An object storing domain names and where to redirect them to.
+   * In the value the first index, a string, is the hostname where to redirect the domain to. An empty string or null value suggests to redirect the domain to a different port on the same machine.
+   * The value in the second index, a number, identifies the port where to redirect the domain to.
+   * If a given domain requires separate ports for both encrypted and unencrypted traffic simply specify the encrypted name instance with a `.secure` extension.
+* **redirect_internal** - Optional. Redirects a requested resource from one location on the current server to a different location. This redirection only occurs on the server out of sight from the user and alters the response content but it does not modify the address of the request.
+* **server_name** - Required. This stores a proper human readable name of the server.
 
-Here is an example `config.json` file:
-
+### config.json Example
 ```json
 {
-    "domain_local": ["pihole.x", "www.x"],
-    "path": {
-        "storage": "/myWebSite/downloads/",
-        "web_root": "/var/httpd/www/"
-    },
-    "ports": {
-        "dashboard": {
-            "open": 3010,
-            "secure": 3011
+    "cheney": {
+        "domain_local": ["www.x", "linux.x"],
+        "http": {
+            "delete": "~/scripts/delete.sh",
+            "post": "~/scripts/post.sh",
+            "put": "~/scripts/put.sh"
         },
-        "secure": {
+        "path": {
+            "storage": "/srv/disk/yt_download/",
+            "web_root": ""
+        },
+        "ports": {
             "open": 80,
             "secure": 443
-        }
-    },
-    "redirect_domain": {
-        "pihole.x": ["", 3001],
-        "minecraft.x": ["", 3002],
-        "linux.x": ["", 3003],
-        "linux.x.secure": ["", 3004]
-    },
-    "redirect_internal": {
-        "pihole.x": {
-            "/*": "/admin/"
-        }
-    },
-    "server_name": "My Home Server"
+        },
+        "redirect_domain": {
+            "jellyfin.x": ["", 3002],
+            "jellyfin.x.secure": ["", 3003],
+            "mealie.x": ["", 3004],
+            "youtube.x": ["", 3001]
+        },
+        "redirect_internal": {
+            "linux.x": {
+                "/": "/linux/"
+            },
+            "pihole.x": {
+                "/*": "/admin/"
+            }
+        },
+        "server_name": "Cheney"
+    }
 }
 ```
 
-#### Please Note
-* Notice in the example the *redirect_domain* instance for `linux.x` and `linux.x.secure`. The application will not consider `linux.x.secure` to be a domain, but will correctly proxy TLS traffic, WSS and HTTPS, to the port specified.
-   * In this case http://linux.x/ would redirect to http://127.0.0.1:3003 or http://[::1]:3003.
-   * https://linux.x/ would redirect to https://127.0.0.1:3004 or https://[::1]:3004.
-   * Since the host name value for all domains in this example is an empty string they will resolve to any address representing the local server.
-* Notice in the example the intra-domain redirects for the example *pihole.x* domain.
-   * http://pihole.x/ would redirect to http://pihole.x/admin/.
-   * http://pihole.x/login.php would redirect to http://pihole.x/admin/login.php.
+#### Notes About the Example config.json
+* Notice there is no *block_list* property.  Those are optional so they, and other optional properties, can be omitted.
+* The properties of the `http` object each take a shell command.  This application supports HTTP methods for *DELETE*, *POST*, and *PUT* but does not execution actions upon those methods.  Instead this application passes off that execution to external applications as a child process executed through a shell.
+* Notice that *path.web_root* is assigned an empty string, so it will resolve to the default location for this server: `/lib/assets/cheney/`.
+* If ports are not included the application will fail with an error message.
+* In *redirect_domain* noticed the two keys `jellyfin.x` and `jellyfin.x.secure`.  Any encrypted traffic for the `jellyfin.x` domain will be redirected to port 3003.  `jellyfin.x.secure` will not be considered a domain.
+* Notice that domain `linux.x` is specified in the *domain_local* list and is also specified in the *redirect_internal* property.
+   * All traffic bound for domain *linux.x* will receive responses from the same local server that is serving `www.x` without direction to a different server.
+   * All requests for resource `/` on `linux.x` will be redirected to file system location `/linux/index.html` relative to the *path.web_root* location on server *Cheney* due to the rule in *redirect_internal*.
+   * To the user they will see `http://linux.x/` or `https://linux.x/` in their browser address bar, but its really just the same service responses as from domain `www.x` with web content served from relative file system path `/linux/`.
 
 ### Certificates
 This application provides a configuration file to generate TLS certificates using OpenSSL.
@@ -148,67 +159,20 @@ The required extensions.cnf file is dynamically created from the build command, 
 * Both HTTP and WS are served from the same port while HTTPS and WSS protocols are also served from the same port.
 * The default content type, when unknown, is `text/plain; utf8`.
 * All relative paths are relative to `path.web_root` from the config file.
-* The default HTML root file name for each server takes the server's name, example: `service.html` as opposed to `index.html`.
+* The default HTML file name is `index.html`. If a request for a resource resolves a directory the server will look for a `index.html` file in that directory and return the contents of that file.
 
 ## More Servers
 To add more servers follow these steps:
-
-1. Add a key/object to the `ports` object of the `config.json` file.  Example:
-   ```json
-   "my_new_server": {
-       "open": 4444,
-       "secure": 5555
-   }
-   ```
-2. Optionally add a new HTML file to the specified `paths.web_root` location using the new server's name, such as: `/lib/assets/my_new_server.html`.
-3. Rebuild the application: `npm run build`.
-4. Restart the application: `npm run server`.
+1. Just update the config.json file. With another server object.  In the example above there is one server named *cheney*, so just add more server objects.
+2. Note that the **ports must be unique** or the application will generate an error.
 
 ## How the Proxy Works
 ### Code
-To see how the proxy works simply read two files.
-First, look at the `/lib/index.ts` file to see that two servers run, one for each of TCP and TLS.
-Second, look at file `/lib/transmit/server.ts` to see the flow control.
-Third, look at file `/lib/transmit/createProxy.ts` to see how a proxy socket is created.
-
-### TLS Identification
-Incoming sockets are identified as secure or open due to the presence of property `encrypted` from the core Node TLS library.
-The socket's corresponding proxy socket will either be a TCP or TLS socket accordingly.
-
-### Socket Management
-The most important piece of code for socket evaluation is:
-```typescript
-            socket.on("error", function transmit_server_connection_handshake_socketError():void {
-                // this worthless error trapping prevents an "unhandled error" escalation that breaks the process
-                return null;
-            });
-            socket.once("data", handshake);
-```
-
-Sockets without an assigned event handler for the error event will crash the application when an error does occur, so always handle error events.
-Secondly, notice the `once` listener for the data event.
-That must be `once` and not `on`, otherwise a new listener is assigned for each incoming network message, which also means a new proxy socket created per message as opposed to per socket.
-In the example above `handshake` just refers to an event handler to evaluate one of three things:
-
-* default domain HTTP socket
-* default domain WebSocket socket
-* other domain, which is pushed into a proxy
-
-### Proxy Creation
-1. Create a corresponding socket, wether TCP or TLS.
-2. Assign some event handler for the error event so that it does not crash the application.
-3. Finally pipe data back and forth like in the following example:
-
-```typescript
-            config.socket.pipe(proxy);
-            proxy.pipe(config.socket);
-            proxy.write(config.buffer);
-```
+Its as simple as `socket.pipe(proxy);proxy.pipe(socket);` where *socket* and *proxy* are each TCP or TLS socket streams.
 
 ## Limitations
-
 ### HTTP Methods
-Currently this application only supports the **CONNECT**, **GET**, and **HEAD** methods of HTTP.
+Currently this application only supports the **CONNECT**, **DELETE**, **GET**, **HEAD**, **POST**, and **PUT** methods of HTTP.
 Other method support will come in the future as this project matures.
 In the mean time save yourself great frustration and just use WebSockets instead.
 

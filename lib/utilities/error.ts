@@ -2,14 +2,14 @@
 import node from "./node.js";
 import vars from "./vars.js";
 
-const error = function utilities_error(errText:string[], errObject:node_childProcess_ExecException|node_error, noStack?:boolean):void {
+const error = function utilities_error(errText:string[], errObject:node_childProcess_ExecException|node_error, exit:boolean):void {
     // eslint-disable-next-line no-console
     const logger:(input:object|string) => void = console.log,
         stack:string|undefined = new Error().stack,
         stackTrace:string[] = (stack === undefined)
             ? null
             : stack.replace(/^Error/, "").replace(/\s+at\s/g, "splitMe").replace(/error\.js:\d+:\d+\)\r?\n/, "splitMe").split("splitMe").slice(3);
-    if (noStack !== true && stackTrace !== null) {
+    if (errObject !== null && stackTrace !== null) {
         const stackMessage:string = `${vars.text.cyan}Stack trace${vars.text.none + node.os.EOL}-----------${node.os.EOL}`;
         logger(stackMessage);
         logger(stackTrace);
@@ -32,6 +32,9 @@ const error = function utilities_error(errText:string[], errObject:node_childPro
         });
     }
     logger("\u0007"); // bell sound
+    if (exit === true) {
+        process.exit(1);
+    }
 };
 
 export default error;

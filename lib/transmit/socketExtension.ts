@@ -43,7 +43,7 @@ const socket_extension = function transmit_socketExtension(config:config_websock
                             socket: config.socket,
                             type: "ws"
                         }))
-                    ], null);
+                    ], null, false);
                 }
             };
         if (vars.sockets[config.server] === undefined) {
@@ -63,10 +63,7 @@ const socket_extension = function transmit_socketExtension(config:config_websock
             config.socket.setKeepAlive(true, 0);      // standard method to retain socket against timeouts from inactivity until a close frame comes in
             config.socket.status = "open";            // sets the status flag for the socket
         } else {
-            config.socket.on("error", function transmit_socketExtension_proxyError():void {
-                // this worthless error trapping prevents an "unhandled error" escalation that breaks the process
-                return;
-            });
+            config.socket.on("error", socketError);
         }
         config.socket.hash = config.identifier;   // assigns a unique identifier to the socket based upon the socket's credentials
         config.socket.proxy = config.proxy;       // stores the relationship between two sockets when they are piped as a proxy

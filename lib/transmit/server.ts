@@ -12,7 +12,8 @@ import vars from "../utilities/vars.js";
 const server = function transmit_server(config:config_websocket_server):node_net_Server {
     const connection = function transmit_server_connection(TLS_socket:node_tls_TLSSocket):void {
             // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, no-restricted-syntax
-            const type_server:string = this.type,
+            const server_name:string = this.name,
+                server:server = vars.servers[server_name],
                 socket:websocket_client = TLS_socket as websocket_client,
                 handshake = function transmit_server_connection_handshake(data:Buffer):void {
                     let nonceHeader:string = null,
@@ -42,19 +43,19 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                 domain = host.replace(`:${address.local.port}`, "");
                             }
                             // ensures HTTP requests pushed through the proxy are identified as originating from the proxy
-                            if (vars.domain_local.includes(domain) === false) {
+                            if (server.domain_local.includes(domain) === false) {
                                 arr[arrIndex] = (socket.encrypted === true)
-                                    ? `Host: ${address.local.address}:${vars.ports.service.secure}`
-                                    : `Host: ${address.local.address}:${vars.ports.service.open}`;
+                                    ? `Host: ${address.local.address}:${server.ports.secure}`
+                                    : `Host: ${address.local.address}:${server.ports.open}`;
                             }
                         },
                         get_referer = function transmit_server_connection_handshake_getReferer(header:string):void {
                             const refererName:string = header.toLowerCase().replace(/referer:\s*/, "");
-                            let index:number = vars.block_list.referer.length;
+                            let index:number = server.block_list.referrer.length;
                             if (index > 0) {
                                 do {
                                     index = index - 1;
-                                    if (refererName.indexOf(vars.block_list.referer[index].toLowerCase()) === 0 || refererName.replace(/\w+:\/\//, "").indexOf(vars.block_list.referer[index].toLowerCase()) === 0) {
+                                    if (refererName.indexOf(server.block_list.referrer[index].toLowerCase()) === 0 || refererName.replace(/\w+:\/\//, "").indexOf(server.block_list.referrer[index].toLowerCase()) === 0) {
                                         referer = true;
                                         return;
                                     }
@@ -73,17 +74,17 @@ const server = function transmit_server(config:config_websocket_server):node_net
                             }
                         },
                         local_service = function transmit_server_connection_handshake_localService():void {
-                            if (vars.redirect_internal[domain] !== undefined) {
-                                data = redirection(domain, data) as Buffer;
+                            if (server.redirect_internal[domain] !== undefined) {
+                                data = redirection(domain, data, server_name) as Buffer;
                                 headerList[0] = data.toString().split("\r\n")[0];
                             }
                             if (key === "") {
                                 const http_action = function transmit_server_connection_handshake_httpAction():void {
-                                    if (headerList[0].indexOf("GET") === 0 || headerList[0].indexOf("HEAD") === 0) {
-                                        // local domain only uses GET method
-                                        http.get(headerList, socket, type_server);
+                                    const method:type_http_method = headerList[0].slice(0, headerList[0].indexOf(" ")).toLowerCase() as type_http_method;
+                                    if (http[method] !== undefined) {
+                                        http[method](headerList, socket, server_name);
                                     } else if (headerList[0].indexOf("CONNECT") === 0) {
-                                        http.connect(headerList, socket, type_server);
+                                        http.connect(headerList, socket, server_name);
                                     } else {
                                         // at this time the local domain only supports HTTP GET method as everything else should use WebSockets
                                         socket.destroy();
@@ -95,7 +96,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                     identifier: `http-${process.hrtime.bigint().toString()}`,
                                     proxy: null,
                                     role: "server",
-                                    server: wsServer.type,
+                                    server: wsServer.name,
                                     socket: socket
                                 });
                             } else {
@@ -123,7 +124,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                         identifier: `browserSocket-${hashOutput.hash}`,
                                         proxy: null,
                                         role: "server",
-                                        server: wsServer.type,
+                                        server: wsServer.name,
                                         socket: socket
                                     });
                                 };
@@ -142,21 +143,21 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                     socket: socket,
                                     type: "ws"
                                 }),
-                                pair:[string, number] = ((socket.encrypted === true && vars.redirect_domain[`${domain}.secure`] !== undefined))
-                                    ? vars.redirect_domain[`${domain}.secure`]
-                                    : (vars.redirect_domain[domain] === undefined)
+                                pair:[string, number] = ((socket.encrypted === true && server.redirect_domain[`${domain}.secure`] !== undefined))
+                                    ? server.redirect_domain[`${domain}.secure`]
+                                    : (server.redirect_domain[domain] === undefined)
                                         ? (socket.encrypted === true)
-                                            ? [address.local.address, vars.ports.service.secure]
-                                            : [address.local.address, vars.ports.service.open]
-                                        : vars.redirect_domain[domain],
+                                            ? [address.local.address, server.ports.secure]
+                                            : [address.local.address, server.ports.open]
+                                        : server.redirect_domain[domain],
                                 host:string = (pair[0] === undefined || pair[0] === null || pair[0] === "")
                                     ? address.local.address
                                     : pair[0],
                                 port:number = (typeof pair[1] === "number")
                                     ? pair[1]
                                     : (socket.encrypted === true)
-                                        ? vars.ports.service.secure
-                                        : vars.ports.service.open,
+                                        ? server.ports.secure
+                                        : server.ports.open,
                                 proxy:websocket_client = (socket.encrypted === true)
                                     ?  node.tls.connect({
                                         host: host,
@@ -172,15 +173,15 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                     count = count + 1;
                                     if (count > 1) {
                                         proxy.pipe(socket);
-                                        if (vars.redirect_internal[domain] === undefined) {
+                                        if (server.redirect_internal[domain] === undefined) {
                                             socket.pipe(proxy);
                                             proxy.write(data);
                                         } else {
                                             // HTTP redirection support
                                             socket.on("data", function transmit_server_connection_handshake_createProxy_redirect(message:Buffer):void {
-                                                proxy.write(redirection(domain, message));
+                                                proxy.write(redirection(domain, message, server_name));
                                             });
-                                            proxy.write(redirection(domain, data));
+                                            proxy.write(redirection(domain, data, server_name));
                                         }
                                     }
                                 };
@@ -191,7 +192,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                 identifier: `${domain}-${now}`,
                                 proxy: proxy,
                                 role: "server",
-                                server: wsServer.type,
+                                server: wsServer.name,
                                 socket: socket
                             });
                             // proxy socket
@@ -201,7 +202,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                 identifier: `${domain}-${now}-proxy`,
                                 proxy: socket,
                                 role: "client",
-                                server: "proxy",
+                                server: wsServer.name,
                                 socket: proxy
                             });
                         };
@@ -209,14 +210,14 @@ const server = function transmit_server(config:config_websocket_server):node_net
 
                     if (
                         referer === true ||
-                        vars.block_list.host.includes(domain) === true ||
-                        vars.block_list.ip.includes(address.remote.address) === true ||
-                        (vars.redirect_domain[domain] === undefined && vars.domain_local.includes(domain) === false)
+                        server.block_list.host.includes(domain) === true ||
+                        server.block_list.ip.includes(address.remote.address) === true ||
+                        (server.redirect_domain[domain] === undefined && server.domain_local.includes(domain) === false)
                     ) {
                         socket.destroy();
                     } else {
                         // do not proxy primary domain
-                        if (vars.domain_local.includes(domain) === true) {
+                        if (server.domain_local.includes(domain) === true) {
                             local_service();
                         } else {
                             create_proxy();
@@ -231,12 +232,12 @@ const server = function transmit_server(config:config_websocket_server):node_net
         },
         server_error = function transmit_server_serverError(ser:node_error):void {
             // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
-            const server:server = this;
+            const server:server_instance = this;
             if (ser.code === "EADDRINUSE") {
-                port_conflict(server.type, server.secure, true);
+                port_conflict(server.name, server.secure, true);
             }
         },
-        wsServer:server = (config.options === null)
+        wsServer:server_instance = (config.options === null)
             // options are of type TlsOptions
             ? node.net.createServer()
             : node.tls.createServer({
@@ -246,9 +247,9 @@ const server = function transmit_server(config:config_websocket_server):node_net
             }, connection),
         listenerCallback = function transmit_server_listenerCallback():void {
             // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
-            const server:server = this;
-            port_conflict(server.type, server.secure, false);
-            config.callback(server.type, wsServer.address() as node_net_AddressInfo);
+            const server:server_instance = this;
+            port_conflict(server.name, server.secure, false);
+            config.callback(server.name, wsServer.address() as node_net_AddressInfo);
         },
         // error messaging for port conflicts
         port_conflict = function transmit_server_portConflict(name:string, secure:boolean, input:boolean):void {
@@ -256,10 +257,10 @@ const server = function transmit_server(config:config_websocket_server):node_net
             const total:number = vars.port_conflict.length;
             let index:number = 0,
                 test:boolean = false;
-            if (total === vars.server_count) {
+            if (total === Object.keys(vars.servers).length * 2) {
                 const errorText:string[] = ["Port conflict on the following ports:"];
                 vars.port_conflict.sort(function transmit_server_portConflict_sort(a:type_port_conflict, b:type_port_conflict):-1|1 {
-                    if (vars.ports[a[0]][(a[1] === true) ? "secure" : "open"] < vars.ports[b[0]][(b[1] === true) ? "secure" : "open"]) {
+                    if (vars.servers[a[0]].ports[(a[1] === true) ? "secure" : "open"] < vars.servers[b[0]].ports[(b[1] === true) ? "secure" : "open"]) {
                         return -1;
                     }
                     return 1;
@@ -281,12 +282,11 @@ const server = function transmit_server(config:config_websocket_server):node_net
                 index = 0;
                 do {
                     if (vars.port_conflict[index][2] === true) {
-                        errorText.push(`${vars.text.angry}*${vars.text.none} Port ${vars.text.angry + vars.ports[vars.port_conflict[index][0]][(vars.port_conflict[index][1] === true) ? "secure" : "open"].toString() + vars.text.none} for server ${vars.text.cyan + vars.port_conflict[index][0]}, ${((vars.port_conflict[index][1]) === true ? "secure" : "open") + vars.text.none}.`);
+                        errorText.push(`${vars.text.angry}*${vars.text.none} Port ${vars.text.angry + vars.servers[vars.port_conflict[index][0]].ports[(vars.port_conflict[index][1] === true) ? "secure" : "open"].toString() + vars.text.none} for server ${vars.text.cyan + vars.port_conflict[index][0]}, ${((vars.port_conflict[index][1]) === true ? "secure" : "open") + vars.text.none}.`);
                     }
                     index = index + 1;
                 } while (index < total);
                 error(errorText, null, true);
-                process.exit(1);
             }
         },
         secureType:"open"|"secure" = (config.options === null)
@@ -297,9 +297,9 @@ const server = function transmit_server(config:config_websocket_server):node_net
     wsServer.secure = (config.options === null)
         ? false
         : true;
-    wsServer.type = config.type;
+    wsServer.name = config.name;
     wsServer.on("error", server_error);
-    vars.servers[config.type] = wsServer;
+    vars.store_server[config.name] = wsServer;
 
     // insecure connection listener
     if (config.options === null) {
@@ -308,7 +308,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
 
     // secure connection listener
     wsServer.listen({
-        port: vars.ports[config.type][secureType]
+        port: vars.servers[config.name].ports[secureType]
     }, listenerCallback);
     return wsServer;
 };

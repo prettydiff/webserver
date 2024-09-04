@@ -21,7 +21,7 @@ const hash = function utilities_hash(config:config_hash):void {
                 hashStream.pipe(hash);
                 hashStream.on("close", hashBack);
             } else {
-                error(["Hash source is either not a file or resulted in an error."], ers);
+                error(["Hash source is either not a file or resulted in an error."], ers, false);
             }
         });
     } else {

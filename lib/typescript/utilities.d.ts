@@ -20,49 +20,7 @@ interface hash_output {
 }
 
 interface project_config {
-    block_list: {
-        host: string[];
-        ip: string[];
-        referer: string[];
-    };
-    domain_local: string[];
-    path: {
-        storage: string;
-        web_root?: string;
-    };
-    ports: {
-        [key:string]: project_ports;
-    };
-    redirect_domain: {
-        [key:string]: [string, number];
-    };
-    redirect_internal: {
-        [key:string]: store_string;
-    };
-    server_name: string;
-}
-
-interface vars extends project_config {
-    path: {
-        conf: string;
-        project: string;
-        storage: string;
-        web_root?: string;
-    };
-    port_conflict: type_port_conflict[];
-    processes: {
-        [key:string]: node_childProcess_ChildProcess;
-    };
-    sep: string;
-    server_count: number;
-    servers: {
-        [key:string]: server;
-    };
-    sockets: {
-        [key:string]: websocket_client[];
-    };
-    text: store_string;
-    verbose: boolean;
+    [key:string]: server;
 }
 
 interface project_ports {
@@ -78,6 +36,57 @@ interface store_number {
     [key:string]: number;
 }
 
+interface store_ports {
+    [key:string]: project_ports;
+}
+
 interface store_string {
     [key:string]: string;
+}
+
+interface server {
+    block_list?: {
+        host: string[];
+        ip: string[];
+        referrer: string[];
+    };
+    domain_local?: string[];
+    http?: {
+        delete?: string;
+        post?: string;
+        put?: string;
+    };
+    path: {
+        storage: string;
+        web_root?: string;
+    };
+    ports: project_ports;
+    redirect_domain?: {
+        [key:string]: [string, number];
+    };
+    redirect_internal?: {
+        [key:string]: store_string;
+    };
+    server_name: string;
+}
+
+interface vars {
+    path: {
+        conf: string;
+        project: string;
+    };
+    port_conflict: type_port_conflict[];
+    processes: {
+        [key:string]: node_childProcess_ChildProcess;
+    };
+    sep: string;
+    servers: project_config;
+    sockets: {
+        [key:string]: websocket_client[];
+    };
+    store_server: {
+        [key:string]: server_instance;
+    };
+    text: store_string;
+    verbose: boolean;
 }

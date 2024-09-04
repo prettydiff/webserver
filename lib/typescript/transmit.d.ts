@@ -1,7 +1,7 @@
 
-interface server extends node_net_Server {
+interface server_instance extends node_net_Server {
+    name?: string;
     secure?: boolean;
-    type?: string;
 }
 
 interface socket_data {
@@ -65,7 +65,7 @@ interface websocket_client extends node_tls_TLSSocket {
     queue: Buffer[];
     role: "client"|"server";
     secure: boolean;
-    server: type_socket_source;
+    server: string;
     status: type_socket_status;
 }
 

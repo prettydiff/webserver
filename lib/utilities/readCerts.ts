@@ -26,7 +26,7 @@ const readCerts = function utilities_readCerts(callback:(options:transmit_tlsOpt
                         `${vars.text.angry}Required certificate files are missing.${vars.text.none}`,
                         "Run the build again:",
                         `${vars.text.cyan}npm run build${vars.text.none}`
-                    ], null);
+                    ], null, true);
                 } else {
                     callback(https, []);
                 }

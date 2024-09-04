@@ -1,5 +1,5 @@
 
-import commas from "../assets/browser_scripts/commas.js";
+import commas from "./commas.js";
 import hash from "./hash.js";
 import node from "./node.js";
 import vars from "./vars.js";

@@ -1,7 +1,11 @@
 
 interface services_http {
     connect: http_action;
+    delete: http_action;
     get: http_action;
+    head: http_action;
+    post: http_action;
+    put: http_action;
 }
 
 interface services_processKill {
