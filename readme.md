@@ -90,8 +90,8 @@ interface project_config {
 * **http** - Optional. This object stores command line instructions for how to handle HTTP methods *delete*, *post*, and *put*.  If these values are not provided the server will return an HTTP status of *403* for these request method types.
 * **path.storage** - Optional. An absolute file path where the server should store things it wishes to write to the file system.  When this is absent it will default to `/lib/assets/[server_name]` where `[server_name]` is the server's name.
 * **path.web_root** - Optional. An absolute file path where the server should serve client facing web assets like HTML, CSS, and JavaScript.  When this is absent it will default to `/lib/assets/[server_name]` where `[server_name]` is the server's name.
-* **ports.open** - Required. The port number to serve unencrypted protocols HTTP and WS.
-* **ports.secure** - Required. The port number to serve encrypted protocols HTTPS and WSS.
+* **ports.open** - Required. The port number to serve unencrypted protocols HTTP and WS. A value of *0* will use a randomly available port.
+* **ports.secure** - Required. The port number to serve encrypted protocols HTTPS and WSS. A value of *0* will use a randomly available port.
 * **redirect_domain** - Optional. An object storing domain names and where to redirect them to.
    * In the value the first index, a string, is the hostname where to redirect the domain to. An empty string or null value suggests to redirect the domain to a different port on the same machine.
    * The value in the second index, a number, identifies the port where to redirect the domain to.

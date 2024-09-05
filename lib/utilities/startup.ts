@@ -21,7 +21,7 @@ const startup = function utilities_startup(callback:() => void):void {
                     },
                     paths = function utilities_startup_read_instructions_paths(input:type_paths):void {
                         if (server.path === undefined || server.path === null || typeof server.path[input] !== "string" || server.path[input] === "") {
-                            server.path[input] = `${vars.path.project}lib/assets/${keys_srv[index_srv]}/`;
+                            server.path[input] = `${vars.path.project}lib${vars.sep}assets${vars.sep + keys_srv[index_srv]}/`;
                         }
                     },
                     interfaces:{ [index: string]: node_os_NetworkInterfaceInfo[]; } = node.os.networkInterfaces(),

@@ -23,7 +23,7 @@ const receiver = function transmit_receiver(buf:Buffer):void {
     //    |                     Payload Data continued ...                |
     //    +---------------------------------------------------------------+
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
+    // eslint-disable-next-line no-restricted-syntax
     const socket:websocket_client = this as websocket_client,
         data:Buffer = (function transmit_receiver_data():Buffer {
             if (buf !== null && buf !== undefined) {

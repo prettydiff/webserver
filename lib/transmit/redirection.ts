@@ -4,7 +4,6 @@ import vars from "../utilities/vars.js";
 const redirection = function transmit_redirection(domain:string, message:Buffer|string, server_name:string):Buffer|string {
     const str:string = (Buffer.isBuffer(message) === true)
             ? message.toString()
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
             : message as string,
         headerStr:string = str.slice(0, str.indexOf("\r\n")),
         server:server = vars.servers[server_name];

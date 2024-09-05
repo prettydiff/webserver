@@ -11,7 +11,7 @@ const core = function core(open:() => void, message:(event:websocket_event) => v
             // addClass - adds a new class value to an element's class attribute if not already present
             // * className:string - The name of the class to add.
             const addClass = function core_dom_addClass(className:string):void {
-                    // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
+                    // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
                     const element:HTMLElement = this,
                         classy:string = element.getAttribute("class"),
                         classes:string[] = (classy === null)
@@ -30,7 +30,7 @@ const core = function core(open:() => void, message:(event:websocket_event) => v
                 // * text: string - The text string to append.
                 // * empty: boolean (optional) - if true all child nodes will be removed before appending the text string.
                 appendText = function core_dom_appendText(text:string, empty?:boolean):void {
-                    // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
+                    // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
                     const element:HTMLElement = this;
                     if (empty === true) {
                         // eslint-disable-next-line no-restricted-syntax
@@ -44,7 +44,7 @@ const core = function core(open:() => void, message:(event:websocket_event) => v
                 // * identifier: string - The string value to search for.
                 // * selector: "class", "id", "name" - The part of the element to compare the identifier against.
                 getAncestor = function core_dom_getAncestor(identifier:string, selector:type_selector):HTMLElement {
-                    // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
+                    // eslint-disable-next-line no-restricted-syntax
                     let start:HTMLElement = (this === document) ? document.documentElement : this;
                     const test = function core_dom_getAncestor_test():boolean {
                             if (selector === "class") {
@@ -86,7 +86,7 @@ const core = function core(open:() => void, message:(event:websocket_event) => v
                 // * name: string - The name of the attribute to search for.  An empty string means accept every attribute name.
                 // * value: string - The attribute value to search for.  An empty string means accept any attribute value.
                 getElementsByAttribute = function core_dom_getElementsByAttribute(name:string, value:string):HTMLElement[] {
-                    // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
+                    // eslint-disable-next-line no-restricted-syntax
                     const start:HTMLElement = (this === document) ? document.documentElement : this,
                         attrs:Attr[]    = start.getNodesByType(2) as Attr[],
                         out:HTMLElement[]   = [];
@@ -109,7 +109,7 @@ const core = function core(open:() => void, message:(event:websocket_event) => v
                 // * textValue: string - The text to match.  The value must exactly match the complete text node value after trimming white space.
                 // * castSensitive: boolean - Whether case sensitivity should apply.
                 getElementsByText = function core_dom_getElementsByText(textValue:string, caseSensitive?:boolean):HTMLElement[] {
-                    // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
+                    // eslint-disable-next-line no-restricted-syntax
                     const start:HTMLElement = (this === document) ? document.documentElement : this,
                         texts:Text[]    = start.getNodesByType(3) as Text[],
                         out:HTMLElement[]   = [];
@@ -143,7 +143,7 @@ const core = function core(open:() => void, message:(event:websocket_event) => v
                             ? Math.round(Number(typeValue))
                             : null,
                         output:Node[] = [],
-                        // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
+                        // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
                         start:Document|HTMLElement = this,
                         child = function core_dom_getNodesByType_child(recurse:HTMLElement):void {
                             const children:NodeListOf<ChildNode> = recurse.childNodes,
@@ -221,10 +221,10 @@ const core = function core(open:() => void, message:(event:websocket_event) => v
                 // highlight - Adds a class name to an element where that class name results in a CSS animated outline and focuses the element
                 // * element: HTMLElement (optional) - A specified element to modify, default is the "this" value executed on an element.
                 highlight = function core_dom_highlight(element?:HTMLElement):void {
-                    // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
+                    // eslint-disable-next-line no-restricted-syntax
                     const item:HTMLElement = (this === document)
                             ? element
-                            // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
+                            // eslint-disable-next-line no-restricted-syntax
                             : this,
                         classy:string = (item === element)
                             ? null
@@ -253,14 +253,14 @@ const core = function core(open:() => void, message:(event:websocket_event) => v
                 },
                 // return a tag's lowercase name.  XML is case sensitive, but HTML returns uppercase tag names
                 lowName = function core_dom_lowName():string {
-                    // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
+                    // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
                     const el:HTMLElement = this;
                     return el.tagName.toLowerCase();
                 },
                 // removes a single class name from an element's class attribute value
                 // * className: string - The name of the class to remove.
                 removeClass = function core_dom_removeClass(className:string):void {
-                    // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
+                    // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
                     const element:HTMLElement = this,
                         classy:string = element.getAttribute("class"),
                         classes:string[] = (classy === null)
@@ -280,10 +280,10 @@ const core = function core(open:() => void, message:(event:websocket_event) => v
                 // removes the "highlight" class name from a given element
                 // * element: HTMLElement (optional) - A specified element to modify, default is the "this" value executed on an element.
                 removeHighlight = function core_dom_removeHighlight(element?:HTMLElement):void {
-                    // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
+                    // eslint-disable-next-line no-restricted-syntax
                     const item:HTMLElement = (this === document)
                             ? element
-                            // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
+                            // eslint-disable-next-line no-restricted-syntax
                             : this,
                         el:HTMLElement = (item === undefined)
                             ? null

@@ -296,9 +296,9 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
     if (fileFragment === "") {
         // server root html file takes the name of the server, not index.html
         input = `${vars.servers[server_name].path.web_root}index.html`;
-    } else if (fileFragment.indexOf(".js") === fileFragment.length - 3 && fileFragment.includes("/js/lib/assets/") === false && vars.servers[server_name].path.web_root === `${vars.path.project}lib/assets/${server_name}/`) {
+    } else if (fileFragment.indexOf(".js") === fileFragment.length - 3 && fileFragment.includes("/js/lib/assets/") === false && vars.servers[server_name].path.web_root === `${vars.path.project}lib${vars.sep}assets${vars.sep + server_name}/`) {
         // normalizes compiled JS path to web_root path
-        input = vars.servers[server_name].path.web_root.replace(/\/lib\/assets\//, "/js/lib/assets/") + decodeURI(fileFragment);
+        input = vars.servers[server_name].path.web_root.replace(/(\/|\\)lib(\/|\\)assets(\/|\\)/, `${vars.sep}js${vars.sep}lib${vars.sep}assets${vars.sep}`) + decodeURI(fileFragment);
     } else {
         // all other HTTP requests
         input = vars.servers[server_name].path.web_root + decodeURI(fileFragment);

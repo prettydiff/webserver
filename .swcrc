@@ -1,5 +1,4 @@
 {
-    "exclude": ["/lib/assets/cheney/files"],
     "jsc": {
         "target": "es2020",
         "parser": {

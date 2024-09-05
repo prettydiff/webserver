@@ -1,11 +1,15 @@
 
 import { exec } from "child_process";
 
+// global console, process
+
 (function install() {
     // do not remove the following comment
     const //exec = require("child_process").exec,
         moduleType = "module",
+        // eslint-disable-next-line no-undef
         logger = console.log,
+        // eslint-disable-next-line no-undef
         start = process.hrtime.bigint(),
         steps = [
             "npm install",
@@ -21,18 +25,18 @@ import { exec } from "child_process";
             none     : "\u001b[0m",
             underline: "\u001b[4m"
         },
+        // eslint-disable-next-line no-undef
         dir = process.argv[1].replace(/(\\|\/)install(\.js)?$/, "");
     let step = 0,
-        insert = 2,
         len = steps.length;
     logger("");
     logger(`${text.underline}Webserver - Installation${text.none}`);
 
     // do not install dependencies
+    // eslint-disable-next-line no-undef
     if (process.argv.indexOf("no_package") > -1) {
         steps.splice(0, 1);
         len = len - 1;
-        insert = insert - 1;
     }
 
     // run this script
@@ -44,6 +48,7 @@ import { exec } from "child_process";
             if (err === null) {
                 step = step + 1;
                 if (step === len) {
+                    // eslint-disable-next-line no-undef
                     const end = (Number(process.hrtime.bigint() - start) / 1000000000).toFixed(9);
                     logger("\u0007");
                     logger(`Built as module type: ${text.cyan + moduleType + text.none}`);
@@ -60,6 +65,7 @@ import { exec } from "child_process";
                 logger("");
                 logger(stderr);
                 logger("");
+                // eslint-disable-next-line no-undef
                 process.exit(1);
             }
         });

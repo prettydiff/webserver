@@ -1,6 +1,6 @@
 
 import certificate from "./commands/certificate.js";
-import create_config from "./commands/create_config.js";
+import create_server from "./commands/create_server.js";
 import error from "./utilities/error.js";
 import readCerts from "./utilities/readCerts.js";
 import server from "./transmit/server.js";
@@ -22,10 +22,9 @@ startup(function index():void {
     } else {
         // certificate command
         if (process.argv.includes("certificate") === true) {
-
             certificate({
                 callback: function index_certificate():void {
-                    log("Certificates create.");
+                    log("Certificates created.");
                 },
                 days: 65535,
                 domain_default: vars.servers[servers[0]].domain_local[0],
@@ -33,7 +32,14 @@ startup(function index():void {
             });
         // create_config command
         } else if (process.argv.includes("create_config") === true) {
-            create_config();
+            const name:string = process.argv[3];
+            if (name === undefined) {
+                error([
+                    "Server name not specified."
+                ], null, true);
+                return;
+            }
+            create_server(name);
         // yt_config command
         } else if (process.argv.includes("yt_config") === true) {
             const name:string = process.argv[3];

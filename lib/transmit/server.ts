@@ -11,7 +11,7 @@ import vars from "../utilities/vars.js";
 
 const server = function transmit_server(config:config_websocket_server):node_net_Server {
     const connection = function transmit_server_connection(TLS_socket:node_tls_TLSSocket):void {
-            // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, no-restricted-syntax
+            // eslint-disable-next-line no-restricted-syntax
             const server_name:string = this.name,
                 server:server = vars.servers[server_name],
                 socket:websocket_client = TLS_socket as websocket_client,
@@ -231,7 +231,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
             socket.once("data", handshake);
         },
         server_error = function transmit_server_serverError(ser:node_error):void {
-            // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
+            // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
             const server:server_instance = this;
             if (ser.code === "EADDRINUSE") {
                 port_conflict(server.name, server.secure, true);
@@ -246,7 +246,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
                 key: config.options.options.key
             }, connection),
         listenerCallback = function transmit_server_listenerCallback():void {
-            // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
+            // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
             const server:server_instance = this;
             port_conflict(server.name, server.secure, false);
             config.callback(server.name, wsServer.address() as node_net_AddressInfo);

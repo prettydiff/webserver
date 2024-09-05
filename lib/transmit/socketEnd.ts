@@ -2,10 +2,9 @@
 import vars from "../utilities/vars.js";
 
 const socket_end = function transmit_socketEnd(socket_input:websocket_client):void {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const socket:websocket_client = (typeof socket_input === "object")
             ? socket_input
-            // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
+            // eslint-disable-next-line no-restricted-syntax
             : this,
         list:string = socket.server;
     let index:number = list.length;
