@@ -1,7 +1,7 @@
 # Web Server
 Serves and proxies HTTP over WebSockets for both TCP and TLS.
 
-<!-- cspell: words pihole, webserver -->
+<!-- cspell: words jellyfin, pihole, webserver -->
 
 ## About
 * Built in proxy and redirection
@@ -48,7 +48,7 @@ This configuration file is essentially an object listing one or more server conf
 ### Schema and Syntax
 Here is the expected configuration schema as a TypeScript interface.
 * Property names ending with a question mark, **?**, are optional properties and may be ignored. All other property names are required. 
-* The `[key:string]` bit of code represents the name of your server in the code.  Any string will work.
+* The `[key:string]` bit of code represents the name of your server in the code.  Directories in the file system will be created matching this name, so the value limited to what the local file system supports.
 * The `string[]` bit of code represents a list of variable length whose values are only string types.
 
 ```typescript

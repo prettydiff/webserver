@@ -4,6 +4,7 @@ interface config_certificate {
     days: number;
     domain_default: string;
     selfSign: boolean;
+    server: string;
 }
 
 interface config_directory {

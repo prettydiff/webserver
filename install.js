@@ -14,8 +14,7 @@ import { exec } from "child_process";
         steps = [
             "npm install",
             "npx swc ./lib -d ./js", // build
-            "node js/lib/index.js certificate", // certificate
-            "node js/lib/index.js create_config", // config file
+            "node js/lib/index.js create_server default_server", // config file
         ],
         text = {
             angry    : "\u001b[1m\u001b[31m",

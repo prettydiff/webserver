@@ -5,7 +5,7 @@ import node from "./node.js";
 
 const vars:vars = {
     path: {
-        conf: "",
+        certs: "",
         project: ""
     },
     port_conflict: [],
@@ -13,6 +13,7 @@ const vars:vars = {
     sep: node.path.sep,
     servers: {},
     sockets: {},
+    start_time: process.hrtime.bigint(),
     store_server: {},
     text: {
         angry    : "\u001b[1m\u001b[31m",

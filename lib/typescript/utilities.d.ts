@@ -57,6 +57,7 @@ interface server {
         put?: string;
     };
     path: {
+        certificates: string;
         storage: string;
         web_root?: string;
     };
@@ -72,7 +73,7 @@ interface server {
 
 interface vars {
     path: {
-        conf: string;
+        certs: string;
         project: string;
     };
     port_conflict: type_port_conflict[];
@@ -84,6 +85,7 @@ interface vars {
     sockets: {
         [key:string]: websocket_client[];
     };
+    start_time: bigint;
     store_server: {
         [key:string]: server_instance;
     };

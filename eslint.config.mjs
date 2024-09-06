@@ -11,6 +11,8 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// cspell: words freelist, iife, linebreak, plusplus, smalloc
+
 export default [
     {
         ignores: ["**/js/*", "**/node_modules", "**/files/*", "**/node.ts", "**/node.d.ts"]

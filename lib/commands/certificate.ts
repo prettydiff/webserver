@@ -3,10 +3,10 @@ import error from "../utilities/error.js";
 import node from "../utilities/node.js";
 import vars from "../utilities/vars.js";
 
-// cspell:word addstore, CAcreateserial, certutil, delstore, extfile, genpkey
+// cspell:word addstore, CAcreateserial, certutil, delstore, extfile, genpkey, keyid, pathlen
 
-const certificate = function commands_certificate(config:config_certificate):void {
-    const cert_path:string = `${vars.path.project}lib${vars.sep}certs`;
+const certificate = function commands_certificate(config:config_certificate):void {console.log("certificate");
+    const cert_path:string = `${vars.path.certs + config.server + vars.sep}`;
     node.fs.stat(cert_path, function commands_certificate_stat(ers:node_error):void {
         const cert = function commands_certificate_stat_cert():void {
             let index:number = 0;
@@ -27,6 +27,69 @@ const certificate = function commands_certificate(config:config_certificate):voi
                         }
                     });
                 },
+                cert_extensions:string = (function commands_certificate_stat_cert_extensions():string {
+                    const server:server = vars.servers[config.server],
+                        output:string[] = [
+                        `[ ca ]
+        basicConstraints       = CA:false
+        subjectKeyIdentifier   = hash
+        authorityKeyIdentifier = keyid,issuer
+        subjectAltName         = @alt_names
+        nameConstraints        = @name_constraints
+
+        [ selfSign ]
+        basicConstraints     = critical,CA:true,pathlen:1
+        subjectKeyIdentifier = hash
+        subjectAltName       = @alt_names
+        nameConstraints      = @name_constraints
+
+        [ name_constraints ]
+        # Name constraints list is dynamically populated from vars.network.domain
+        permitted;DNS.1 = localhost
+        permitted;DNS.2 = 192.168.0.3`,
+                        "",
+                        `# permitted;IP.1 = 127.0.0.1/255.0.0.0
+        # End Constraints
+
+        [ alt_names ]
+        # Alt names list is dynamically populated from vars.network.domain
+        DNS.1 = localhost
+        DNS.2 = 192.168.0.3`,
+                        "",
+                        `# IP.1 = 127.0.0.1/255.0.0.0
+        # End Alt Names
+        `
+                        ],
+                        keys:string[] = Object.keys(server.redirect_domain),
+                        total_keys:number = keys.length,
+                        total_local:number = server.domain_local.length,
+                        list1:string[] = [],
+                        list2:string[] = [];
+                    let cert_index:number = 0,
+                        line_index:number = 3;
+                    if (total_keys > 0) {
+                        do {
+                            if ((/\.secure$/).test(keys[cert_index]) === false) {
+                                list1.push(`permitted;DNS.${line_index} = ${keys[cert_index]}`);
+                                list2.push(`DNS.${line_index} = ${keys[cert_index]}`);
+                                line_index = line_index + 1;
+                            }
+                            cert_index = cert_index + 1;
+                        } while (cert_index < total_keys);
+                    }
+                    if (total_local > 0) {
+                        cert_index = 0;
+                        do {
+                            list1.push(`permitted;DNS.${line_index} = ${server.domain_local[cert_index]}`);
+                            list2.push(`DNS.${line_index} = ${server.domain_local[cert_index]}`);
+                            line_index = line_index + 1;
+                            cert_index = cert_index + 1;
+                        } while (cert_index < total_local);
+                    }
+                    output[1] = list1.join("\n");
+                    output[3] = list2.join("\n");
+                    return output.join("\n");
+                }()),
 
                 // OpenSSL features used:
                 // * file extensions
@@ -62,7 +125,7 @@ const certificate = function commands_certificate(config:config_certificate):voi
                         org:string = "/O=home_server/OU=home_server",
                         // provides the path to the configuration file used for certificate signing
                         pathConf = function commands_certificate_stat_cert_create_confPath(configName:"ca"|"selfSign"):string {
-                            return `"${vars.path.conf}extensions.cnf" -extensions ${configName}`;
+                            return `"${cert_path}extensions.cnf" -extensions ${configName}`;
                         },
                         // create a certificate signed by another certificate
                         actionCert = function commands_certificate_stat_cert_create_cert(type:"int"|"server"):string {
@@ -100,8 +163,14 @@ const certificate = function commands_certificate(config:config_certificate):voi
                     }
                     crypto();
                 };
-            create();
-        };
+            node.fs.writeFile(`${cert_path}extensions.cnf`, cert_extensions, function command_certificate_writeExtensions(erw:node_error):void {
+                if (erw === null) {
+                    create();
+                } else {
+                    error([`Error writing certificate extensions.cnf file to ${vars.text.angry + cert_path}extensions.cnf${vars.text.none}`], erw, true);
+                }
+            });
+        };console.log(cert_path);console.log(ers);
         if (ers === null) {
             cert();
         } else {

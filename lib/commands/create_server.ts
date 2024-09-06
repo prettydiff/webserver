@@ -1,11 +1,20 @@
 
+import certificate from "./certificate.js";
 import error from "../utilities/error.js";
+import log from "../utilities/log.js";
 import node from "../utilities/node.js";
 import vars from "../utilities/vars.js";
 
-const create_config = function commands_createConfig(name:string):void {
+const create_server = function commands_createServer(name:string):void {
     const configPath:string = `${vars.path.project}config.json`,
-        assets:string = `${vars.path.project}lib${vars.sep}assets${vars.sep + name}/`,
+        locations:store_string = {
+            "assets": `${vars.path.project}lib${vars.sep}assets${vars.sep + name}/`,
+            "certs": `${vars.path.certs + name}/`
+        },
+        locations_created:store_flag = {
+            "assets": false,
+            "certs": false
+        },
         config:string = `
     "${name}": {
         "block_list": {
@@ -20,77 +29,132 @@ const create_config = function commands_createConfig(name:string):void {
             "put": ""
         },
         "path": {
-            storage: "${assets}",
-            web_root: "${assets}"
+            "certificates": "${locations.certs}",
+            "storage": "${locations.assets}",
+            "web_root": "${locations.assets}"
         },
-        ports: {
-            open: 0,
-            secure: 0
+        "ports": {
+            "open": 0,
+            "secure": 0
         },
-        redirect_domain: {
+        "redirect_domain": {
             "": ["", 0]
         },
-        redirect_internal: {
+        "redirect_internal": {
             "": {
                 "": ""
             }
         },
-        server_name: "${name}"
+        "server_name": "${name}"
     }
 `,
         flags:store_flag = {
-            config: false,
-            dir: false
+            assets: false,
+            certs: false,
+            config: false
         },
-        complete = function commands_createConfig_complete(input:string):void {
+        complete = function commands_createServer_complete(input:"assets"|"certs"|"config"):void {
             flags[input] = true;
-            if (flags.config === true && flags.dir === true) {
-                // eslint-disable-next-line no-console
-                console.log(`Server ${name} created in both the config.json file and default asset directory. Please restart the application to execute the new server.`);
+            if (flags.assets === true && flags.certs === true && flags.config === true) {
+                certificate({
+                    callback: function commands_createServer_complete_certificate():void {
+                        const dirText = function commands_createServer_complete_certificate_dirText(key:"assets"|"certs"):string {
+                            return (locations_created[key] === true)
+                                ? `Directory ${vars.text.cyan + locations[key] + vars.text.none} created.`
+                                : `Directory ${vars.text.cyan + locations[key] + vars.text.none} already exists.`;
+                        };
+                        log([
+                            `Server ${vars.text.cyan + name + vars.text.none} created in both the config.json file and default asset directory. Please restart the application to execute the new server.`,
+                            dirText("assets"),
+                            dirText("certs"),
+                            "Certificates created."
+                        ], true);
+                    },
+                    days: 65535,
+                    domain_default: null,
+                    selfSign: false,
+                    server: name
+                });
             }
         },
-        write = function commands_createConfig_write(contents:string):void {
-            node.fs.writeFile(configPath, contents, function commands_createConfig_write_writeFile(erw:node_error):void {
-                if (erw === null) {
-                    complete("config");
+        dirs = function commands_createServer_dirs(input:"assets"|"certs"):void {
+            const location:string = locations[input];
+            node.fs.stat(location, function commands_createServer_assets(ers:node_error):void {
+                if (ers === null) {
+                    complete(input);
+                } else if (ers.code === "ENOENT") {
+                    node.fs.mkdir(location, function commands_createServer_assets_mkdir(erm:node_error):void {
+                        if (erm === null) {
+                            locations_created[input] = true;
+                            complete(input);
+                        } else {
+                            error([`Error making directory ${location}`], erm, true);
+                        }
+                    });
+                } else {
+                    error([`Error performing stat on directory ${location}`], ers, true);
                 }
-                error([
-                    `Error writing file: ${vars.text.angry + configPath + vars.text.none} during the create_config command.`
-                ], erw, true);
             });
         };
-    node.fs.stat(assets, function commands_createConfig_assets(ers:node_error):void {
-        if (ers === null) {
-            complete("dir");
-        } else if (ers.code === "ENOENT") {
-            node.fs.mkdir(assets, function commands_createConfig_assets_mkdir(erm:node_error):void {
-                if (erm === null) {
-                    complete("dir");
+    node.fs.stat(configPath, function commands_createServer_stat(ers:node_error):void {
+        const write = function commands_createServer_stat_write(contents:string):void {
+            node.fs.writeFile(configPath, contents, function commands_createServer_stat_write_writeFile(erw:node_error):void {
+                if (erw === null) {
+                    complete("config");
                 } else {
-                    error([`Error making directory ${assets}`], erm, true);
+                    error([
+                        `Error writing file: ${vars.text.angry + configPath + vars.text.none} during the create_server command.`
+                    ], erw, true);
                 }
             });
-        } else {
-            error([`Error performing stat on directory ${assets}`], ers, true);
-        }
-    });
-    node.fs.stat(configPath, function commands_createConfig_stat(ers:node_error):void {
+        };
         if (ers === null) {
-            node.fs.readFile(configPath, function commands_createConfig_stat_read(err:node_error, fileRaw:Buffer):void {
+            node.fs.readFile(configPath, function commands_createServer_stat_read(err:node_error, fileRaw:Buffer):void {
                 if (err === null) {
-                    const fileData:string = fileRaw.toString().replace(/\s*\}\s*$/, `,${config}}`);
-                    write(fileData);
+                    const str:string = fileRaw.toString(),
+                        keys:string[] = Object.keys(JSON.parse(str));
+                    if (keys.includes(name) === true) {
+                        error([
+                            `A server with name ${name} already exists.`,
+                            "Either delete the existing server with that name or choose a different name."
+                        ], null, true);
+                    } else {
+                        const fileData:string = fileRaw.toString().replace(/\s*\}\s*$/, `,${config}}`);
+                        write(fileData);
+                    }
                 } else {
                     error(["Error reading application's config.json file."], err, true);
                 }
             });
         } else if (ers.code === "ENOENT") {
             write(`{${config}}`);
+        } else {
+            error([
+                `Error reading file: ${vars.text.angry + configPath + vars.text.none} during the create_server command.`
+            ], ers, true);
         }
-        error([
-            `Error reading file: ${vars.text.angry + configPath + vars.text.none} during the create_config command.`
-        ], ers, true);
+    });
+    node.fs.stat(`${vars.path.certs}`, function commands_createServer_certStat(erc:node_error):void {
+        if (erc === null) {
+            dirs("assets");
+            dirs("certs");
+        } else if (erc.code === "ENOENT") {
+            node.fs.mkdir(`${vars.path.certs}`, function commands_createServer_assets_mkdir(erm:node_error):void {
+                if (erm === null) {
+                    dirs("assets");
+                    dirs("certs");
+                } else {
+                    error([
+                        `Error creating directory: ${vars.text.angry + vars.path.certs + vars.text.none} during the create_server command.`
+                    ], erm, true);
+                }
+            });
+        } else {
+            error([
+                `Error reading directory: ${vars.text.angry + vars.path.certs + vars.text.none} during the create_server command.`
+            ], erc, true);
+        }
     });
 };
 
-export default create_config;
+export default create_server;

@@ -78,23 +78,7 @@ const startup = function utilities_startup(callback:() => void):void {
                     callback();
                 }
             };
-            node.fs.stat(vars.path.conf, function utilities_startup_read_stat(ers:node_error):void {
-                if (ers === null) {
-                    instructions();
-                } else {
-                    if (ers.code === "ENOENT") {
-                        node.fs.mkdir(vars.path.conf, function utilities_startup_read_stat_mkdir(erm:node_error):void {
-                            if (erm === null) {
-                                instructions();
-                            } else {
-                                error([`Error creating directory ${vars.path.conf}.`], erm, true);
-                            }
-                        });
-                    } else {
-                        error([`Error reading directory ${vars.path.conf}.`], ers, true);
-                    }
-                }
-            });
+            instructions();
         } else {
             error(["Error reading config.json file from project root."], erp, true);
         }
@@ -113,7 +97,7 @@ const startup = function utilities_startup(callback:() => void):void {
     };
 
     vars.path.project = process.argv[1].slice(0, process.argv[1].indexOf(`${vars.sep}js${vars.sep}`)) + vars.sep;
-    vars.path.conf = `${vars.path.project}lib${vars.sep}conf${vars.sep}`;
+    vars.path.certs = `${vars.path.project}lib${vars.sep}certs${vars.sep}`;
     node.fs.stat(`${vars.path.project}config.json`, stat);
 };
 
