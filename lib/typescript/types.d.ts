@@ -1,5 +1,6 @@
 
 type type_certKey = "ca" | "crt" | "key";
+type type_command = "certificate" | "create_server" | "delete_server" | "server" | "yt_config";
 type type_directory_item = [string, type_file, string, number, number, directory_data, string];
 type type_directory_mode = "array" | "hash" | "list" | "read" | "search" | "type";
 type type_file = "block_device" | "character_device" | "directory" | "fifo_pipe" | "file" | "socket" | "symbolic_link";

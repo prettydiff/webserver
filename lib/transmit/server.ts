@@ -224,9 +224,12 @@ const server = function transmit_server(config:config_websocket_server):node_net
                         }
                     }
                 };
-            socket.on("error", function transmit_server_connection_handshake_socketError():void {
-                // this worthless error trapping prevents an "unhandled error" escalation that breaks the process
-                return null;
+            socket.on("error", function transmit_server_connection_handshake_socketError(ers:node_error):void {
+                if (vars.verbose === true) {
+                    // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
+                    const server:websocket_client = this;
+                    error([`Error on socket ${vars.text.angry + server.hash + vars.text.none}`], ers, false);
+                }
             });
             socket.once("data", handshake);
         },
@@ -247,9 +250,17 @@ const server = function transmit_server(config:config_websocket_server):node_net
             }, connection),
         listenerCallback = function transmit_server_listenerCallback():void {
             // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
-            const server:server_instance = this;
+            const server:server_instance = this,
+                address:node_net_AddressInfo = server.address() as node_net_AddressInfo,
+                secure:"open"|"secure" = (server.secure === true)
+                    ? "secure"
+                    : "open";
             port_conflict(server.name, server.secure, false);
-            config.callback(server.name, wsServer.address() as node_net_AddressInfo);
+            vars.store_server[secure][config.name] = server;
+            vars.servers[server.name].ports[secure] = address.port;
+            if (config.callback !== null) {
+                config.callback(server.name, secure);
+            }
         },
         // error messaging for port conflicts
         port_conflict = function transmit_server_portConflict(name:string, secure:boolean, input:boolean):void {
@@ -299,7 +310,6 @@ const server = function transmit_server(config:config_websocket_server):node_net
         : true;
     wsServer.name = config.name;
     wsServer.on("error", server_error);
-    vars.store_server[config.name] = wsServer;
 
     // insecure connection listener
     if (config.options === null) {

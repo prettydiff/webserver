@@ -4,6 +4,7 @@ import node from "./node.js";
 /* cspell: words appdata */
 
 const vars:vars = {
+    command: null,
     path: {
         certs: "",
         project: ""
@@ -14,7 +15,10 @@ const vars:vars = {
     servers: {},
     sockets: {},
     start_time: process.hrtime.bigint(),
-    store_server: {},
+    store_server: {
+        open: {},
+        secure: {}
+    },
     text: {
         angry    : "\u001b[1m\u001b[31m",
         blue     : "\u001b[34m",

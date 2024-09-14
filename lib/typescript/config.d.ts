@@ -58,7 +58,7 @@ interface config_websocket_extensions {
 }
 
 interface config_websocket_server {
-    callback: (name:string, addressInfo:node_net_AddressInfo) => void;
+    callback: (name:string, secure:"open"|"secure") => void;
     name: string;
     options: transmit_tlsOptions;
 }

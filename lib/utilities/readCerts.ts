@@ -3,8 +3,8 @@ import error from "./error.js";
 import node from "./node.js";
 import vars from "./vars.js";
 
-const readCerts = function utilities_readCerts(callback:(options:transmit_tlsOptions, certLogs:string[]) => void):void {
-    const certLocation:string = `${vars.path.project}lib${vars.sep}certs${vars.sep}`,
+const readCerts = function utilities_readCerts(name:string, callback:(name:string, options:transmit_tlsOptions) => void):void {
+    const certLocation:string = `${vars.path.project}lib${vars.sep}certs${vars.sep + name + vars.sep}`,
         certName:string = "server",
         caName:string = "int",
         https:transmit_tlsOptions = {
@@ -28,7 +28,7 @@ const readCerts = function utilities_readCerts(callback:(options:transmit_tlsOpt
                         `${vars.text.cyan}npm run build${vars.text.none}`
                     ], null, true);
                 } else {
-                    callback(https, []);
+                    callback(name, https);
                 }
             }
         },

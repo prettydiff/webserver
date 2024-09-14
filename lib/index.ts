@@ -9,18 +9,27 @@ import startup from "./utilities/startup.js";
 import vars from "./utilities/vars.js";
 import yt_config from "./commands/yt_config.js";
 
-let count:number = 0;
-
 startup(function index():void {
     const servers:string[] = Object.keys(vars.servers);
-    if (servers.length < 1) {
+    if  (vars.command === "create_server") {
+        const name:string = process.argv[3];
+        if (name === undefined) {
+            error([
+                "Server name not specified.",
+                `Example: ${vars.text.cyan}npm run create_server my_server${vars.text.none}`
+            ], null, true);
+            return;
+        }
+        create_server(name);
+    // yt_config command
+    } else if (servers.length < 1) {
         error([
             `${vars.text.angry}No servers initiated.${vars.text.none}`,
             `Ensure the ${vars.text.cyan}config.json${vars.text.none} file is properly populated with at least one server.`
         ], null, true);
     } else {
         // certificate command
-        if (process.argv.includes("certificate") === true) {
+        if (vars.command === "certificate") {
             const name:string = process.argv[3];
             if (name === undefined) {
                 error([
@@ -39,18 +48,7 @@ startup(function index():void {
                 server: name
             });
         // create_server command
-        } else if (process.argv.includes("create_server") === true) {
-            const name:string = process.argv[3];
-            if (name === undefined) {
-                error([
-                    "Server name not specified.",
-                    `Example: ${vars.text.cyan}npm run create_server my_server${vars.text.none}`
-                ], null, true);
-                return;
-            }
-            create_server(name);
-        // yt_config command
-        } else if (process.argv.includes("yt_config") === true) {
+        } else if (vars.command === "yt_config") {
             const name:string = process.argv[3];
             if (vars.servers[name] === undefined) {
                 error([
@@ -63,44 +61,52 @@ startup(function index():void {
             });
         // service, default behavior
         } else {
-            readCerts(function index_readCerts(tlsOptions:transmit_tlsOptions):void {
-                const total:number = servers.length,
-                    portList:store_ports = {},
-                    config:config_websocket_server = {
-                        callback: function index_serverCallback(name:string):void {
-                            count = count + 1;
-                            portList[name] = vars.servers[name].ports;
-                            if (count === total) {
-                                const logs:string[] = [
-                                        "Web Servers started.",
-                                        "",
-                                        "Ports:",
-                                    ],
-                                    keys:string[] = Object.keys(portList);
-                                keys.sort();
-                                let ports:number = 0;
-                                do {
-                                    logs.push(`${vars.text.angry}*${vars.text.none} ${portList[keys[ports]].open} - ${keys[ports]}, open`);
-                                    logs.push(`${vars.text.angry}*${vars.text.none} ${portList[keys[ports]].secure} - ${keys[ports]}, secure`);
-                                    ports = ports + 1;
-                                } while (ports < keys.length);
-                                log(logs, false);
-                            }
-                        },
-                        name: "",
-                        options: null
-                    };
-                let index:number = servers.length;
-                do {
-                    index = index - 1;
+            const servers:string[] = Object.keys(vars.servers),
+                total:number = servers.length,
+                portList:store_ports = {},
+                config:config_websocket_server = {
+                    callback: function index_serverCallback(name:string, secure:"open"|"secure"):void {
+                        count = count + 1;
+                        if (portList[name] === undefined) {
+                            portList[name] = {
+                                open: 0,
+                                secure: 0
+                            };
+                        }
+                        portList[name][secure] = vars.servers[name].ports[secure];
+                        if (count === total * 2) {
+                            const logs:string[] = [
+                                    "Web Servers started.",
+                                    "",
+                                    "Ports:",
+                                ],
+                                keys:string[] = Object.keys(portList);
+                            keys.sort();
+                            let ports:number = 0;
+                            do {
+                                logs.push(`${vars.text.angry}*${vars.text.none} ${portList[keys[ports]].open} - ${keys[ports]}, open`);
+                                logs.push(`${vars.text.angry}*${vars.text.none} ${portList[keys[ports]].secure} - ${keys[ports]}, secure`);
+                                ports = ports + 1;
+                            } while (ports < keys.length);
+                            log(logs, false);
+                        }
+                    },
+                    name: "",
+                    options: null
+                };
+            let index:number = 0,
+                count:number = 0;
+            do {
+                readCerts(servers[index], function index_readCerts(name:string, tlsOptions:transmit_tlsOptions):void {
                     config.options = tlsOptions;
-                    config.name = servers[index];
+                    config.name = name;
                     server(config);
                     config.options = null;
-                    config.name = servers[index];
+                    config.name = name;
                     server(config);
-                } while (index > 0);
-            });
+                    index = index + 1;
+                });
+            } while (index < total);
         }
     }
 });

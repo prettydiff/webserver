@@ -3,24 +3,26 @@ import certificate from "./certificate.js";
 import error from "../utilities/error.js";
 import log from "../utilities/log.js";
 import node from "../utilities/node.js";
+import server from "../transmit/server.js";
 import vars from "../utilities/vars.js";
 
-const create_server = function commands_createServer(name:string):void {
+const create_server = function commands_createServer(name:string, callback:() => void):void {
     const configPath:string = `${vars.path.project}config.json`,
         locations:store_string = {
-            "assets": `${vars.path.project}lib${vars.sep}assets${vars.sep + name}/`,
-            "certs": `${vars.path.certs + name}/`
+            "assets": `${vars.path.project}lib${vars.sep}assets${vars.sep + name + vars.sep}`,
+            "certs": `${vars.path.certs + name + vars.sep}`
         },
         locations_created:store_flag = {
             "assets": false,
             "certs": false
         },
+        terminate:boolean = (vars.command === "create_server"),
         config:string = `
     "${name}": {
         "block_list": {
             "host": [],
             "ip": [],
-            "referer": []
+            "referrer": []
         },
         "domain_local": [],
         "http": {
@@ -29,9 +31,9 @@ const create_server = function commands_createServer(name:string):void {
             "put": ""
         },
         "path": {
-            "certificates": "${locations.certs}",
-            "storage": "${locations.assets}",
-            "web_root": "${locations.assets}"
+            "certificates": "${locations.certs.replace(/\\/g, "\\\\")}",
+            "storage": "${locations.assets.replace(/\\/g, "\\\\")}",
+            "web_root": "${locations.assets.replace(/\\/g, "\\\\")}"
         },
         "ports": {
             "open": 0,
@@ -59,16 +61,62 @@ const create_server = function commands_createServer(name:string):void {
                 certificate({
                     callback: function commands_createServer_complete_certificate():void {
                         const dirText = function commands_createServer_complete_certificate_dirText(key:"assets"|"certs"):string {
-                            return (locations_created[key] === true)
-                                ? `Directory ${vars.text.cyan + locations[key] + vars.text.none} created.`
-                                : `Directory ${vars.text.cyan + locations[key] + vars.text.none} already exists.`;
-                        };
-                        log([
-                            `Server ${vars.text.cyan + name + vars.text.none} created in both the config.json file and default asset directory. Please restart the application to execute the new server.`,
-                            dirText("assets"),
-                            dirText("certs"),
-                            "Certificates created."
-                        ], true);
+                                return (locations_created[key] === true)
+                                    ? `${vars.text.angry}*${vars.text.none}Directory ${vars.text.cyan + locations[key] + vars.text.none} created.`
+                                    : `${vars.text.angry}*${vars.text.none}Directory ${vars.text.cyan + locations[key] + vars.text.none} already exists.`;
+                            },
+                            config:config_websocket_server = {
+                                callback: null,
+                                name: "",
+                                options: null
+                            };
+                        if (vars.command === "create_server") {
+                            log([
+                                `Server ${vars.text.cyan + name + vars.text.none} created.`,
+                                `${vars.text.angry}*${vars.text.none}config.json file updated.`,
+                                dirText("assets"),
+                                dirText("certs"),
+                                `${vars.text.angry}*${vars.text.none}Certificates created.`,
+                                "",
+                                "1. Update the config.json file to customize the new server.",
+                                "2. Restart the application to execute the new server."
+                            ], true);
+                        } else {
+                            vars.servers[name] = {
+                                block_list: {
+                                    host: [],
+                                    ip: [],
+                                    referrer: []
+                                },
+                                domain_local: [],
+                                http: {
+                                    delete: "",
+                                    post: "",
+                                    put: ""
+                                },
+                                path: {
+                                    certificates: locations.cert,
+                                    storage: locations.assets,
+                                    web_root: locations.assets
+                                },
+                                ports: {
+                                    open: 0,
+                                    secure: 0
+                                },
+                                redirect_domain: {
+                                    "": ["", 0]
+                                },
+                                redirect_internal: {
+                                    "": {
+                                        "": ""
+                                    }
+                                },
+                                server_name: name
+                            };
+                        }
+                        if (callback !== null) {
+                            callback();
+                        }
                     },
                     days: 65535,
                     domain_default: null,
@@ -88,11 +136,11 @@ const create_server = function commands_createServer(name:string):void {
                             locations_created[input] = true;
                             complete(input);
                         } else {
-                            error([`Error making directory ${location}`], erm, true);
+                            error([`Error making directory ${location}`], erm, terminate);
                         }
                     });
                 } else {
-                    error([`Error performing stat on directory ${location}`], ers, true);
+                    error([`Error performing stat on directory ${location}`], ers, terminate);
                 }
             });
         };
@@ -104,7 +152,7 @@ const create_server = function commands_createServer(name:string):void {
                 } else {
                     error([
                         `Error writing file: ${vars.text.angry + configPath + vars.text.none} during the create_server command.`
-                    ], erw, true);
+                    ], erw, terminate);
                 }
             });
         };
@@ -117,13 +165,13 @@ const create_server = function commands_createServer(name:string):void {
                         error([
                             `A server with name ${name} already exists.`,
                             "Either delete the existing server with that name or choose a different name."
-                        ], null, true);
+                        ], null, terminate);
                     } else {
                         const fileData:string = fileRaw.toString().replace(/\s*\}\s*$/, `,${config}}`);
                         write(fileData);
                     }
                 } else {
-                    error(["Error reading application's config.json file."], err, true);
+                    error(["Error reading application's config.json file."], err, terminate);
                 }
             });
         } else if (ers.code === "ENOENT") {
@@ -131,7 +179,7 @@ const create_server = function commands_createServer(name:string):void {
         } else {
             error([
                 `Error reading file: ${vars.text.angry + configPath + vars.text.none} during the create_server command.`
-            ], ers, true);
+            ], ers, terminate);
         }
     });
     node.fs.stat(`${vars.path.certs}`, function commands_createServer_certStat(erc:node_error):void {
@@ -146,13 +194,13 @@ const create_server = function commands_createServer(name:string):void {
                 } else {
                     error([
                         `Error creating directory: ${vars.text.angry + vars.path.certs + vars.text.none} during the create_server command.`
-                    ], erm, true);
+                    ], erm, terminate);
                 }
             });
         } else {
             error([
                 `Error reading directory: ${vars.text.angry + vars.path.certs + vars.text.none} during the create_server command.`
-            ], erc, true);
+            ], erc, terminate);
         }
     });
 };

@@ -5,7 +5,7 @@ import vars from "../utilities/vars.js";
 
 // cspell:word addstore, CAcreateserial, certutil, delstore, extfile, genpkey, keyid, pathlen
 
-const certificate = function commands_certificate(config:config_certificate):void {console.log("certificate");
+const certificate = function commands_certificate(config:config_certificate):void {
     const cert_path:string = `${vars.path.certs + config.server + vars.sep}`;
     node.fs.stat(cert_path, function commands_certificate_stat(ers:node_error):void {
         const cert = function commands_certificate_stat_cert():void {
@@ -28,7 +28,9 @@ const certificate = function commands_certificate(config:config_certificate):voi
                     });
                 },
                 cert_extensions:string = (function commands_certificate_stat_cert_extensions():string {
-                    const server:server = vars.servers[config.server],
+                    const server:server = (vars.servers[config.server] === undefined)
+                            ? null
+                            : vars.servers[config.server],
                         output:string[] = [
                         `[ ca ]
         basicConstraints       = CA:false
@@ -60,9 +62,13 @@ const certificate = function commands_certificate(config:config_certificate):voi
         # End Alt Names
         `
                         ],
-                        keys:string[] = Object.keys(server.redirect_domain),
+                        keys:string[] = (server === null)
+                            ? []
+                            : Object.keys(server.redirect_domain),
                         total_keys:number = keys.length,
-                        total_local:number = server.domain_local.length,
+                        total_local:number = (server === null)
+                            ? 0
+                            : server.domain_local.length,
                         list1:string[] = [],
                         list2:string[] = [];
                     let cert_index:number = 0,
@@ -170,7 +176,7 @@ const certificate = function commands_certificate(config:config_certificate):voi
                     error([`Error writing certificate extensions.cnf file to ${vars.text.angry + cert_path}extensions.cnf${vars.text.none}`], erw, true);
                 }
             });
-        };console.log(cert_path);console.log(ers);
+        };
         if (ers === null) {
             cert();
         } else {

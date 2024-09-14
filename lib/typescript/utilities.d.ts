@@ -72,6 +72,7 @@ interface server {
 }
 
 interface vars {
+    command: type_command;
     path: {
         certs: string;
         project: string;
@@ -87,7 +88,12 @@ interface vars {
     };
     start_time: bigint;
     store_server: {
-        [key:string]: server_instance;
+        open: {
+            [key:string]: server_instance;
+        };
+        secure: {
+            [key:string]: server_instance;
+        };
     };
     text: store_string;
     verbose: boolean;

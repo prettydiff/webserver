@@ -87,15 +87,42 @@ const startup = function utilities_startup(callback:() => void):void {
         if (ers === null) {
             node.fs.readFile(`${vars.path.project}config.json`, read);
         } else if (ers.code === "ENOENT") {
-            error([
-                `File ${vars.text.angry + vars.path.project}config.json${vars.text.none} does not exist.`,
-                "See the readme.md file for an example."
-            ], null, false);
+            if (vars.command === "create_server") {
+                callback();
+            } else {
+                error([
+                    `File ${vars.text.angry + vars.path.project}config.json${vars.text.none} does not exist.`,
+                    "See the readme.md file for an example."
+                ], null, false);
+            }
         } else {
             error(["Error reading config.json file from project root."], ers, true);
         }
+    },
+    options = function utilities_startup_options(key:"no_color"|"verbose", iterate:boolean, property:boolean):void {
+        const argv:number = process.argv.indexOf(key);
+        if (argv > -1) {
+            process.argv.splice(argv, 1);
+            if (property === true) {
+                vars[key as "verbose"] = true;
+            }
+            if (iterate === true) {
+                const store:store_string = (key === "no_color")
+                        ? vars.text
+                        : vars[key as "text"],
+                    keys:string[] = Object.keys(store);
+                let index:number = keys.length;
+                do {
+                    index = index - 1;
+                    store[keys[index]] = "";
+                } while (index > 0);
+            }
+        }
     };
 
+    options("no_color", true, false);
+    options("verbose", false, true);
+    vars.command = process.argv[2] as type_command;
     vars.path.project = process.argv[1].slice(0, process.argv[1].indexOf(`${vars.sep}js${vars.sep}`)) + vars.sep;
     vars.path.certs = `${vars.path.project}lib${vars.sep}certs${vars.sep}`;
     node.fs.stat(`${vars.path.project}config.json`, stat);
