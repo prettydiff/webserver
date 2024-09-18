@@ -3,8 +3,8 @@ interface config_certificate {
     callback: () => void;
     days: number;
     domain_default: string;
+    name: string;
     selfSign: boolean;
-    server: string;
 }
 
 interface config_directory {

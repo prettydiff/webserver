@@ -6,7 +6,7 @@ import vars from "../utilities/vars.js";
 // cspell:word addstore, CAcreateserial, certutil, delstore, extfile, genpkey, keyid, pathlen
 
 const certificate = function commands_certificate(config:config_certificate):void {
-    const cert_path:string = `${vars.path.certs + config.server + vars.sep}`;
+    const cert_path:string = vars.servers[config.name].path.certificates;
     node.fs.stat(cert_path, function commands_certificate_stat(ers:node_error):void {
         const cert = function commands_certificate_stat_cert():void {
             let index:number = 0;
@@ -28,9 +28,9 @@ const certificate = function commands_certificate(config:config_certificate):voi
                     });
                 },
                 cert_extensions:string = (function commands_certificate_stat_cert_extensions():string {
-                    const server:server = (vars.servers[config.server] === undefined)
+                    const server:server = (vars.servers[config.name] === undefined)
                             ? null
-                            : vars.servers[config.server],
+                            : vars.servers[config.name],
                         output:string[] = [
                         `[ ca ]
         basicConstraints       = CA:false

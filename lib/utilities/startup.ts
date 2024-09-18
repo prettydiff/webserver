@@ -124,7 +124,6 @@ const startup = function utilities_startup(callback:() => void):void {
     options("verbose", false, true);
     vars.command = process.argv[2] as type_command;
     vars.path.project = process.argv[1].slice(0, process.argv[1].indexOf(`${vars.sep}js${vars.sep}`)) + vars.sep;
-    vars.path.certs = `${vars.path.project}lib${vars.sep}certs${vars.sep}`;
     node.fs.stat(`${vars.path.project}config.json`, stat);
 };
 

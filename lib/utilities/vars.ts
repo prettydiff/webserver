@@ -6,7 +6,6 @@ import node from "./node.js";
 const vars:vars = {
     command: null,
     path: {
-        certs: "",
         project: ""
     },
     port_conflict: [],

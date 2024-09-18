@@ -14,6 +14,42 @@ interface directory_list extends Array<type_directory_item> {
     failures?: string[];
 }
 
+interface file {
+    mkdir: (config:file_mkdir) => void;
+    read: (config:file_read) => void;
+    stat: (config:file_stat) => void;
+    write: (config:file_write) => void;
+}
+
+interface file_mkdir {
+    callback: () => void;
+    error_terminate: boolean;
+    location: string;
+}
+
+interface file_read {
+    callback: (file:Buffer) => void;
+    error_terminate: boolean;
+    location: string;
+    no_error: () => void;
+    no_file: () => void;
+}
+
+interface file_stat {
+    callback: (stats:node_fs_Stats) => void;
+    error_terminate: boolean;
+    location: string;
+    no_error: () => void;
+    no_file: () => void;
+}
+
+interface file_write {
+    callback: () => void;
+    contents: Buffer | string;
+    error_terminate: boolean;
+    location: string;
+}
+
 interface hash_output {
     filePath: string;
     hash: string;
@@ -74,7 +110,6 @@ interface server {
 interface vars {
     command: type_command;
     path: {
-        certs: string;
         project: string;
     };
     port_conflict: type_port_conflict[];

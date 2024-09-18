@@ -35,6 +35,7 @@
         "build": "npx swc ./lib -d ./js --ignore \"./lib/assets/**/files\"",
         "certificate": "node js/lib/index.js certificate",
         "create_server": "node js/lib/index.js create_server",
+        "delete_server": "node js/lib/index.js delete_server",
         "lint": "npx eslint ./",
         "server": "node js/lib/index.js",
         "tsc": "npx tsc --pretty",
