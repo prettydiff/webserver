@@ -1,24 +1,24 @@
 
 import error from "../utilities/error.js";
+import file from "../utilities/file.js";
 import node from "../utilities/node.js";
 import vars from "../utilities/vars.js";
 
 // cspell:word addstore, CAcreateserial, certutil, delstore, extfile, genpkey, keyid, pathlen
 
 const certificate = function commands_certificate(config:config_certificate):void {
-    const cert_path:string = vars.servers[config.name].path.certificates;
-    node.fs.stat(cert_path, function commands_certificate_stat(ers:node_error):void {
-        const cert = function commands_certificate_stat_cert():void {
+    const cert_path:string = vars.servers[config.name].path.certificates,
+        cert = function commands_certificate_cert():void {
             let index:number = 0;
             const commands:string[] = [],
-                crypto = function commands_certificate_stat_cert_crypto():void {
+                crypto = function commands_certificate_cert_crypto():void {
                     node.child_process.exec(commands[index], {
                         cwd: cert_path
-                    }, function commands_certificate_stat_cert_crypto_child(erChild:node_childProcess_ExecException):void {
+                    }, function commands_certificate_cert_crypto_child(erChild:node_childProcess_ExecException):void {
                         if (erChild === null) {
                             index = index + 1;
                             if (index < commands.length) {
-                                commands_certificate_stat_cert_crypto();
+                                commands_certificate_cert_crypto();
                             } else {
                             config.callback();
                             }
@@ -27,7 +27,7 @@ const certificate = function commands_certificate(config:config_certificate):voi
                         }
                     });
                 },
-                cert_extensions:string = (function commands_certificate_stat_cert_extensions():string {
+                cert_extensions:string = (function commands_certificate_cert_extensions():string {
                     const server:server = (vars.servers[config.name] === undefined)
                             ? null
                             : vars.servers[config.name],
@@ -75,7 +75,7 @@ const certificate = function commands_certificate(config:config_certificate):voi
                         line_index:number = 3;
                     if (total_keys > 0) {
                         do {
-                            if ((/\.secure$/).test(keys[cert_index]) === false) {
+                            if (keys[cert_index] !== "" && (/\.secure$/).test(keys[cert_index]) === false) {
                                 list1.push(`permitted;DNS.${line_index} = ${keys[cert_index]}`);
                                 list2.push(`DNS.${line_index} = ${keys[cert_index]}`);
                                 line_index = line_index + 1;
@@ -86,9 +86,11 @@ const certificate = function commands_certificate(config:config_certificate):voi
                     if (total_local > 0) {
                         cert_index = 0;
                         do {
-                            list1.push(`permitted;DNS.${line_index} = ${server.domain_local[cert_index]}`);
-                            list2.push(`DNS.${line_index} = ${server.domain_local[cert_index]}`);
-                            line_index = line_index + 1;
+                            if (server.domain_local[cert_index] !== "") {
+                                list1.push(`permitted;DNS.${line_index} = ${server.domain_local[cert_index]}`);
+                                list2.push(`DNS.${line_index} = ${server.domain_local[cert_index]}`);
+                                line_index = line_index + 1;
+                            }
                             cert_index = cert_index + 1;
                         } while (cert_index < total_local);
                     }
@@ -124,25 +126,25 @@ const certificate = function commands_certificate(config:config_certificate):voi
                 //    - in            : specifies certificate request file path of certificate to sign
                 //    - out           : file location to output the signed certificate
                 //    - req           : use a certificate request as input opposed to an actual certificate
-                create = function commands_certificate_stat_cert_create():void {
+                create = function commands_certificate_cert_create():void {
                     const mode:[string, string] = (config.selfSign === true)
                             ? ["server", config.domain_default]
                             : ["root", config.domain_default],
                         org:string = "/O=home_server/OU=home_server",
                         // provides the path to the configuration file used for certificate signing
-                        pathConf = function commands_certificate_stat_cert_create_confPath(configName:"ca"|"selfSign"):string {
+                        pathConf = function commands_certificate_cert_create_confPath(configName:"ca"|"selfSign"):string {
                             return `"${cert_path}extensions.cnf" -extensions ${configName}`;
                         },
                         // create a certificate signed by another certificate
-                        actionCert = function commands_certificate_stat_cert_create_cert(type:"int"|"server"):string {
+                        actionCert = function commands_certificate_cert_create_cert(type:"int"|"server"):string {
                             return `openssl req -new -sha512 -key ${type}.key -out ${type}.csr -subj "/CN=${config.domain_default + org}"`;
                         },
                         // generates the key file associated with a given certificate
-                        actionKey = function commands_certificate_stat_cert_create_key(type:"int"|"root"|"server"):string {
+                        actionKey = function commands_certificate_cert_create_key(type:"int"|"root"|"server"):string {
                             return `openssl genrsa -out ${type}.key 4096`;
                         },
                         // signs the certificate
-                        actionSign = function commands_certificate_stat_cert_create_sign(cert:string, parent:string, path:"ca"|"selfSign"):string {
+                        actionSign = function commands_certificate_cert_create_sign(cert:string, parent:string, path:"ca"|"selfSign"):string {
                             return `openssl x509 -req -sha512 -in ${cert}.csr -days ${config.days} -out ${cert}.crt -CA ${parent}.crt -CAkey ${parent}.key -CAcreateserial -extfile ${pathConf(path)}`;
                         },
                         root:string = `openssl req -x509 -new -newkey rsa:4096 -nodes -key ${mode[0]}.key -days ${config.days} -out ${mode[0]}.crt -subj "/CN=${mode[1] + org}"`;
@@ -169,28 +171,23 @@ const certificate = function commands_certificate(config:config_certificate):voi
                     }
                     crypto();
                 };
-            node.fs.writeFile(`${cert_path}extensions.cnf`, cert_extensions, function command_certificate_writeExtensions(erw:node_error):void {
-                if (erw === null) {
-                    create();
-                } else {
-                    error([`Error writing certificate extensions.cnf file to ${vars.text.angry + cert_path}extensions.cnf${vars.text.none}`], erw, true);
-                }
+            file.write({
+                callback: create,
+                contents: cert_extensions,
+                error_terminate: true,
+                location: `${cert_path}extensions.cnf`
             });
         };
-        if (ers === null) {
-            cert();
-        } else {
-            if (ers.code === "ENOENT") {
-                node.fs.mkdir(cert_path, function commands_certificate_mkdir(erm:node_error):void {
-                    if (erm === null) {
-                        cert();
-                    } else {
-                        error([`Not able to create directory: ${cert_path}`], erm, true);
-                    }
-                });
-            } else {
-                error([`Not able to create directory: ${cert_path}`], ers, true);
-            }
+    file.stat({
+        callback: cert,
+        error_terminate: true,
+        location: cert_path,
+        no_file: function commands_certificate_mkdir():void {
+            file.mkdir({
+                callback: cert,
+                error_terminate: true,
+                location: cert_path
+            });
         }
     });
 };

@@ -9,7 +9,10 @@ const startup = function utilities_startup(callback:() => void):void {
     const read = function utilities_startup_read(erp:node_error, fileContents:Buffer):void {
         if (erp === null) {
             const instructions = function utilities_startup_read_instructions():void {
-                const config:project_config = JSON.parse(fileContents.toString()) as project_config,
+                const configStr:string = fileContents.toString(),
+                    config:project_config = (configStr === "" || (/^\s*\{/).test(configStr) === false || (/\}\s*$/).test(configStr) === false)
+                        ? null
+                        : JSON.parse(configStr) as project_config,
                     errorList:string[] = [
                         "Errors on server configurations from the config.json file.",
                         ""
@@ -26,12 +29,18 @@ const startup = function utilities_startup(callback:() => void):void {
                     },
                     interfaces:{ [index: string]: node_os_NetworkInterfaceInfo[]; } = node.os.networkInterfaces(),
                     keys_int:string[] = Object.keys(interfaces),
-                    keys_srv:string[] = Object.keys(config);
+                    keys_srv:string[] = (config === null)
+                        ? null
+                        : Object.keys(config);
                 let index_int:number = keys_int.length,
-                    index_srv:number = keys_srv.length,
+                    index_srv:number = (config === null)
+                        ? 0
+                        : keys_srv.length,
                     server:server = null,
                     sub:number = 0;
-                vars.servers = config;
+                vars.servers = (config === null)
+                    ? {}
+                    : config;
                 if (index_srv > 0) {
                     do {
                         index_srv = index_srv - 1;
@@ -99,29 +108,29 @@ const startup = function utilities_startup(callback:() => void):void {
             error(["Error reading config.json file from project root."], ers, true);
         }
     },
-    options = function utilities_startup_options(key:"no_color"|"verbose", iterate:boolean, property:boolean):void {
+    options = function utilities_startup_options(key:"no_color"|"verbose", iterate:string, property:boolean):void {
         const argv:number = process.argv.indexOf(key);
         if (argv > -1) {
             process.argv.splice(argv, 1);
             if (property === true) {
                 vars[key as "verbose"] = true;
             }
-            if (iterate === true) {
-                const store:store_string = (key === "no_color")
-                        ? vars.text
-                        : vars[key as "text"],
+            if (iterate !== null) {
+                const store:store_string = vars[iterate as "text"],
                     keys:string[] = Object.keys(store);
                 let index:number = keys.length;
                 do {
                     index = index - 1;
-                    store[keys[index]] = "";
+                    if (iterate === "text") {
+                        store[keys[index]] = "";
+                    }
                 } while (index > 0);
             }
         }
     };
 
-    options("no_color", true, false);
-    options("verbose", false, true);
+    options("no_color", "text", false);
+    options("verbose", null, true);
     vars.command = process.argv[2] as type_command;
     vars.path.project = process.argv[1].slice(0, process.argv[1].indexOf(`${vars.sep}js${vars.sep}`)) + vars.sep;
     node.fs.stat(`${vars.path.project}config.json`, stat);

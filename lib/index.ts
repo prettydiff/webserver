@@ -30,12 +30,12 @@ startup(function index():void {
         // delete_server command
         const name:string = process.argv[3],
             callback = function index_createServerCallback():void {
-                log([`Server ${name} created.`], true);
+                log([`Server ${name} deleted.`], true);
             };
         if (name === undefined) {
             error([
                 "Server name not specified.",
-                `Example: ${vars.text.cyan}npm run create_server my_server${vars.text.none}`
+                `Example: ${vars.text.cyan}npm run delete_server my_server${vars.text.none}`
             ], null, true);
             return;
         }

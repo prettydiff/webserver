@@ -17,6 +17,7 @@ interface directory_list extends Array<type_directory_item> {
 interface file {
     mkdir: (config:file_mkdir) => void;
     read: (config:file_read) => void;
+    remove: (config:file_remove) => void;
     stat: (config:file_stat) => void;
     write: (config:file_write) => void;
 }
@@ -31,15 +32,20 @@ interface file_read {
     callback: (file:Buffer) => void;
     error_terminate: boolean;
     location: string;
-    no_error: () => void;
     no_file: () => void;
+}
+
+interface file_remove {
+    callback: () => void;
+    error_terminate: boolean;
+    exclusions: string[];
+    location: string;
 }
 
 interface file_stat {
     callback: (stats:node_fs_Stats) => void;
     error_terminate: boolean;
     location: string;
-    no_error: () => void;
     no_file: () => void;
 }
 

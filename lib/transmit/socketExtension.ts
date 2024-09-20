@@ -46,9 +46,6 @@ const socket_extension = function transmit_socketExtension(config:config_websock
                     ], null, false);
                 }
             };
-        if (vars.sockets[config.server] === undefined) {
-            vars.sockets[config.server] = [];
-        }
         vars.sockets[config.server].push(config.socket);
         if (config.proxy === null) {
             config.socket.handler = config.handler;   // assigns an event handler to process incoming messages

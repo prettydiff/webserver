@@ -310,6 +310,9 @@ const server = function transmit_server(config:config_websocket_server):node_net
         : true;
     wsServer.name = config.name;
     wsServer.on("error", server_error);
+    if (vars.sockets[config.name] === undefined) {
+        vars.sockets[config.name] = [];
+    }
 
     // insecure connection listener
     if (config.options === null) {
