@@ -1,6 +1,6 @@
 
 import error from "../utilities/error.js";
-import node from "../utilities/node.js";
+import file from "../utilities/file.js";
 import vars from "../utilities/vars.js";
 
 // cspell: words bestaudio, keyid, multistreams, pathlen
@@ -51,7 +51,12 @@ const yt_config = function commands_ytConfig(name:string, callback:() => void):v
         let conf_count:number = 0,
             index:number = 0;
         do {
-            node.fs.writeFile(files[index][0], files[index][1], confWritten);
+            file.write({
+                callback: confWritten,
+                contents: files[index][1],
+                error_terminate: true,
+                location: files[index][0]
+            });
             index = index + 1;
         } while (index < conf_total);
     }

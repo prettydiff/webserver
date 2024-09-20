@@ -89,7 +89,7 @@ const file:file = {
                 if (config.no_file !== null) {
                     config.no_file();
                 } else if (config.callback !== null) {
-                    config.callback(file_raw);
+                    config.callback(null);
                 }
             } else if (err === null) {
                 if (config.callback !== null) {
@@ -195,7 +195,9 @@ const file:file = {
         directory(dirConfig);
     },
     stat: function utilities_fileStat(config:file_stat):void {
-        node.fs.stat(config.location, function utilities_fileStat_stat(ers:node_error, stat:node_fs_Stats):void {
+        node.fs.stat(config.location, {
+            bigint: true
+        }, function utilities_fileStat_stat(ers:node_error, stat:node_fs_BigIntStats):void {
             if (ers !== null && ers.code === "ENOENT") {
                 if (config.no_file !== null) {
                     config.no_file();

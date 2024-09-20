@@ -43,7 +43,7 @@ interface file_remove {
 }
 
 interface file_stat {
-    callback: (stats:node_fs_Stats) => void;
+    callback: (stats:node_fs_BigIntStats) => void;
     error_terminate: boolean;
     location: string;
     no_file: () => void;
