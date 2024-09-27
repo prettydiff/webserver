@@ -2,7 +2,9 @@
 // this file supports HTTP methods GET and HEAD
 
 import commas from "../utilities/commas.js";
+import core from "../browser/core.js";
 import dateString from "../utilities/dateString.js";
+import dashboard from "../dashboard/dashboard_script.js";
 import directory from "../utilities/directory.js";
 import file from "../utilities/file.js";
 import file_list from "../browser/file_list.js";
@@ -49,41 +51,49 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                     ""
                 ];
             if (config.template === true) {
-                const templateText:string[] = [
-                    "<!doctype html>",
-                    "<html lang=\"en\">",
-                    "<head>",
-                    "<meta charset=\"utf-8\"/>",
-                    (config.page_title === null)
-                        ? `<title>${vars.servers[server_name].server_name}</title>`
-                        : `<title>${vars.servers[server_name].server_name} ${config.page_title}</title>`,
-                    "<meta content=\"text/html;charset=UTF-8\" http-equiv=\"Content-Type\"/>",
-                    "<meta content=\"width=device-width, initial-scale=1\" name=\"viewport\"/>",
-                    "<meta content=\"noindex, nofollow\" name=\"robots\"/>",
-                    "<meta content=\"#fff\" name=\"theme-color\"/>",
-                    "<meta content=\"Global\" name=\"distribution\"/>",
-                    "<meta content=\"en\" http-equiv=\"Content-Language\"/>",
-                    "<meta content=\"blendTrans(Duration=0)\" http-equiv=\"Page-Enter\"/>",
-                    "<meta content=\"blendTrans(Duration=0)\" http-equiv=\"Page-Exit\"/>",
-                    "<meta content=\"text/css\" http-equiv=\"content-style-type\"/>",
-                    "<meta content=\"application/javascript\" http-equiv=\"content-script-type\"/>",
-                    "<meta content=\"#bbbbff\" name=\"msapplication-TileColor\"/>",
-                    "<link href=\"/styles.css\" media=\"all\" rel=\"stylesheet\" type=\"text/css\"/>",
-                    "<link rel=\"icon\" type=\"image/png\" href=\"data:image/png;base64,iVBORw0KGgo=\"/>",
-                    "</head>",
-                    "<body>",
-                    `<h1>${vars.servers[server_name].server_name}</h1>`,
-                    (config.status === 200)
-                        ? ""
-                        : `<h2>${config.status}</h2>`
-                ],
-                templateEnd:string[] = (config.script === null)
-                    ? ["</body></html"]
-                    : [
-                        `<script type="application/javascript">${config.script}</script></body></html>`
+                const name:string = (server_name === "dashboard")
+                        ? "Server Management"
+                        : server_name,
+                    templateText:string[] = [
+                        "<!doctype html>",
+                        "<html lang=\"en\">",
+                        "<head>",
+                        "<meta charset=\"utf-8\"/>",
+                        (config.page_title === null)
+                            ? `<title>${name}</title>`
+                            : `<title>${name} ${config.page_title}</title>`,
+                        "<meta content=\"text/html;charset=UTF-8\" http-equiv=\"Content-Type\"/>",
+                        "<meta content=\"width=device-width, initial-scale=1\" name=\"viewport\"/>",
+                        "<meta content=\"noindex, nofollow\" name=\"robots\"/>",
+                        "<meta content=\"#fff\" name=\"theme-color\"/>",
+                        "<meta content=\"Global\" name=\"distribution\"/>",
+                        "<meta content=\"en\" http-equiv=\"Content-Language\"/>",
+                        "<meta content=\"blendTrans(Duration=0)\" http-equiv=\"Page-Enter\"/>",
+                        "<meta content=\"blendTrans(Duration=0)\" http-equiv=\"Page-Exit\"/>",
+                        "<meta content=\"text/css\" http-equiv=\"content-style-type\"/>",
+                        "<meta content=\"application/javascript\" http-equiv=\"content-script-type\"/>",
+                        "<meta content=\"#bbbbff\" name=\"msapplication-TileColor\"/>",
+                        "<link href=\"/styles.css\" media=\"all\" rel=\"stylesheet\" type=\"text/css\"/>",
+                        "<link rel=\"icon\" type=\"image/png\" href=\"data:image/png;base64,iVBORw0KGgo=\"/>",
+                        "</head>",
+                        "<body>",
+                        `<h1>${name}</h1>`,
+                        (config.status === 200)
+                            ? ""
+                            : `<h2>${config.status}</h2>`
                     ],
-                bodyText:string = templateText.join("\r\n") + config.content.join("\r\n") + templateEnd.join("\r\n");
-                headerText[2] = `content-length: ${Buffer.from(bodyText).length}`;
+                    script:string = (config.script === null)
+                        ? null
+                        : (config.core === true)
+                            ? `(${config.script.toString().replace(/\(\s*\)/, "(core)")}(${core.toString()}));`
+                            : `(${config.script.toString()}());`,
+                    templateEnd:string[] = (config.script === null)
+                        ? ["</body></html"]
+                        : [
+                            `<script type="application/javascript">${script}</script></body></html>`
+                        ],
+                    bodyText:string = templateText.join("\r\n") + config.content.join("\r\n") + templateEnd.join("\r\n");
+                    headerText[2] = `content-length: ${Buffer.from(bodyText).length}`;
                 return payload(headerText, bodyText);
             }
             headerText[2] = `content-length: ${Buffer.from(bodyText).length}`;
@@ -98,6 +108,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
             write(html({
                 content: [`<p>Resource not found: <strong>${asset.join("/")}</strong></p>`],
                 content_type: "text/html; utf8",
+                core: false,
                 page_title: "404",
                 script: null,
                 status: 404,
@@ -112,6 +123,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                             JSON.stringify(errorObject)
                         ],
                         content_type: "text/html; utf8",
+                        core: false,
                         page_title: "500",
                         script: null,
                         status: 500,
@@ -181,10 +193,11 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                                 write(html({
                                     content: content,
                                     content_type: "text/html; utf8",
+                                    core: true,
                                     page_title: index0[1],
                                     status: 200,
                                     template: true,
-                                    script: `(${file_list.toString()}());`
+                                    script: file_list
                                 }));
                             };
                             directory({
@@ -288,8 +301,28 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
             }
         };
     if (fileFragment === "") {
-        // server root html file takes the name of the server, not index.html
-        input = `${vars.servers[server_name].path.web_root}index.html`;
+        if (server_name === "dashboard") {
+            const payload:transmit_dashboard = {
+                servers: vars.servers,
+                sockets: vars.sockets
+            };
+            write(html({
+                content: [
+                    `<input type="hidden" value='${JSON.stringify(payload).replace(/'/g, "&#39;")}'/>`,
+                    "<p><button class=\"server_create\">Create Server ⇸</button></p>",
+                    "<div id=\"server_list\"><h2>Server List</h2></div>"
+                ],
+                content_type: "text/html; utf8",
+                core: true,
+                page_title: null,
+                script: dashboard,
+                status: 200,
+                template: true
+            }));
+        } else {
+            // server root html file takes the name of the server, not index.html
+            input = `${vars.servers[server_name].path.web_root}index.html`;
+        }
     } else if (fileFragment.indexOf(".js") === fileFragment.length - 3 && fileFragment.includes("/js/lib/assets/") === false && vars.servers[server_name].path.web_root === `${vars.path.project}lib${vars.sep}assets${vars.sep + server_name}/`) {
         // normalizes compiled JS path to web_root path
         input = vars.servers[server_name].path.web_root.replace(/(\/|\\)lib(\/|\\)assets(\/|\\)/, `${vars.sep}js${vars.sep}lib${vars.sep}assets${vars.sep}`) + decodeURI(fileFragment);

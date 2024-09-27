@@ -29,6 +29,11 @@ interface transmit_addresses_socket {
     };
 }
 
+interface transmit_dashboard {
+    servers: project_config;
+    sockets: store_sockets;
+}
+
 interface transmit_receiver {
     [key:string]: receiver;
 }

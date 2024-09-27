@@ -66,8 +66,8 @@ interface project_config {
 }
 
 interface project_ports {
-    open: number;
-    secure: number;
+    open?: number;
+    secure?: number;
 }
 
 interface store_flag {
@@ -82,6 +82,10 @@ interface store_ports {
     [key:string]: project_ports;
 }
 
+interface store_sockets {
+    [key:string]: websocket_client[];
+}
+
 interface store_string {
     [key:string]: string;
 }
@@ -93,11 +97,13 @@ interface server {
         referrer: string[];
     };
     domain_local?: string[];
+    encryption: "both" | "open" | "secure";
     http?: {
         delete?: string;
         post?: string;
         put?: string;
     };
+    name: string;
     path: {
         certificates: string;
         storage: string;
@@ -110,7 +116,6 @@ interface server {
     redirect_internal?: {
         [key:string]: store_string;
     };
-    server_name: string;
 }
 
 interface vars {
@@ -124,9 +129,7 @@ interface vars {
     };
     sep: string;
     servers: project_config;
-    sockets: {
-        [key:string]: websocket_client[];
-    };
+    sockets: store_sockets;
     start_time: bigint;
     store_server: {
         open: {

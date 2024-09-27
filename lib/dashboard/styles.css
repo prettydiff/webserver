@@ -1,0 +1,64 @@
+/* cspell: words ytdownload, ytstatus */
+
+html{font-size:10px}
+body{background:#333;color:#ccc;font-family:sans-serif;max-width:120em}
+div.section{border-style:solid;border-width:0.1em;margin:2em;padding:2em}
+h1{font-size:4em}
+h2{font-size:3em}
+h3{font-size:2.4em}
+h4{font-size:2em}
+h5{font-size:1.8em}
+h1,h2,h3,h4,h5,h6{margin:0 0 1em}
+p,li,dd,dt,td,th{font-size:1.6em}
+li li{font-size:1em}
+label input{display:block}
+dt{font-weight:bold;text-decoration:underline}
+dd{margin:0 0 1em 2.5em}
+dd p,li p{font-size:1em}
+li{margin:1em 0 0}
+code{display:block;font-family:monospace;font-size:0.9em;white-space:pre}
+fieldset{background:#181818;border-color:#ccc;border-style:solid;border-width:0.1em;margin:0 0 0 -2.8em;max-width:48.25em;padding:0 1em 1em;overflow:scroll}
+a{color:#f66}
+button{background:#444;border-color:#666;border-radius:0.75em;border-style:revert;border-width:0.1em;box-shadow:0.1em 0.1em 0.25em #000;color:#eee;cursor:pointer;padding:0.25em 0.5em}
+button:hover{background:#333}
+button:active{border-style:inset;box-shadow:-0.1em -0.1em 0.25em #111}
+th{min-width:10em}
+strong,
+em{color:#c96}
+
+.delay{height:50%;width:50%}
+.delay svg{stroke:#ccc}
+.ytDownload input{display:block;width:100%}
+.fail{color:#c33;font-weight:bold}
+.success{color:#393;font-weight:bold}
+.yt strong{color:#c90;font-weight:bold}
+.ytStatus{background:#222;border-color:#666;border-style:solid;border-radius:1.6em;border-width:0.2em;box-shadow:0.1em 0.1em 0.5em #000;font-family:monospace;height:50em;overflow:scroll;padding:0 0.5em;white-space:nowrap;width:100%}
+.ytStatus h2{margin:0 0 1em}
+.buttons span,
+label.radio{display:inline-block;width:45%}
+.buttons button,
+label.radio{cursor:pointer}
+label.radio input{display:inline}
+input{background:#222;border-color:#666;border-radius:1em;border-style:solid;border-width:0.2em;color:#eee;font-family:monospace;margin:0.5em 0 0;padding:0.5em}
+input[type="radio"]{visibility:hidden}
+th button{float:right;margin:0 1em}
+.controls p{margin:2em 0}
+.controls button{font-size:2em}
+label span{border-radius:50%;background:#999;border-color:#999;border-style:solid;border-width:0.2em;display:inline-block;height:0.8em;margin:0 0.5em 0 0;width:0.8em}
+label span.checked{background:#111}
+.linux-link{display:none;font-size:4em;font-weight:bold}
+.linux-options{margin:0;overflow:hidden}
+.linux-options select{display:block;width:20em}
+.linux-options legend{font-size:2em;font-weight:bold}
+
+table.data-table{margin:0 0 2em;min-width:120em}
+table.data-table td,
+table.data-table th{border:0.1em solid #000}
+table.data-table th{background:#282828;padding:0.5em}
+table.data-table tr.odd{background:#383838}
+
+.odd{background:#3a3a3a}
+.even{background:#333}
+table{border-collapse:collapse}
+td{font-family:monospace;padding:0.5em}
+td .icon{display:inline-block;width:1.5em}

@@ -29,8 +29,9 @@ interface config_hash {
 interface config_html {
     content: Buffer|string[];
     content_type: string;
+    core: boolean;
     page_title: string;
-    script: string;
+    script: () => void;
     status: number;
     template: boolean;
 }

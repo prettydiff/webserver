@@ -46,17 +46,17 @@ const startup = function utilities_startup(callback:() => void):void {
                 index_int = keys_int.length;
                 server = vars.servers[keys_srv[index_srv]];
                 if (server.ports === null || server.ports === undefined) {
-                    errorList.push(`${vars.text.angry}*${vars.text.none} Server ${vars.text.cyan + keys_srv[index_srv] + vars.text.none} is missing a ${vars.text.angry}ports${vars.text.none} object.`);
+                    server.ports = {
+                        open: 0,
+                        secure: 0
+                    };
                 } else {
                     if (typeof server.ports.open !== "number") {
-                        errorList.push(`${vars.text.angry}*${vars.text.none} Server ${vars.text.cyan + keys_srv[index_srv] + vars.text.none} is missing a numeric value for ${vars.text.angry}ports.open${vars.text.none} property.`);
+                        server.ports.open = 0;
                     }
                     if (typeof server.ports.secure !== "number") {
-                        errorList.push(`${vars.text.angry}*${vars.text.none} Server ${vars.text.cyan + keys_srv[index_srv] + vars.text.none} is missing a numeric value for ${vars.text.angry}ports.secure${vars.text.none} property.`);
+                        server.ports.secure = 0;
                     }
-                }
-                if (typeof server.server_name !== "string" || server.server_name === "") {
-                    errorList.push(`${vars.text.angry}*${vars.text.none} Server ${vars.text.cyan + keys_srv[index_srv] + vars.text.none} is missing a numeric value for ${vars.text.angry}server_name${vars.text.none} property.`);
                 }
                 if (server.block_list === undefined || server.block_list === null) {
                     server.block_list = {

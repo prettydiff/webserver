@@ -4,13 +4,13 @@ import file from "../utilities/file.js";
 import log from "../utilities/log.js";
 import vars from "../utilities/vars.js";
 
-// 1. remove server's directory
-// 2. remove server from the config.json file
-// 3. turn off active servers
-// 4. kill all sockets on the server
+// 1. turn off active servers
+// 2. kill all sockets on the server
+// 3. delete server objects
+// 4. delete vars.sockets[server]
 // 5. delete server from vars.server
-// 6. delete server objects
-// 7. delete vars.sockets[server]
+// 6. remove server's directory
+// 7. remove server from the config.json file
 // 8. call the callback
 
 const delete_server = function commands_deleteServer(name:string, callback:() => void):void {
@@ -25,12 +25,11 @@ const delete_server = function commands_deleteServer(name:string, callback:() =>
             path_name:string = `${vars.path.project}servers${vars.sep + name + vars.sep}`,
             flags:store_flag = {
                 config: false,
-                destroy: false,
                 remove: false
             },
             complete = function commands_deleteServer_complete(flag:"config"|"destroy"|"remove"):void {
                 flags[flag] = true;
-                if (flags.config === true && flags.destroy === true && flags.remove === true) {
+                if (flags.config === true && flags.remove === true) {
                     if (vars.command === "delete_server") {
                         log([
                             `Server ${vars.text.cyan + name + vars.text.none} ${vars.text.angry}deleted${vars.text.none}.`,
@@ -46,92 +45,6 @@ const delete_server = function commands_deleteServer(name:string, callback:() =>
                     }
                 }
             },
-            destroy = function commands_deleteServer_destroy():void {
-                if (vars.command !== "delete_server") {
-                    const sockets:websocket_client[] = vars.sockets[name];
-                    let index:number = (sockets === undefined)
-                        ? 0
-                        : sockets.length;
-                    // 3. turn off active servers
-                    vars.store_server.open[name].close();
-                    vars.store_server.secure[name].close();
-                    // 4. kill all sockets on the server
-                    if (index > 0) {
-                        do {
-                            index = index - 1;
-                            sockets[index].destroy();
-                        } while (index > 0);
-                    }
-                    // 5. delete server from vars.server
-                    delete vars.servers[name];
-                    // 6. delete server objects
-                    delete vars.store_server.open[name];
-                    delete vars.store_server.secure[name];
-                    // 7. turn off active servers
-                    delete vars.sockets[name];
-                }
-                complete("destroy");
-            },
-            file_config:file_read = {
-                callback: function commands_deleteServer_readConfig(fileRaw:Buffer):void {
-                    const fileString:string = fileRaw.toString(),
-                        traverse = function commands_deleteServer_readConfig_traverse(increment:boolean):boolean {
-                            if (quote === "") {
-                                if (count === 0) {
-                                    if (increment === false && (fileString.charAt(chars - 1) === "{" || fileString.charAt(chars) === ",")) {
-                                        start = chars;
-                                        return true;
-                                    }
-                                    if (increment === true && (fileString.charAt(chars) === "}" || fileString.charAt(chars - 1) === ",")) {
-                                        end = chars;
-                                        return true;
-                                    }
-                                }
-                                if (fileString.charAt(chars) === "{") {
-                                    count = count - 1;
-                                } else if (fileString.charAt(chars) === "}") {
-                                    count = count + 1;
-                                } else if (fileString.charAt(chars) === "\"") {
-                                    quote = "\"";
-                                }
-                            } else if (fileString.charAt(chars) === quote) {
-                                quote = "";
-                            }
-                            return false;
-                        };
-                    let chars:number = fileString.indexOf(`"${name}"`),
-                        start:number = chars,
-                        end:number = chars,
-                        quote:string = "",
-                        count:number = 0;
-                    do {
-                        chars = chars - 1;
-                        if (traverse(false) === true) {
-                            break;
-                        }
-                    } while (chars > 0);
-                    chars = end;
-                    do {
-                        if (traverse(true) === true) {
-                            break;
-                        }
-                        chars = chars + 1;
-                    } while (chars > 0);
-                    file.write({
-                        callback: function commands_deleteServer_readConfig_callback():void {
-                            complete("config");
-                        },
-                        contents: fileString.slice(0, start) + fileString.slice(end),
-                        error_terminate: terminate,
-                        location: path_config
-                    });
-                },
-                error_terminate: terminate,
-                location: path_config,
-                no_file: function commands_deleteServer_noFile():void {
-                    complete("config");
-                }
-            },
             file_remove:file_remove = {
                 callback: function commands_deleteServer_remove():void {
                     complete("remove");
@@ -140,11 +53,40 @@ const delete_server = function commands_deleteServer(name:string, callback:() =>
                 exclusions: [],
                 location: path_name
             };
-        // 1. remove server's directory
+        if (vars.command !== "delete_server") {
+            const sockets:websocket_client[] = vars.sockets[name];
+            let index:number = (sockets === undefined)
+                ? 0
+                : sockets.length;
+            // 1. turn off active servers
+            vars.store_server.open[name].close();
+            vars.store_server.secure[name].close();
+            // 2. kill all sockets on the server
+            if (index > 0) {
+                do {
+                    index = index - 1;
+                    sockets[index].destroy();
+                } while (index > 0);
+            }
+            // 3. delete server objects
+            delete vars.store_server.open[name];
+            delete vars.store_server.secure[name];
+            // 4. delete vars.sockets[server]
+            delete vars.sockets[name];
+        }
+        // 5. delete server from vars.server
+        delete vars.servers[name];
+        // 6. remove server's directory
         file.remove(file_remove);
-        // 2. remove server from the config.json file
-        file.read(file_config);
-        destroy();
+        // 7. remove server from the config.json file
+        file.write({
+            callback: function commands_deleteServer_readConfig_callback():void {
+                complete("config");
+            },
+            contents: JSON.stringify(vars.servers),
+            error_terminate: terminate,
+            location: path_config
+        });
     }
 };
 
