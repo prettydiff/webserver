@@ -13,7 +13,7 @@ import vars from "../utilities/vars.js";
 
 /* cspell: words msvideo, nofollow, onnection, prettydiff */
 
-const http_get:http_action = function http_get(headerList:string[], socket:websocket_client, server_name:string):void {
+const http_get:http_action = function http_get(headerList:string[], socket:websocket_client):void {
     let input:string = "";
     const index0:string[] = headerList[0].replace(/^\s+/, "").replace(/\s+/, " ").split(" "),
         method:"GET"|"HEAD" = (index0.indexOf("HEAD") === 0)
@@ -21,6 +21,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
             : "GET",
         resource:string = index0[1],
         asset:string[] = resource.split("/"),
+        server_name:string = socket.server,
         fileFragment:string = asset.join(vars.sep).replace(/^(\\|\/)/, ""),
         payload = function http_get_payload(heading:string[], body:string):string {
             if (method === "HEAD") {
@@ -76,7 +77,10 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                         "<link href=\"/styles.css\" media=\"all\" rel=\"stylesheet\" type=\"text/css\"/>",
                         "<link rel=\"icon\" type=\"image/png\" href=\"data:image/png;base64,iVBORw0KGgo=\"/>",
                         "</head>",
-                        "<body>",
+                        "<body",
+                        (server_name === "dashboard")
+                            ? " id=\"dashboard\">"
+                            : ">",
                         `<h1>${name}</h1>`,
                         (config.status === 200)
                             ? ""
@@ -309,8 +313,25 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
             write(html({
                 content: [
                     `<input type="hidden" value='${JSON.stringify(payload).replace(/'/g, "&#39;")}'/>`,
-                    "<p><button class=\"server_create\">Create Server ⇸</button></p>",
-                    "<div id=\"server_list\"><h2>Server List</h2></div>"
+                    "<nav><ul>",
+                    "<li><button class=\"nav-focus\">Servers</button></li>",
+                    "<li><button>Port Summary</button></li>",
+                    "<li><button>Socket Summary</button></li>",
+                    "<li><button>Docker Compose</button></li>",
+                    "</ul></nav>",
+                    "<main><div id=\"servers\"><h2>Servers</h2>",
+                    "<div class=\"server-definitions\"><h3>Definitions of Server Object Properties</h3><dl>",
+                    "<dt>block_list</dt><dd>The block list contains three optional string arrays of criteria to determine if matching sockets should be instantly destroyed. At this time wildcards, CIDR notation, and ranges are not supported.</dd>",
+                    "<dt>domain_local</dt><dd>Sockets featuring HTTP request host names in this list will be served from this server.  Sockets featuring HTTP request host names not in this list or in the redirect_domain list will be destroyed.</dd>",
+                    "<dt>encryption</dt><dd>Whether to create an encrypted server for HTTPS and WSS protocols, an unencrypted server for HTTP and WS protocols, or both. Accepted values are 'both, 'open', or 'secure'.</dd>",
+                    "<dt>http</dt><dd>File system paths to external utilities for handling the supported HTTP methods: delete, post, and put.  HTTP request bodies are passed into an environmental variable on the respective child process named 'payload'.</dd>",
+                    "<dt>name</dt><dd>The name of this server.</dd>",
+                    "<dt>path</dt><dd>Stores absolute file system paths used by the server.  The storage path is for any dynamically written data, such as logs.  The web_root directory is where web pages and web page assets are sourced from. The certificates path is only used for secure servers to store their respective TLS certificates.</dd>",
+                    "<dt>ports</dt><dd>The ports on which the server operates.</dd>",
+                    "<dt>redirect_domain</dt><dd>Redirects traffic to a different location, such as vanity domains. Each value is an array of two indexes.  The first index, a string, identifies where to redirect the traffic to as in a IP address, hostname, or domain name.  An empty string or non-string value will redirect traffic onto a different port of the same local machine.  The second index is a number representing a port to redirect traffic to.</dd>",
+                    "<dt>redirect_internal</dt><dd>Redirects resource paths within the given server based upon the hostname in the HTTP request header. This is useful for dynamic or vanity endpoints on a given server.</dd>",
+                    "</dl></div>",
+                    "<p><button class=\"server-create\">Create Server</button></p></div></main>"
                 ],
                 content_type: "text/html; utf8",
                 core: true,

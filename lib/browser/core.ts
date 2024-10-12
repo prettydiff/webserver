@@ -1,12 +1,53 @@
 
-const core = function core(open:() => void, message:(event:websocket_event) => void):WebSocket {
-    const port:string = (location.protocol === "http:")
-            ? "80"
-            : "443",
-        address:string = (location.host.includes(":") === true)
-            ? location.origin
-            : `${location.origin}:${port}`,
-        socket:WebSocket = new WebSocket(address, ["browser"]),
+const core = function core(open:() => void, message:(event:websocket_event) => void):browserSocket {
+    const socketCall = function core_socketCall():WebSocket {
+            const port:string = (location.protocol === "http:")
+                    ? "80"
+                    : "443",
+                address:string = (location.host.includes(":") === true)
+                    ? location.origin
+                    : `${location.origin}:${port}`,
+                socketItem:WebSocket = new WebSocket(address, ["browser"]),
+                close = function core_close(event:CloseEvent):void {
+                    socket.interval = setInterval(core_socketCall, 10000);
+                };
+            socketItem.onmessage = message;
+            socketItem.onopen = function core_socket_open(event:Event):void {
+                const target:WebSocket = event.target as WebSocket;
+                if (socket.interval !== null) {
+                    clearInterval(socket.interval);
+                    socket.interval = null;
+                }
+                socket.socket = target;
+                if (socket.queueStore.length > 0) {
+                    do {
+                        socket.socket.send(socket.queueStore[0]);
+                        socket.queueStore.splice(0, 1);
+                    } while (socket.queueStore.length > 0)
+                }
+                open();
+            };
+            socketItem.onclose = close;
+            return socketItem;
+        },
+        socket:browserSocket = {
+            call: socketCall,
+            interval: null,
+            queueStore: [],
+            queue: function core_queue(message:string):void {
+                const instance:browserSocket = this;
+                if (instance.socket === null || instance.socket.readyState !== 1) {
+                    instance.queueStore.push(message);
+                } else {
+                    instance.socket.send(message);
+                }
+            },
+            socket: null
+        },
+        capitalize = function core_capitalize():string {
+            // eslint-disable-next-line no-restricted-syntax
+            return this.charAt(0).toUpperCase() + this.slice(1);
+        },
         dom = function core_dom():void {
             // addClass - adds a new class value to an element's class attribute if not already present
             // * className:string - The name of the class to add.
@@ -320,10 +361,9 @@ const core = function core(open:() => void, message:(event:websocket_event) => v
             Element.prototype.lowName                = lowName;
             Element.prototype.removeClass            = removeClass;
             Element.prototype.removeHighlight        = removeHighlight;
+            String.prototype.capitalize              = capitalize;
         };
     dom();
-    socket.onmessage = message;
-    socket.onopen = open;
     return socket;
 };
 

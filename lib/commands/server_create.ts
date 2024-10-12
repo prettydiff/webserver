@@ -14,7 +14,7 @@ import vars from "../utilities/vars.js";
 // 5. launch servers
 // 6. call the callback
 
-const create_server = function commands_createServer(config:server, read_certificates:boolean, callback:() => void):void {
+const server_create = function commands_serverCreate(config:server, read_certificates:boolean, callback:() => void):void {
     let count:number = 0;
     const path_config:string = `${vars.path.project}config.json`,
         path_servers:string = `${vars.path.project}servers${vars.sep}`,
@@ -26,14 +26,14 @@ const create_server = function commands_createServer(config:server, read_certifi
             config: false,
             dir: false
         },
-        complete = function commands_createServer_complete(input:"config"|"dir"):void {
+        complete = function commands_serverCreate_complete(input:"config"|"dir"):void {
             flags[input] = true;
             if (flags.config === true && flags.dir === true) {
                 // 4. create server's certificates
                 let server_count:number = 0;
                 const config_server:config_websocket_server = {
                     callback: (vars.servers[config.name].encryption === "both")
-                        ? function commands_createServer_complete_certificate_callbackBoth():void {
+                        ? function commands_serverCreate_complete_certificate_callbackBoth():void {
                             server_count = server_count + 1;
                             if (server_count > 1 && callback !== null) {
                                 // 6. call the callback
@@ -48,7 +48,7 @@ const create_server = function commands_createServer(config:server, read_certifi
                     server(config_server);
                 } else {
                     certificate({
-                        callback: function commands_createServer_complete_certificate():void {
+                        callback: function commands_serverCreate_complete_certificate():void {
                             if (vars.command === "create_server") {
                                 log([
                                     `Server ${vars.text.cyan + config.name + vars.text.none} ${vars.text.green}created${vars.text.none}.`,
@@ -81,13 +81,13 @@ const create_server = function commands_createServer(config:server, read_certifi
                 }
             }
         },
-        children = function commands_createServer_children():void {
+        children = function commands_serverCreate_children():void {
             count = count + 1;
             if (count > 1) {
                 complete("dir");
             }
         },
-        mkdir = function commands_createServer_serverDir(location:string):void {
+        mkdir = function commands_serverCreate_serverDir(location:string):void {
             file.mkdir({
                 callback: children,
                 error_terminate: terminate,
@@ -130,7 +130,7 @@ const create_server = function commands_createServer(config:server, read_certifi
         vars.servers[config.name] = config;
         // 2. add server to config.json file
         file.write({
-            callback: function commands_createServer_writeConfig_callback():void {
+            callback: function commands_serverCreate_writeConfig_callback():void {
                 complete("config");
             },
             contents: JSON.stringify(vars.servers),
@@ -149,4 +149,4 @@ const create_server = function commands_createServer(config:server, read_certifi
     mkdir(path_certs);
 };
 
-export default create_server;
+export default server_create;

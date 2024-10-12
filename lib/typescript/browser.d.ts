@@ -25,6 +25,10 @@ interface Element {
     removeHighlight: () => void;
 }
 
+interface String {
+    capitalize: () => string;
+}
+
 interface FocusEvent {
     target: HTMLElement;
 }
@@ -36,4 +40,12 @@ interface MouseEvent {
 }
 interface TouchEvent {
     target: HTMLElement;
+}
+
+interface browserSocket {
+    call: () => void;
+    interval: ReturnType<typeof setTimeout>;
+    queueStore: string[];
+    queue: (message:string) => void;
+    socket: WebSocket;
 }

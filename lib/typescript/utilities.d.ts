@@ -70,6 +70,10 @@ interface project_ports {
     secure?: number;
 }
 
+interface store_action {
+    [key:string]: (event?:type_user_event) => void;
+}
+
 interface store_flag {
     [key:string]: boolean;
 }
@@ -97,7 +101,7 @@ interface server {
         referrer: string[];
     };
     domain_local?: string[];
-    encryption: "both" | "open" | "secure";
+    encryption: type_encryption;
     http?: {
         delete?: string;
         post?: string;
@@ -107,15 +111,20 @@ interface server {
     path: {
         certificates: string;
         storage: string;
-        web_root?: string;
+        web_root: string;
     };
     ports: project_ports;
+    modification_name?: string;
     redirect_domain?: {
         [key:string]: [string, number];
     };
     redirect_internal?: {
         [key:string]: store_string;
     };
+}
+
+interface server_content {
+    [key:string]: (property:type_server_property, parent:HTMLElement) => void;
 }
 
 interface vars {

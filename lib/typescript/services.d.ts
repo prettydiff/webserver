@@ -1,4 +1,10 @@
 
+
+interface services_dashboard_action {
+    action: "server-destroy" | "server-save";
+    configuration: server;
+}
+
 interface services_http {
     connect: http_action;
     delete: http_action;

@@ -36,6 +36,14 @@ interface config_html {
     template: boolean;
 }
 
+interface config_validate_serverKeys {
+    name: "block_list" | "http" | "path" | "ports" | "redirect_domain" | "redirect_internal";
+    required_name: boolean;
+    required_property: boolean;
+    supported: string[];
+    type: "array" | "number" | "path" | "store" | "string";
+}
+
 interface config_websocket_create {
     callback: (socket:websocket_client) => void;
     handler: websocket_message_handler;

@@ -65,9 +65,10 @@ interface project_config {
             post?: string;
             put?: string;
         };
-        path?: {
-            storage?: string;
-            web_root?: string;
+        path: {
+            certificates: string;
+            storage: string;
+            web_root: string;
         };
         ports: {
             open: number;
@@ -93,7 +94,7 @@ interface project_config {
 * **ports.open** - Required. The port number to serve unencrypted protocols HTTP and WS. A value of *0* will use a randomly available port.
 * **ports.secure** - Required. The port number to serve encrypted protocols HTTPS and WSS. A value of *0* will use a randomly available port.
 * **redirect_domain** - Optional. An object storing domain names and where to redirect them to.
-   * In the value the first index, a string, is the hostname where to redirect the domain to. An empty string or null value suggests to redirect the domain to a different port on the same machine.
+   * The value in the first index, a string, is the hostname where to redirect the domain to. An empty string or null value suggests to redirect the domain to a different port on the same machine.
    * The value in the second index, a number, identifies the port where to redirect the domain to.
    * If a given domain requires separate ports for both encrypted and unencrypted traffic simply specify the encrypted name instance with a `.secure` extension.
 * **redirect_internal** - Optional. Redirects a requested resource from one location on the current server to a different location. This redirection only occurs on the server out of sight from the user and alters the response content but it does not modify the address of the request.

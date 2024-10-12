@@ -1,11 +1,11 @@
 
 import certificate from "./commands/certificate.js";
-import create_server from "./commands/create_server.js";
-import delete_server from "./commands/delete_server.js";
 import error from "./utilities/error.js";
 import log from "./utilities/log.js";
 import read_certs from "./utilities/read_certs.js";
 import server from "./transmit/server.js";
+import server_create from "./commands/server_create.js";
+import server_halt from "./commands/server_halt.js";
 import startup from "./utilities/startup.js";
 import vars from "./utilities/vars.js";
 import yt_config from "./commands/yt_config.js";
@@ -66,7 +66,7 @@ startup(function index():void {
             return;
         }
         if (vars.command === "create_server") {
-            create_server(default_server(name), false, function index_createServerCallback():void {
+            server_create(default_server(name), false, function index_serverCreateCallback():void {
                 log([`
                     Server ${name} created with default values.`,
                     "Edit the config.json file to customize."
@@ -80,7 +80,7 @@ startup(function index():void {
                 return;
             }
             if (vars.command === "delete_server") {
-                delete_server(name, function index_deleteServerCallback():void {
+                server_halt(vars.servers[name], "destroy", function index_serverHaltCallback():void {
                     log([`Server ${name} deleted.`], true);
                 });
             } else if (vars.command === "certificate") {
@@ -147,7 +147,7 @@ startup(function index():void {
                         config.options = tlsOptions;
                         config.name = name;
                         server(config);
-                        if (vars.servers[servers[index]].encryption === "both") {
+                        if (vars.servers[name].encryption === "both") {
                             callback_total = callback_total + 1;
                             config.options = null;
                             config.name = name;
@@ -160,7 +160,7 @@ startup(function index():void {
             } while (index < total);
         };
         if (vars.servers.dashboard === undefined) {
-            create_server(default_server("dashboard"), false, function index_startDashboard():void {
+            server_create(default_server("dashboard"), false, function index_startDashboard():void {
                 start();
             });
         } else {

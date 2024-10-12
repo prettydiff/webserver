@@ -9,7 +9,7 @@ h3{font-size:2.4em}
 h4{font-size:2em}
 h5{font-size:1.8em}
 h1,h2,h3,h4,h5,h6{margin:0 0 1em}
-p,li,dd,dt,td,th{font-size:1.6em}
+p,li,dd,dt,td,th,textarea{font-size:1.6em}
 li li{font-size:1em}
 label input{display:block}
 dt{font-weight:bold;text-decoration:underline}
@@ -25,6 +25,8 @@ button:active{border-style:inset;box-shadow:-0.1em -0.1em 0.25em #111}
 th{min-width:10em}
 strong,
 em{color:#c96}
+textarea{background:#222;border-color:#666;border-style:solid;border-width:0.065em;color:#ccc}
+.clear{background:transparent;border-style:none;display:block;clear:both;float:none}
 
 .delay{height:50%;width:50%}
 .delay svg{stroke:#ccc}
@@ -62,3 +64,59 @@ table.data-table tr.odd{background:#383838}
 table{border-collapse:collapse}
 td{font-family:monospace;padding:0.5em}
 td .icon{display:inline-block;width:1.5em}
+
+#dashboard button{background:#444;border-color:#ccc;border-style:solid;border-radius:0;border-width:0.065em;font-size:1.2em;font-weight:bold;text-shadow:0.05em 0.05em #111;width:10em}
+#dashboard button:hover{background:#666}
+#dashboard button:hover:disabled{background:#444;color:#666;cursor:auto}
+#dashboard button:disabled{color:#666}
+#dashboard nav ul{border-color:#ccc;border-style:none none solid;border-width:0.1em;margin:0 0 4em;padding:0 0 1em}
+#dashboard nav li{border-color:#ccc;border-style:none none none solid;border-width:0.1em;display:inline-block;padding:0 0.2em}
+#dashboard nav button{background:transparent;border-style:none;box-shadow:none;font-size:0.8em}
+#dashboard nav .nav-focus{background:#222}
+#dashboard h1,
+#servers .detail_item p{margin:0 0 0.5em}
+#servers p,
+#servers h2,
+#servers .server-list h4{margin:0 0 0.42em}
+#servers .server-list h4{cursor:pointer}
+#servers .server-list h4:hover{background:#444}
+#servers h5{font-size:1em;margin:0}
+#servers div.edit,
+#servers p{font-size:1.6em}
+#servers .server-list h4 button{background:none;border-style:none;box-shadow:none;display:block;font-size:1em;padding:0;text-align:left;width:100%}
+#servers .server-list h4 .expand{display:block;float:right;font-size:0.5em}
+#servers ul{font-size:1em;margin:1em 0 0;padding:0}
+#servers .server-definitions,
+#servers .server-list,
+#servers li{border-color:#ccc;border-style:solid;border-width:0.1em;font-size:1em;padding:1em 1em 0}
+#servers .server-list{padding-bottom:1em}
+#servers li{list-style:none}
+#servers label{display:flex;width:100%}
+#servers label span.details-redundant,
+#servers label span.text{background:transparent;border-style:none;display:inline-block;font-size:1em;font-weight:bold;line-height:2.5;width:12em}
+#servers label span.details-redundant{text-indent:-2000em}
+#servers textarea{font-size:1em;height:1em;line-height:1;padding:0.4em;width:100%}
+#servers .server-cancel,
+#servers .server-destroy,
+#servers .server-edit,
+#servers .server-save{font-size:1em}
+#servers .server-cancel,
+#servers .server-save,
+#servers .server-destroy{margin:1em 3em}
+#servers .server-save{color:#090;float:right}
+#servers .server-edit{color:#ca3;display:block;margin:1em auto}
+#servers .server-cancel{color:#ca3}
+#servers .server-destroy{color:#911}
+#servers .server-create{margin:2em 0}
+#servers .edit textarea{box-sizing:border-box;display:block;height:50em;margin:0 0 1em;overflow:scroll;width:100%}
+#servers .summary{display:none}
+#servers .edit label,
+#servers .edit label span{display:block}
+#servers .edit label span{height:2em}
+#servers .edit h4{font-size:1.2em}
+#servers .edit li{border-style:none;list-style-type:disc;margin:0.5em 0 0 1em;padding:0}
+#servers .edit dt,
+#servers .edit dd{font-size:1em}
+#dashboard .pass-false{color:#f33}
+#dashboard .pass-true{color:#090}
+#dashboard .pass-warn{color:#ca3}
