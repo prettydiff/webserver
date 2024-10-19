@@ -12,6 +12,7 @@ startup(function index():void {
             path_assets:string = `${path_name}assets${vars.sep}`,
             path_certs:string = `${path_name}certs${vars.sep}`;
         return {
+            activate: true,
             block_list: {
                 host: [],
                 ip: [],

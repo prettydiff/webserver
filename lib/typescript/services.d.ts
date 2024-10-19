@@ -5,6 +5,11 @@ interface services_dashboard_action {
     configuration: server;
 }
 
+interface services_dashboard_activate {
+    name: string;
+    ports: server_ports;
+}
+
 interface services_dashboard_status {
     action: type_dashboard_action;
     configuration: type_dashboard_config;

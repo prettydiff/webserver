@@ -236,7 +236,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
                 // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
                 const socket:websocket_client = this;
                 log({
-                    action: "activate",
+                    action: null,
                     config: ers,
                     message: `Error on socket ${socket.hash} of server ${socket.server}`,
                     status: "error",
@@ -269,13 +269,16 @@ const server = function transmit_server(config:config_websocket_server):node_net
                     : "open";
             port_conflict(server.name, server.secure, false);
             vars.store_server[secure][config.name] = server;
-            vars.servers[server.name].ports[secure] = address.port;
+            vars.server_status[config.name][secure] = address.port;
             log({
                 action: "activate",
-                config: config,
+                config: {
+                    name: config.name,
+                    ports: vars.server_status[config.name]
+                },
                 message: `${secure.capitalize()} server ${server.name} came online.`,
                 status: "informational",
-                type: "log"
+                type: "server"
             });
             if (config.callback !== null) {
                 config.callback(server.name, secure);

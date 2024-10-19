@@ -1,7 +1,7 @@
 
 type type_certKey = "ca" | "crt" | "key";
 type type_dashboard_action = "activate" | "add" | type_halt_action;
-type type_dashboard_config = config_websocket_create | config_websocket_server | node_childProcess_ExecException | node_error | server;
+type type_dashboard_config = config_websocket_create | config_websocket_server | node_childProcess_ExecException | node_error | server | services_dashboard_activate;
 type type_dashboard_status = "error" | "informational" | "success";
 type type_dashboard_type = "log" | "port" | "server" | "socket";
 type type_directory_item = [string, type_file, string, number, number, directory_data, string];
@@ -16,6 +16,7 @@ type type_paths = "storage" | "web_root";
 type type_port_conflict = [string, boolean, boolean];
 type type_search = "fragment" | "negation" | "regex";
 type type_selector = "class" | "id" | "tag";
+type type_server_color = "amber" | "green" | "red";
 type type_server_property = "block_list" | "domain_local" | "encryption" | "http" | "name" | "path" | "ports" | "redirect_domain" | "redirect_internal";
 type type_service = "dashboard-action" | "dashboard-status" | "process-kill" | "youtube-download-status" | "youtube-download";
 type type_socket_data = services_dashboard_action | services_dashboard_status | services_processKill | services_youtubeDownload | services_youtubeStatus;

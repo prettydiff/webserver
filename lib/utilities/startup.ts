@@ -78,6 +78,10 @@ const startup = function utilities_startup(callback:() => void):void {
                         includes(interfaces[keys_int[index_int]][sub].address);
                     } while (sub > 0);
                 } while (index_int > 0);
+                vars.server_status[keys_srv[index_srv]] = {
+                    open: 0,
+                    secure: 0
+                };
             } while (index_srv > 0);
         }
         if (errorList.length > 2) {

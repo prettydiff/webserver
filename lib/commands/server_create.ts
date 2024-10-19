@@ -33,13 +33,6 @@ const server_create = function commands_serverCreate(config:server, read_certifi
                     callback: function commands_serverCreate_complete_certificate_callbackBoth():void {
                         server_count = server_count + 1;
                         if ((server_count > 1 && config.encryption === "both") || config.encryption !== "both") {
-                            log({
-                                action: "add",
-                                config: config,
-                                message: `Server named ${config.name} created.`,
-                                status: "success",
-                                type: "server"
-                            });
                             // 6. call the callback
                             if (callback !== null) {
                                 callback();
@@ -49,6 +42,13 @@ const server_create = function commands_serverCreate(config:server, read_certifi
                     name: config.name,
                     options: null
                 };
+                log({
+                    action: "add",
+                    config: config,
+                    message: `Server named ${config.name} created.`,
+                    status: "success",
+                    type: "server"
+                });
                 if (config.encryption === "open") {
                     server(config_server);
                 } else {
@@ -64,13 +64,6 @@ const server_create = function commands_serverCreate(config:server, read_certifi
                                     server(config_server);
                                 });
                             } else {
-                                log({
-                                    action: "add",
-                                    config: config,
-                                    message: `Server named ${config.name} created.`,
-                                    status: "success",
-                                    type: "server"
-                                });
                                 // 6. call the callback
                                 if (callback !== null) {
                                     callback();
@@ -132,6 +125,18 @@ const server_create = function commands_serverCreate(config:server, read_certifi
             }
         }
         vars.servers[config.name] = config;
+        vars.server_status[config.name] = (config.encryption === "both")
+            ? {
+                open: 0,
+                secure: 0
+            }
+            : (config.encryption === "open")
+                ? {
+                    open: 0
+                }
+                : {
+                    secure: 0
+                };
         // 2. add server to config.json file
         file.write({
             callback: function commands_serverCreate_writeConfig_callback():void {

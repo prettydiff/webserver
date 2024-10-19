@@ -79,7 +79,10 @@ td .icon{display:inline-block;width:1.5em}
 #servers h2,
 #servers .server-list h4{margin:0 0 0.42em}
 #servers .server-list h4{cursor:pointer}
-#servers .server-list h4:hover{background:#444}
+#servers .server-list h4:hover{background:rgba(0,0,0,0.25)}
+#servers .server-list > ul > .amber{background:#443}
+#servers .server-list > ul > .green{background:#121}
+#servers .server-list > ul > .red{background:#422}
 #servers h5{font-size:1em;margin:0}
 #servers div.edit,
 #servers p{font-size:1.6em}
@@ -117,6 +120,8 @@ td .icon{display:inline-block;width:1.5em}
 #servers .server-destroy{color:#911}
 #servers .server-new{margin:2em 0}
 #servers .edit textarea{box-sizing:border-box;display:block;height:35em;margin:0 0 1em;overflow:scroll;width:100%}
+#servers .active-ports,
+#servers .summary{background:#333;border-color:#ccc;border-style:solid;border-width:0.1em;margin:0 0 1em;padding:1em 0.5em}
 #servers .summary{display:none}
 #servers .edit label,
 #servers .edit label span{display:block}

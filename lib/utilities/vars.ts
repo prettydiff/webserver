@@ -11,6 +11,7 @@ const vars:vars = {
     port_conflict: [],
     processes: {},
     sep: node.path.sep,
+    server_status: {},
     servers: {},
     sockets: {},
     start_time: process.hrtime.bigint(),

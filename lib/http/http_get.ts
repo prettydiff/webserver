@@ -307,6 +307,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
         if (server_name === "dashboard") {
             const payload:transmit_dashboard = {
                 logs: vars.logs,
+                server_status: vars.server_status,
                 servers: vars.servers,
                 sockets: vars.sockets
             };
@@ -319,6 +320,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                     "<main>",
                     "<div id=\"servers\"><h2>Servers</h2>",
                     "<div class=\"server-definitions\"><h3>Definitions of Server Object Properties</h3><button class=\"expand\">Expand</button><dl>",
+                    "<dt>activate</dt><dd>Instructs the application to bring the server online.</dd>",
                     "<dt>block_list</dt><dd>The block list contains three optional string arrays of criteria to determine if matching sockets should be instantly destroyed. At this time wildcards, CIDR notation, and ranges are not supported.</dd>",
                     "<dt>domain_local</dt><dd>Sockets featuring HTTP request host names in this list will be served from this server.  Sockets featuring HTTP request host names not in this list or in the redirect_domain list will be destroyed.</dd>",
                     "<dt>encryption</dt><dd>Whether to create an encrypted server for HTTPS and WSS protocols, an unencrypted server for HTTP and WS protocols, or both. Accepted values are 'both, 'open', or 'secure'.</dd>",

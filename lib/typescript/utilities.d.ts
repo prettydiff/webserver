@@ -65,7 +65,7 @@ interface project_config {
     [key:string]: server;
 }
 
-interface project_ports {
+interface server_ports {
     open?: number;
     secure?: number;
 }
@@ -83,7 +83,7 @@ interface store_number {
 }
 
 interface store_ports {
-    [key:string]: project_ports;
+    [key:string]: server_ports;
 }
 
 interface store_sockets {
@@ -95,6 +95,7 @@ interface store_string {
 }
 
 interface server {
+    activate: boolean;
     block_list?: {
         host: string[];
         ip: string[];
@@ -114,7 +115,7 @@ interface server {
         storage: string;
         web_root: string;
     };
-    ports: project_ports;
+    ports: server_ports;
     redirect_domain?: {
         [key:string]: [string, number];
     };
@@ -137,6 +138,7 @@ interface vars {
         [key:string]: node_childProcess_ChildProcess;
     };
     sep: string;
+    server_status: store_ports;
     servers: project_config;
     sockets: store_sockets;
     start_time: bigint;

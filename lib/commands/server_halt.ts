@@ -87,6 +87,7 @@ const server_halt = function commands_serverHalt(server:server, action:type_halt
         if (action === "destroy") {
             // 5. delete server from vars.server
             delete vars.servers[name];
+            delete vars.server_status[name];
             // 6. remove server's directory
             file.remove(file_remove);
         }
