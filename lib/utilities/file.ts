@@ -1,6 +1,6 @@
 
 import directory from "./directory.js";
-import error from "./error.js";
+import log from "./log.js";
 import node from "./node.js";
 import vars from "./vars.js";
 
@@ -35,7 +35,13 @@ const file:file = {
                         errorCallback();
                         return;
                     }
-                    error(["Error making a directory."], errorInstance, config.error_terminate);
+                    log({
+                        action: null,
+                        config: errorInstance,
+                        message: `Error making directory ${config.location}`,
+                        status: "error",
+                        type: "log"
+                    });
                     return;
                 }
 
@@ -47,7 +53,13 @@ const file:file = {
                     }
                     return;
                 }
-                error(["Destination for mkdir already exists."], new Error(`Destination directory, '${vars.text.cyan + config.location + vars.text.none}', is a ${type}.`), config.error_terminate);
+                log({
+                    action: null,
+                    config: new Error(`Destination directory, '${vars.text.cyan + config.location + vars.text.none}', is a ${type}.`),
+                    message: `Destination for mkdir, ${config.location}, already exists.`,
+                    status: "error",
+                    type: "log"
+                });
                 return;
             },
             recursiveStat = function utilities_fileDir_recursiveStat():void {
@@ -63,7 +75,13 @@ const file:file = {
                                     config.callback();
                                 }
                             } else {
-                                error([`Error creating directory ${vars.text.angry + config.location + vars.text.none}.`], errB, config.error_terminate);
+                                log({
+                                    action: null,
+                                    config: errB,
+                                    message: `Error making directory ${config.location}`,
+                                    status: "error",
+                                    type: "log"
+                                });
                             }
                         });
                     });
@@ -96,8 +114,14 @@ const file:file = {
                     config.callback(file_raw);
                 }
             } else {
-                error([`Error reading file ${vars.text.angry + config.location + vars.text.none}.`], err, config.error_terminate);
-                if (config.error_terminate === false && config.callback !== null) {
+                log({
+                    action: null,
+                    config: err,
+                    message: `Error reading file: ${config.location}`,
+                    status: "error",
+                    type: "log"
+                });
+                if (config.callback !== null) {
                     config.callback(null);
                 }
             }
@@ -122,12 +146,18 @@ const file:file = {
                             : config.exclusions.length;
                         const destruction = function utilities_fileRemove_removeItems_destroy_destruction(er:node_error):void {
                             // error handling
-                            if (vars.verbose === true && er !== null && er.toString().indexOf("no such file or directory") < 0) {
+                            if (er !== null && er.toString().indexOf("no such file or directory") < 0) {
                                 if (er.code === "ENOTEMPTY") {
                                     utilities_fileRemove_removeItems_destroy(item);
                                     return;
                                 }
-                                error([`Error removing file system artifact ${vars.text.angry + item[0] + vars.text.none}.`], er, config.error_terminate);
+                                log({
+                                    action: null,
+                                    config: er,
+                                    message: `Error removing file system artifact ${item[0]}`,
+                                    status: "error",
+                                    type: "log"
+                                });
                                 return;
                             }
 
@@ -209,8 +239,14 @@ const file:file = {
                     config.callback(stat);
                 }
             } else {
-                error([`Error reading file ${vars.text.angry + config.location + vars.text.none}.`], ers, config.error_terminate);
-                if (config.error_terminate === false && config.callback !== null) {
+                log({
+                    action: null,
+                    config: ers,
+                    message: `Error reading file: ${config.location}`,
+                    status: "error",
+                    type: "log"
+                });
+                if (config.callback !== null) {
                     config.callback(null);
                 }
             }
@@ -223,8 +259,14 @@ const file:file = {
                     config.callback();
                 }
             } else {
-                error([`Error writing file ${vars.text.angry + config.location + vars.text.none}.`], erw, config.error_terminate);
-                if (config.error_terminate === false && config.callback !== null) {
+                log({
+                    action: null,
+                    config: erw,
+                    message: `Error writing file: ${config.location}`,
+                    status: "error",
+                    type: "log"
+                });
+                if (config.callback !== null) {
                     config.callback();
                 }
             }

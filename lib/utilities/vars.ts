@@ -4,7 +4,7 @@ import node from "./node.js";
 /* cspell: words appdata */
 
 const vars:vars = {
-    command: null,
+    logs: [],
     path: {
         project: ""
     },
@@ -32,8 +32,7 @@ const vars:vars = {
         red      : "\u001b[31m",
         underline: "\u001b[4m",
         yellow   : "\u001b[33m"
-    },
-    verbose: false
+    }
 };
 
 export default vars;

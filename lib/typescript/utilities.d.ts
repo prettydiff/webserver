@@ -24,27 +24,27 @@ interface file {
 
 interface file_mkdir {
     callback: () => void;
-    error_terminate: boolean;
+    error_terminate: type_dashboard_config;
     location: string;
 }
 
 interface file_read {
     callback: (file:Buffer) => void;
-    error_terminate: boolean;
+    error_terminate: type_dashboard_config;
     location: string;
     no_file: () => void;
 }
 
 interface file_remove {
     callback: () => void;
-    error_terminate: boolean;
+    error_terminate: type_dashboard_config;
     exclusions: string[];
     location: string;
 }
 
 interface file_stat {
     callback: (stats:node_fs_BigIntStats) => void;
-    error_terminate: boolean;
+    error_terminate: type_dashboard_config;
     location: string;
     no_file: () => void;
 }
@@ -52,7 +52,7 @@ interface file_stat {
 interface file_write {
     callback: () => void;
     contents: Buffer | string;
-    error_terminate: boolean;
+    error_terminate: type_dashboard_config;
     location: string;
 }
 
@@ -107,6 +107,7 @@ interface server {
         post?: string;
         put?: string;
     };
+    modification_name?: string;
     name: string;
     path: {
         certificates: string;
@@ -114,7 +115,6 @@ interface server {
         web_root: string;
     };
     ports: project_ports;
-    modification_name?: string;
     redirect_domain?: {
         [key:string]: [string, number];
     };
@@ -128,7 +128,7 @@ interface server_content {
 }
 
 interface vars {
-    command: type_command;
+    logs: services_dashboard_status[];
     path: {
         project: string;
     };
@@ -149,5 +149,4 @@ interface vars {
         };
     };
     text: store_string;
-    verbose: boolean;
 }

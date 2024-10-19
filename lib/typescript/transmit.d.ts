@@ -30,6 +30,7 @@ interface transmit_addresses_socket {
 }
 
 interface transmit_dashboard {
+    logs: services_dashboard_status[];
     servers: project_config;
     sockets: store_sockets;
 }
@@ -72,6 +73,7 @@ interface websocket_client extends node_tls_TLSSocket {
     secure: boolean;
     server: string;
     status: type_socket_status;
+    type: string;
 }
 
 interface websocket_event extends Event {

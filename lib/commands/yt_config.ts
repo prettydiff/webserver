@@ -1,6 +1,6 @@
 
-import error from "../utilities/error.js";
 import file from "../utilities/file.js";
+import log from "../utilities/log.js";
 import vars from "../utilities/vars.js";
 
 // cspell: words bestaudio, keyid, multistreams, pathlen
@@ -8,7 +8,13 @@ import vars from "../utilities/vars.js";
 const yt_config = function commands_ytConfig(name:string, callback:() => void):void {
     const server:server = vars.servers[name];
     if (server === undefined) {
-        error([`Server named ${name} does not exist.`], null, true);
+        log({
+            action: null,
+            config: null,
+            message: `Server named ${name} does not exist. Called from library yt_config.`,
+            status: "error",
+            type: "log"
+        });
     } else {
         const dest:string = server.path.storage,
             confWritten = function commands_startup_config_instructions_confWritten():void {
@@ -54,7 +60,7 @@ const yt_config = function commands_ytConfig(name:string, callback:() => void):v
             file.write({
                 callback: confWritten,
                 contents: files[index][1],
-                error_terminate: true,
+                error_terminate: null,
                 location: files[index][0]
             });
             index = index + 1;

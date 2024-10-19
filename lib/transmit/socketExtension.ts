@@ -1,6 +1,5 @@
 
-import error from "../utilities/error.js";
-import getAddress from "../utilities/getAddress.js";
+import log from "../utilities/log.js";
 import receiver from "./receiver.js";
 import send from "./send.js";
 import socket_end from "./socketEnd.js";
@@ -35,39 +34,37 @@ const socket_extension = function transmit_socketExtension(config:config_websock
                 }
             },
             socketError = function transmit_socketExtension_socketError(errorMessage:node_error):void {
-                if (vars.verbose === true) {
-                    error([
-                        `Error on socket ${config.socket.hash} at location ${config.socket.role} with identifier ${config.socket.hash}.`,
-                        JSON.stringify(errorMessage),
-                        JSON.stringify(getAddress({
-                            socket: config.socket,
-                            type: "ws"
-                        }))
-                    ], null, false);
-                }
+                log({
+                    action: null,
+                    config: errorMessage,
+                    message: `Error on socket ${config.socket.hash} at location ${config.socket.role} with server ${config.socket.server}.`,
+                    status: "error",
+                    type: "socket"
+                });
             };
         vars.sockets[config.server].push(config.socket);
         if (config.proxy === null) {
             config.socket.handler = config.handler;   // assigns an event handler to process incoming messages
             config.socket.on("data", receiver);
-            config.socket.on("error", socketError);
             config.socket.fragment = Buffer.from([]); // storehouse of complete data frames, which will comprise a frame header and payload body that may be fragmented
             config.socket.frame = Buffer.from([]);    // stores pieces of frames, which can be divided due to TLS decoding or header separation from some browsers
             config.socket.frameExtended = 0;          // stores the payload size of a given message payload as derived from the extended size bytes of a frame header
             config.socket.ping = ping;                // provides a means to insert a ping control frame and measure the round trip time of the returned pong frame
             config.socket.pong = {};                  // stores termination times and callbacks for pong handling
             config.socket.queue = [];                 // stores messages for transmit, because websocket protocol cannot intermix messages
-            config.socket.setKeepAlive(true, 0);      // standard method to retain socket against timeouts from inactivity until a close frame comes in
             config.socket.status = "open";            // sets the status flag for the socket
         } else {
             config.socket.on("error", socketError);
         }
+        config.socket.setKeepAlive(true, 0);      // standard method to retain socket against timeouts from inactivity until a close frame comes in
         config.socket.hash = config.identifier;   // assigns a unique identifier to the socket based upon the socket's credentials
         config.socket.proxy = config.proxy;       // stores the relationship between two sockets when they are piped as a proxy
         config.socket.role = config.role;         // assigns socket creation location
         config.socket.server = config.server;     // identifies which local server the given socket is connected to
+        config.socket.type = config.type;         // a classification identifier to functionally identify a common utility of sockets on a given server
         config.socket.on("close", socket_end);
         config.socket.on("end", socket_end);
+        config.socket.on("error", socketError);
         if (config.callback !== null && config.callback !== undefined) {
             config.callback(config.socket);
         }

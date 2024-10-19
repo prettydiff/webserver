@@ -6,7 +6,7 @@ import youtube_download from "../services/youtubeDownload.js";
 const router = function transmit_router(socketData:socket_data, transmit:transmit_socket):void {
     const services:type_service = socketData.service,
         actions:transmit_receiver = {
-            "dashboard": dashboard,
+            "dashboard-action": dashboard,
             "process-kill": process_kill,
             "youtube-download": youtube_download
         };

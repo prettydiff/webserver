@@ -43,9 +43,9 @@ interface TouchEvent {
 }
 
 interface browserSocket {
-    call: () => void;
     interval: ReturnType<typeof setTimeout>;
-    queueStore: string[];
+    invoke: () => void;
     queue: (message:string) => void;
+    queueStore: string[];
     socket: WebSocket;
 }

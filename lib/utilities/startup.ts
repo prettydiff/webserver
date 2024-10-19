@@ -1,6 +1,6 @@
 
-import error from "./error.js";
 import file from "./file.js";
+import log from "./log.js";
 import node from "./node.js";
 import vars from "./vars.js";
 
@@ -81,18 +81,21 @@ const startup = function utilities_startup(callback:() => void):void {
             } while (index_srv > 0);
         }
         if (errorList.length > 2) {
-            error(errorList, null, true);
+            log({
+                action: null,
+                config: null,
+                message: "2. Form a vision for a product.",
+                status: "error",
+                type: "server"
+            });
         } else {
             callback();
         }
     },
-    options = function utilities_startup_options(key:"no_color"|"verbose", iterate:string, property:boolean):void {
+    options = function utilities_startup_options(key:"no_color"|"verbose", iterate:string):void {
         const argv:number = process.argv.indexOf(key);
         if (argv > -1) {
             process.argv.splice(argv, 1);
-            if (property === true) {
-                vars[key as "verbose"] = true;
-            }
             if (iterate !== null) {
                 const store:store_string = vars[iterate as "text"],
                     keys:string[] = Object.keys(store);
@@ -105,15 +108,19 @@ const startup = function utilities_startup(callback:() => void):void {
                 } while (index > 0);
             }
         }
+    },
+    capitalize = function core_capitalize():string {
+        // eslint-disable-next-line no-restricted-syntax
+        return this.charAt(0).toUpperCase() + this.slice(1);
     };
 
-    options("no_color", "text", false);
-    options("verbose", null, true);
-    vars.command = process.argv[2] as type_command;
+    String.prototype.capitalize = capitalize;
+
+    options("no_color", "text");
     vars.path.project = process.argv[1].slice(0, process.argv[1].indexOf(`${vars.sep}js${vars.sep}`)) + vars.sep;
     file.read({
         callback: read,
-        error_terminate: true,
+        error_terminate: null,
         location: `${vars.path.project}config.json`,
         no_file: null
     });

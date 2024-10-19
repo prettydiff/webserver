@@ -1,24 +1,21 @@
 
-import humanTime from "./humanTime.js";
+import broadcast from "../transmit/broadcast.js";
 import vars from "./vars.js";
 
-const log = function terminal_utilities_log(output:string[], end?:boolean):void {
-    const logger:(input:string) => void = function terminal_utilities_log_logger(input:string):void {
-            // eslint-disable-next-line no-console
-            console.log(input);
-        };
-    if (vars.verbose === true && (output.length > 1 || output[0] !== "")) {
-        logger("");
-    }
-    if (output[output.length - 1] === "") {
-        output.pop();
-    }
-    output.forEach(function terminal_utilities_log_each(value:string) {
-        logger(value);
+const log = function terminal_utilities_log(config:config_log):void {
+    const data:services_dashboard_status = {
+        action: config.action,
+        configuration: config.config,
+        message: config.message,
+        status: config.status,
+        time: Date.now(),
+        type: config.type
+    };
+    vars.logs.push(data);
+    broadcast("dashboard", "browser", {
+        data: data,
+        service: "dashboard-status"
     });
-    if (end === true) {
-        humanTime(vars.start_time);
-    }
 };
 
 export default log;

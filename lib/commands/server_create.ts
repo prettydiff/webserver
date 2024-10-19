@@ -1,6 +1,5 @@
 
 import certificate from "./certificate.js";
-import error from "../utilities/error.js";
 import file from "../utilities/file.js";
 import log from "../utilities/log.js";
 import read_certs from "../utilities/read_certs.js";
@@ -19,7 +18,6 @@ const server_create = function commands_serverCreate(config:server, read_certifi
     const path_config:string = `${vars.path.project}config.json`,
         path_servers:string = `${vars.path.project}servers${vars.sep}`,
         path_name:string = path_servers + config.name + vars.sep,
-        terminate:boolean = (vars.command === "create_server"),
         path_assets:string = `${path_name}assets${vars.sep}`,
         path_certs:string = `${path_name}certs${vars.sep}`,
         flags:store_flag = {
@@ -32,15 +30,22 @@ const server_create = function commands_serverCreate(config:server, read_certifi
                 // 4. create server's certificates
                 let server_count:number = 0;
                 const config_server:config_websocket_server = {
-                    callback: (vars.servers[config.name].encryption === "both")
-                        ? function commands_serverCreate_complete_certificate_callbackBoth():void {
-                            server_count = server_count + 1;
-                            if (server_count > 1 && callback !== null) {
-                                // 6. call the callback
+                    callback: function commands_serverCreate_complete_certificate_callbackBoth():void {
+                        server_count = server_count + 1;
+                        if ((server_count > 1 && config.encryption === "both") || config.encryption !== "both") {
+                            log({
+                                action: "add",
+                                config: config,
+                                message: `Server named ${config.name} created.`,
+                                status: "success",
+                                type: "server"
+                            });
+                            // 6. call the callback
+                            if (callback !== null) {
                                 callback();
                             }
                         }
-                        : callback,
+                    },
                     name: config.name,
                     options: null
                 };
@@ -49,18 +54,7 @@ const server_create = function commands_serverCreate(config:server, read_certifi
                 } else {
                     certificate({
                         callback: function commands_serverCreate_complete_certificate():void {
-                            if (vars.command === "create_server") {
-                                log([
-                                    `Server ${vars.text.cyan + config.name + vars.text.none} ${vars.text.green}created${vars.text.none}.`,
-                                    `${vars.text.angry}*${vars.text.none} config.json file updated.`,
-                                    `${vars.text.angry}*${vars.text.none} Directory structure at ${vars.text.cyan + path_name + vars.text.none} created.`,
-                                    `${vars.text.angry}*${vars.text.none} Certificates created.`,
-                                    "",
-                                    "1. Update the config.json file to customize the new server.",
-                                    "",
-                                    ""
-                                ], true);
-                            } else if (read_certificates === true) {
+                            if (read_certificates === true) {
                                 read_certs(config.name, function index_readCerts(name:string, tlsOptions:transmit_tlsOptions):void {
                                     // 5. launch servers
                                     if (vars.servers[name].encryption === "both") {
@@ -70,7 +64,17 @@ const server_create = function commands_serverCreate(config:server, read_certifi
                                     server(config_server);
                                 });
                             } else {
-                                callback();
+                                log({
+                                    action: "add",
+                                    config: config,
+                                    message: `Server named ${config.name} created.`,
+                                    status: "success",
+                                    type: "server"
+                                });
+                                // 6. call the callback
+                                if (callback !== null) {
+                                    callback();
+                                }
                             }
                         },
                         days: 65535,
@@ -90,7 +94,7 @@ const server_create = function commands_serverCreate(config:server, read_certifi
         mkdir = function commands_serverCreate_serverDir(location:string):void {
             file.mkdir({
                 callback: children,
-                error_terminate: terminate,
+                error_terminate: config,
                 location: location
             });
         };
@@ -110,7 +114,7 @@ const server_create = function commands_serverCreate(config:server, read_certifi
             if (typeof config.ports.open !== "number") {
                 config.ports = {
                     open: 0
-                }
+                };
             } else {
                 config.ports = {
                     open: config.ports.open
@@ -120,7 +124,7 @@ const server_create = function commands_serverCreate(config:server, read_certifi
             if (typeof config.ports.secure !== "number") {
                 config.ports = {
                     secure: 0
-                }
+                };
             } else {
                 config.ports = {
                     secure: config.ports.secure
@@ -134,14 +138,17 @@ const server_create = function commands_serverCreate(config:server, read_certifi
                 complete("config");
             },
             contents: JSON.stringify(vars.servers),
-            error_terminate: terminate,
+            error_terminate: config,
             location: path_config
         });
     } else {
-        error([
-            `A server with name ${config.name} already exists.`,
-            "Either delete the existing server with that name or choose a different name."
-        ], null, terminate);
+        log({
+            action: "add",
+            config: config,
+            message: `Server named ${config.name} already exists.  Called on library server_create.`,
+            status: "error",
+            type: "log"
+        });
         return;
     }
     // 3. create server's directory structure

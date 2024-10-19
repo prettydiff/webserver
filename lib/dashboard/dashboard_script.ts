@@ -9,10 +9,55 @@ const dashboard = function dashboard():void {
 
 
     const socketOpen = function dashboard_socketOpen():void {},
-        socketMessage = function dashboard_socketMessage():void {}, 
-        socket:browserSocket = core(socketOpen, socketMessage),
+        socketMessage = function dashboard_socketMessage(event:websocket_event):void {
+            if (typeof event.data === "string") {
+                const data:services_dashboard_status = JSON.parse(event.data).data;
+                log(data);
+                if (data.type === "server") {
+                    const config:server = data.configuration as server,
+                        list:HTMLCollectionOf<HTMLElement> = document.getElementById("servers").getElementsByTagName("li");
+                    let index:number = list.length;
+                    if (data.action === "destroy") {
+                        delete payload.servers[config.name];
+                        do {
+                            index = index - 1;
+                            if (list[index].getAttribute("data-name") === config.name) {
+                                list[index].parentNode.removeChild(list[index]);
+                                return;
+                            }
+                        } while (index > 0);
+                    } else if (data.action === "add") {
+                        payload.servers[config.name] = config;
+                        const names:string[] = Object.keys(payload.servers),
+                            ul:HTMLElement = document.getElementById("servers").getElementsByClassName("server-list")[0].getElementsByTagName("ul")[0];
+                        names.sort(function dashboard_serverList_sort(a:string, b:string):-1|1 {
+                            if (a < b) {
+                                return -1;
+                            }
+                            return 1;
+                        });
+                        index = names.length;console.log(names);
+                        if (names[names.length - 1] === config.name) {
+                            ul.appendChild(serverTitle(config.name));
+                        } else if (names[0] === config.name) {
+                            ul.insertBefore(serverTitle(config.name), ul.firstChild);
+                        } else {
+                            do {
+                                index = index - 1;
+                                if (names[index] === config.name) {
+                                    ul.insertBefore(serverTitle(config.name), ul.childNodes[index - 1]);
+                                    break;
+                                }
+                            } while (index > 0);
+                        }
+                    }
+                }
+            }
+        }, 
+        socket:browserSocket = core(socketOpen, socketMessage, "browser"),
         payload:transmit_dashboard = JSON.parse(document.getElementsByTagName("input")[0].value),
-        server_create:HTMLButtonElement = document.getElementsByClassName("server-create")[0] as HTMLButtonElement,
+        server_new:HTMLButtonElement = document.getElementsByClassName("server-new")[0] as HTMLButtonElement,
+        definitions:HTMLButtonElement = document.getElementsByClassName("server-definitions")[0].getElementsByTagName("button")[0],
         serverTitle = function dashboard_serverTitle(name_server:string):HTMLElement {
             const li:HTMLElement = document.createElement("li"),
                 h4:HTMLElement = document.createElement("h4"),
@@ -38,7 +83,7 @@ const dashboard = function dashboard():void {
                 const target:HTMLElement = event.target,
                     li:HTMLElement = target.getAncestor("li", "tag"),
                     servers:HTMLElement = li.getAncestor("servers", "id"),
-                    create:HTMLButtonElement = servers.getElementsByClassName("server-create")[0] as HTMLButtonElement;
+                    create:HTMLButtonElement = servers.getElementsByClassName("server-new")[0] as HTMLButtonElement;
                 li.parentNode.removeChild(li);
                 create.disabled = false;
             },
@@ -47,11 +92,22 @@ const dashboard = function dashboard():void {
                 button.disabled = true;
                 server.details(event);
             },
+            definitions: function dashboard_serverDefinitions(event:type_user_event):void {
+                const target:HTMLElement = event.target,
+                    dl:HTMLElement = target.parentNode.getElementsByTagName("dl")[0];
+                if (target.textContent === "Expand") {
+                    dl.style.display = "block";
+                    target.textContent = "Hide";
+                } else {
+                    dl.style.display = "none";
+                    target.textContent = "Expand";
+                }
+            },
             details: function dashboard_serverDetails(event:type_user_event):void {
                 let newFlag:boolean = false;
                 const target:HTMLElement = (function dashboard_serverDetails_target():HTMLElement {
                         const el:HTMLElement = event.target;
-                        if (el.getAttribute("class") === "server-create") {
+                        if (el.getAttribute("class") === "server-new") {
                             const li:HTMLElement = serverTitle(null),
                                 ul:HTMLElement = el.getAncestor("servers", "id").getElementsByClassName("server-list")[0].getElementsByTagName("ul")[0];
                             ul.insertBefore(li, ul.firstChild);
@@ -180,7 +236,7 @@ const dashboard = function dashboard():void {
                             if (serverData.encryption === "both" || serverData.encryption === "open" || serverData.encryption === "secure") {
                                 output.push(`"encryption": "${serverData.encryption}",`);
                             } else {
-                                output.push(`"encryption": "both",`);
+                                output.push("\"encryption\": \"both\",");
                             }
                             output.push("\"http\": {");
                             if (serverData.http === null || serverData.http === undefined) {
@@ -268,7 +324,7 @@ const dashboard = function dashboard():void {
                     textArea:HTMLTextAreaElement = listItem.getElementsByTagName("textarea")[0],
                     destroy:HTMLButtonElement = document.createElement("button"),
                     save:HTMLButtonElement = document.createElement("button"),
-                    createServer:boolean = (target.getAttribute("class") === "server-create");
+                    createServer:boolean = (target.getAttribute("class") === "server-new");
                 save.disabled = true;
                 if (createServer === false && listItem.getAttribute("data-name") !== "dashboard") {
                     destroy.appendText("✘ Destroy");
@@ -281,11 +337,13 @@ const dashboard = function dashboard():void {
                     destroy.setAttribute("class", "server-cancel");
                     destroy.onclick = server.cancel;
                     p.insertBefore(destroy, p.firstChild);
+                    save.appendText("✔ Create");
+                    save.setAttribute("class", "server-create");
                 } else {
                     p.removeChild(p.getElementsByClassName("server-edit")[0]);
+                    save.appendText("🖪 Save");
+                    save.setAttribute("class", "server-save");
                 }
-                save.appendText("🖪 Save");
-                save.setAttribute("class", "server-save");
                 save.onclick = server.message;
                 p.insertBefore(save, p.firstChild);
                 textArea.readOnly = false;
@@ -297,22 +355,23 @@ const dashboard = function dashboard():void {
                     list_old:HTMLElement = tag.getElementsByTagName("ul")[0],
                     ul:HTMLElement = document.createElement("ul"),
                     h3:HTMLElement = document.createElement("h3"),
-                    div:HTMLElement = document.createElement("div");
-                let index:number = list.length;
+                    div:HTMLElement = document.createElement("div"),
+                    total:number = list.length;
+                let index:number = 0;
     
                 if (list_old !== undefined) {
                     tag.removeChild(list_old);
                 }
                 list.sort(function dashboard_serverList_sort(a:string, b:string):-1|1 {
-                    if (a > b) {
+                    if (a < b) {
                         return -1;
                     }
                     return 1;
                 });
                 do {
-                    index = index - 1;
                     ul.appendChild(serverTitle(list[index]));
-                } while (index > 0);
+                    index = index + 1;
+                } while (index < total);
                 h3.appendText("Server List");
                 div.setAttribute("class", "server-list");
                 div.appendChild(h3);
@@ -323,7 +382,7 @@ const dashboard = function dashboard():void {
                 const target:HTMLElement = event.target,
                     li:HTMLElement = target.getAncestor("li", "tag"),
                     textArea:HTMLTextAreaElement = li.getElementsByTagName("textarea")[0],
-                    action:"destroy"|"save" = target.getAttribute("class").replace("server-", "") as "destroy"|"save",
+                    action:"create"|"destroy"|"save" = target.getAttribute("class").replace("server-", "") as "create"|"destroy"|"save",
                     cancel:HTMLElement = li.getElementsByClassName("server-cancel")[0] as HTMLElement,
                     configuration:server = (function dashboard_serverMessage_configuration():server {
                         const config:server = JSON.parse(textArea.value);
@@ -335,10 +394,10 @@ const dashboard = function dashboard():void {
                         configuration: configuration
                     },
                     message:socket_data = {
-                        service: `dashboard`,
+                        service: "dashboard-action",
                         data: payload
                     };
-                    socket.queue(JSON.stringify(message));
+                socket.queue(JSON.stringify(message));
                 if (cancel !== undefined) {
                     server.cancel(event);
                 }
@@ -358,7 +417,7 @@ const dashboard = function dashboard():void {
                     populate = function dashboard_serverValidate_populate(pass:boolean, message:string):void {
                         const li:HTMLElement = document.createElement("li");
                         if (pass === null) {
-                            li.setAttribute("class", `pass-warn`);
+                            li.setAttribute("class", "pass-warn");
                             li.appendText(`Warning: ${message}`);
                         } else {
                             li.setAttribute("class", `pass-${pass}`);
@@ -370,13 +429,16 @@ const dashboard = function dashboard():void {
                         }
                     },
                     disable = function dashboard_serverValidate_disable():void {
-                        const save:HTMLButtonElement = listItem.getElementsByClassName("server-save")[0] as HTMLButtonElement;
+                        const save:HTMLButtonElement = (name_attribute === null)
+                            ? listItem.getElementsByClassName("server-create")[0] as HTMLButtonElement
+                            : listItem.getElementsByClassName("server-save")[0] as HTMLButtonElement;
                         summary.removeChild(summary.getElementsByTagName("ul")[0]);
                         summary.appendChild(ul);
                         if (failures > 0) {
-                            save.disabled = true;const plural:string = (failures === 1)
+                            const plural:string = (failures === 1)
                                 ? ""
                                 : "s";
+                            save.disabled = true;
                             populate(false, `The server configuration contains ${failures} violation${plural}.`);
                         } else if (JSON.stringify(serverData) === JSON.stringify(payload.servers[name_server])) {
                             save.disabled = true;
@@ -389,8 +451,8 @@ const dashboard = function dashboard():void {
                     stringArray = function dashboard_serverValidate_stringArray(required:boolean, name:string, property:string[]):boolean {
                         let index:number = (property === null || property === undefined)
                                 ? 0
-                                : property.length,
-                            requirement:string = (required === true)
+                                : property.length;
+                        const requirement:string = (required === true)
                                 ? "Required"
                                 : "Optional";
                         if (index > 0) {
@@ -423,13 +485,13 @@ const dashboard = function dashboard():void {
                                 : "supported",
                             requirement_parent:string = (config.required_name === true)
                                 ? "Required"
-                                : "Optional";
-                        let keys:string[] = (config.name === null)
+                                : "Optional",
+                            keys:string[] = (config.name === null)
                                 ? Object.keys(serverData)
                                 : (serverData[config.name] === null || serverData[config.name] === undefined)
                                     ? []
-                                    : Object.keys(serverData[config.name]),
-                            value:string = null,
+                                    : Object.keys(serverData[config.name]);
+                        let value:string = null,
                             redirect:[string, number] = null,
                             indexActual:number = keys.length,
                             indexSupported:number = 0,
@@ -456,8 +518,10 @@ const dashboard = function dashboard():void {
                             do {
                                 indexActual = indexActual - 1;
                                 indexSupported = config.supported.length;
-                                // @ts-ignore - The following line forces an implicit any, but we don't care because we are only evaluating for data type not value or assignment
-                                value = serverData[config.name][keys[indexActual]];
+                                value = (serverData[config.name] === undefined || serverData[config.name] === null)
+                                    ? null
+                                    // @ts-expect-error - The following line forces an implicit any, but we don't care because we are only evaluating for data type not value or assignment
+                                    : serverData[config.name][keys[indexActual]];
                                 if ((
                                     (config.type === "array" && Array.isArray(value) === false) ||
                                     ((config.type === "string" || config.type === "path") && typeof value !== "string") ||
@@ -467,7 +531,7 @@ const dashboard = function dashboard():void {
                                     pass = false;
                                 } else if (config.type === "path" && serverData.name !== name_server && pathReg.test(value) === true) {
                                     populate(null, `Property '${keys[indexActual]}' of '${config.name}' is a file system path that contains a directory references to a prior or default server name.`);
-                                    // @ts-ignore - The following line complains about comparing a string to a number when the value is not actually a string
+                                    // @ts-expect-error - The following line complains about comparing a string to a number when the value is not actually a string
                                 } else if (config.name === "ports" && value > 65535) {
                                     populate(false, `Property '${keys[indexActual]}' of 'ports' must be a value in range 0 to 65535.`);
                                     pass = false;
@@ -479,7 +543,7 @@ const dashboard = function dashboard():void {
                                             pass = false;
                                         }
                                     } else {
-                                        // @ts-ignore - The last argument expects a string[] but variable value is superficially typed as string
+                                        // @ts-expect-error - The last argument expects a string[] but variable value is superficially typed as string
                                         if (stringArray(config.required_property, `${config.name}.${keys[indexActual]}`, value) === false) {
                                             pass = false;
                                         }
@@ -490,7 +554,7 @@ const dashboard = function dashboard():void {
                                     if (childIndex > 0) {
                                         do {
                                             childIndex = childIndex - 1;
-                                            // @ts-ignore - The following line forces an implicit any, but we expect it to be a string value on a string store as a child of a larger string store
+                                            // @ts-expect-error - The following line forces an implicit any, but we expect it to be a string value on a string store as a child of a larger string store
                                             if (typeof value[childKeys[childIndex]] !== "string") {
                                                 populate(false, `Property '${keys[indexActual]}.${[childKeys[childIndex]]}' of '${config.name}' is not type: string.`);
                                                 pass = false;
@@ -520,7 +584,7 @@ const dashboard = function dashboard():void {
                         } else {
                             if (keys.length === 0 && config.supported.length === 0) {
                                 if (config.name === null) {
-                                    populate(true, `Configuration contains only optional property names and all required primary property names.`);
+                                    populate(true, "Configuration contains only optional property names and all required primary property names.");
                                 } else {
                                     populate(true, `${requirement_parent} property '${config.name}' contains only the ${requirement_child} property names.`);
                                 }
@@ -545,9 +609,10 @@ const dashboard = function dashboard():void {
                 let serverData:server = null,
                     failures:number = 0;
                 summary.style.display = "block";
+                // eslint-disable-next-line no-restricted-syntax
                 try {
                     serverData = JSON.parse(value);
-                } catch (e:any) {
+                } catch (e:unknown) {
                     const error:Error = e as Error;
                     populate(false, error.message);
                     disable();
@@ -584,7 +649,7 @@ const dashboard = function dashboard():void {
                     if (serverData.name === "new_server") {
                         populate(null, "The name 'new_server' is a default placeholder. A more unique name is preferred.");
                     } else if (serverData.name === name_server || payload.servers[serverData.name] === undefined) {
-                        populate(true, "Required property 'name' has an appropriate value.")
+                        populate(true, "Required property 'name' has an appropriate value.");
                     } else {
                         populate(false, `Name ${serverData.name} is already in use. Value for required property 'name' must be unique.`);
                     }
@@ -636,11 +701,90 @@ const dashboard = function dashboard():void {
                 });
                 disable();
             }
-        };
+        },
+        log = function dashboard_log(item:services_dashboard_status):void {
+            let li:HTMLElement = document.createElement("li"),
+                timeElement:HTMLElement = document.createElement("time");
+            const ul:HTMLElement = document.getElementById("logs").getElementsByTagName("ul")[0],
+                strong:HTMLElement = document.createElement("strong"),
+                time:string = (function dashboard_log_time():string {
+                    const output:string[] = [],
+                        day:string = ul.getAttribute("data-day"),
+                        date:Date = new Date(item.time),
+                        hours:string = date.getHours().toString(),
+                        minutes:string = date.getMinutes().toString(),
+                        seconds:string = date.getSeconds().toString(),
+                        milliseconds:string = date.getMilliseconds().toString(),
+                        mil:string = (milliseconds.length === 1)
+                            ? `00${milliseconds}`
+                            : (milliseconds.length === 2)
+                                ? `0${milliseconds}`
+                                : milliseconds;
+                    output.push((hours.length < 2)
+                        ? `0${hours}`
+                        : hours);
+                    output.push((minutes.length < 2)
+                        ? `0${minutes}`
+                        : minutes);
+                    output.push((seconds.length < 2)
+                        ? `0${seconds}`
+                        : seconds);
+                    if (day === null || date.getDate().toString() !== day) {
+                        timeElement.appendText(`[${date.toDateString()}]`);
+                        li.appendChild(timeElement);
+                        ul.appendChild(li);
+                        li = document.createElement("li");
+                        timeElement = document.createElement("time");
+                        ul.setAttribute("data-day", date.getDate().toString());
+                    }
+                    return `[${output.join(":")}.${mil}]`;
+                }());
+            timeElement.appendText(time);
+            li.appendChild(timeElement);
+            li.setAttribute("class", `log-${item.status}`);
+            if (item.status === "error") {
+                strong.appendText(item.message);
+                li.appendChild(strong);
+            } else {
+                li.appendText(item.message);
+            }
+            ul.appendChild(li);
+        },
+        navigation = function dashboard_navigation(event:MouseEvent):void {
+            const target:HTMLElement = event.target,
+                buttons:HTMLCollectionOf<HTMLElement> = document.getElementsByTagName("nav")[0].getElementsByTagName("button");
+            let index:number = sections.length;
+            do {
+                index = index - 1;
+                document.getElementById(sections[index]).style.display = "none";
+            } while (index > 0);
+            index = buttons.length;
+            do {
+                index = index - 1;
+                buttons[index].removeAttribute("class");
+            } while (index > 0);
+            document.getElementById(target.getAttribute("data-section")).style.display = "block";
+            target.setAttribute("class", "nav-focus");
+        },
+        sections:string[] = (function dashboard_sections():string[] {
+            const buttons:HTMLCollectionOf<HTMLElement> = document.getElementsByTagName("nav")[0].getElementsByTagName("button"),
+                output:string[] = [];
+            let index:number = buttons.length;
+            do {
+                index = index - 1;
+                output.push(buttons[index].getAttribute("data-section"));
+                buttons[index].onclick = navigation;
+            } while (index > 0);
+            return output;
+        }());
 
-    socket.call();
-    server_create.onclick = server.create;
+    socket.invoke();
+    server_new.onclick = server.create;
+    definitions.onclick = server.definitions;
     server.list();
+    payload.logs.forEach(function dashboard_logsEach(item:services_dashboard_status):void {
+        log(item);
+    });
 };
 
 export default dashboard;

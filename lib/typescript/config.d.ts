@@ -36,6 +36,14 @@ interface config_html {
     template: boolean;
 }
 
+interface config_log {
+    action: type_dashboard_action;
+    config: type_dashboard_config;
+    message: string;
+    status: type_dashboard_status;
+    type: type_dashboard_type;
+}
+
 interface config_validate_serverKeys {
     name: "block_list" | "http" | "path" | "ports" | "redirect_domain" | "redirect_internal";
     required_name: boolean;
@@ -54,6 +62,7 @@ interface config_websocket_create {
     proxy: websocket_client;
     resource: string;
     secure: boolean;
+    type: string;
 }
 
 interface config_websocket_extensions {
@@ -64,6 +73,7 @@ interface config_websocket_extensions {
     role: "client"|"server";
     server: string;
     socket: websocket_client;
+    type: string;
 }
 
 interface config_websocket_server {

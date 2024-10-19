@@ -77,10 +77,9 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                         "<link href=\"/styles.css\" media=\"all\" rel=\"stylesheet\" type=\"text/css\"/>",
                         "<link rel=\"icon\" type=\"image/png\" href=\"data:image/png;base64,iVBORw0KGgo=\"/>",
                         "</head>",
-                        "<body",
-                        (server_name === "dashboard")
+                        `<body${(server_name === "dashboard")
                             ? " id=\"dashboard\">"
-                            : ">",
+                            : ">"}`,
                         `<h1>${name}</h1>`,
                         (config.status === 200)
                             ? ""
@@ -141,7 +140,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                             input = indexFile;
                             fileItem();
                         },
-                        error_terminate: false,
+                        error_terminate: null,
                         location: indexFile,
                         no_file: function http_get_statTest_directoryItem_noFile():void {
                             const callback = function http_get_statTest_directoryItem_noFile_directory(dir:directory_list|string[]):void {
@@ -307,6 +306,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
     if (fileFragment === "") {
         if (server_name === "dashboard") {
             const payload:transmit_dashboard = {
+                logs: vars.logs,
                 servers: vars.servers,
                 sockets: vars.sockets
             };
@@ -314,13 +314,11 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                 content: [
                     `<input type="hidden" value='${JSON.stringify(payload).replace(/'/g, "&#39;")}'/>`,
                     "<nav><ul>",
-                    "<li><button class=\"nav-focus\">Servers</button></li>",
-                    "<li><button>Port Summary</button></li>",
-                    "<li><button>Socket Summary</button></li>",
-                    "<li><button>Docker Compose</button></li>",
+                    "<li><button class=\"nav-focus\" data-section=\"servers\">Servers</button></li><li><button data-section=\"logs\">Logs</button></li><li><button data-section=\"ports\">Port Summary</button></li><li><button data-section=\"sockets\">Socket Summary</button></li><li><button data-section=\"compose\">Docker Compose</button></li>",
                     "</ul></nav>",
-                    "<main><div id=\"servers\"><h2>Servers</h2>",
-                    "<div class=\"server-definitions\"><h3>Definitions of Server Object Properties</h3><dl>",
+                    "<main>",
+                    "<div id=\"servers\"><h2>Servers</h2>",
+                    "<div class=\"server-definitions\"><h3>Definitions of Server Object Properties</h3><button class=\"expand\">Expand</button><dl>",
                     "<dt>block_list</dt><dd>The block list contains three optional string arrays of criteria to determine if matching sockets should be instantly destroyed. At this time wildcards, CIDR notation, and ranges are not supported.</dd>",
                     "<dt>domain_local</dt><dd>Sockets featuring HTTP request host names in this list will be served from this server.  Sockets featuring HTTP request host names not in this list or in the redirect_domain list will be destroyed.</dd>",
                     "<dt>encryption</dt><dd>Whether to create an encrypted server for HTTPS and WSS protocols, an unencrypted server for HTTP and WS protocols, or both. Accepted values are 'both, 'open', or 'secure'.</dd>",
@@ -331,7 +329,12 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                     "<dt>redirect_domain</dt><dd>Redirects traffic to a different location, such as vanity domains. Each value is an array of two indexes.  The first index, a string, identifies where to redirect the traffic to as in a IP address, hostname, or domain name.  An empty string or non-string value will redirect traffic onto a different port of the same local machine.  The second index is a number representing a port to redirect traffic to.</dd>",
                     "<dt>redirect_internal</dt><dd>Redirects resource paths within the given server based upon the hostname in the HTTP request header. This is useful for dynamic or vanity endpoints on a given server.</dd>",
                     "</dl></div>",
-                    "<p><button class=\"server-create\">Create Server</button></p></div></main>"
+                    "<p><button class=\"server-new\">Create Server</button></p></div>",
+                    "<div id=\"ports\"><h2>Port Summary</h2></div>",
+                    "<div id=\"sockets\"><h2>Socket Summary</h2></div>",
+                    "<div id=\"compose\"><h2>Docker Compose</h2></div>",
+                    "<div id=\"logs\"><h2>Logs</h2><ul></ul></div>",
+                    "</main>"
                 ],
                 content_type: "text/html; utf8",
                 core: true,
@@ -353,7 +356,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
     }
     file.stat({
         callback: statTest,
-        error_terminate: false,
+        error_terminate: null,
         location: input,
         no_file: notFound
     });

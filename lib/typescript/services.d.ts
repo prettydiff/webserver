@@ -1,8 +1,17 @@
 
 
 interface services_dashboard_action {
-    action: "server-destroy" | "server-save";
+    action: "server-create" | "server-destroy" | "server-save";
     configuration: server;
+}
+
+interface services_dashboard_status {
+    action: type_dashboard_action;
+    configuration: type_dashboard_config;
+    message: string;
+    status: type_dashboard_status;
+    time: number;
+    type: type_dashboard_type;
 }
 
 interface services_http {

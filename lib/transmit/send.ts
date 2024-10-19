@@ -1,6 +1,5 @@
 
-import error from "../utilities/error.js";
-import vars from "../utilities/vars.js";
+import log from "../utilities/log.js";
 
 const send = function transmit_send(body:Buffer|socket_data, socketItem:websocket_client, opcode:number):void {
     const writeFrame = function transmit_send_writeFrame():void {
@@ -137,9 +136,13 @@ const send = function transmit_send(body:Buffer|socket_data, socketItem:websocke
             writeFrame();
         }
     } else {
-        error([
-            `Error queueing message for socket transmission. Opcode ${vars.text.angry + String(opcode) + vars.text.none} is not supported.`
-        ], null, false);
+        log({
+            action: null,
+            config: null,
+            message: `Error queueing message for socket transmission on socket ${socketItem.hash} of server ${socketItem.server}. Opcode ${String(opcode)} is not supported.`,
+            status: "error",
+            type: "log"
+        });
     }
 };
 

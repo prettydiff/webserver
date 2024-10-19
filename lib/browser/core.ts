@@ -1,5 +1,5 @@
 
-const core = function core(open:() => void, message:(event:websocket_event) => void):browserSocket {
+const core = function core(open:() => void, message:(event:websocket_event) => void, type:string):browserSocket {
     const socketCall = function core_socketCall():WebSocket {
             const port:string = (location.protocol === "http:")
                     ? "80"
@@ -7,8 +7,8 @@ const core = function core(open:() => void, message:(event:websocket_event) => v
                 address:string = (location.host.includes(":") === true)
                     ? location.origin
                     : `${location.origin}:${port}`,
-                socketItem:WebSocket = new WebSocket(address, ["browser"]),
-                close = function core_close(event:CloseEvent):void {
+                socketItem:WebSocket = new WebSocket(address, [type]),
+                close = function core_close():void {
                     socket.interval = setInterval(core_socketCall, 10000);
                 };
             socketItem.onmessage = message;
@@ -23,7 +23,7 @@ const core = function core(open:() => void, message:(event:websocket_event) => v
                     do {
                         socket.socket.send(socket.queueStore[0]);
                         socket.queueStore.splice(0, 1);
-                    } while (socket.queueStore.length > 0)
+                    } while (socket.queueStore.length > 0);
                 }
                 open();
             };
@@ -31,10 +31,11 @@ const core = function core(open:() => void, message:(event:websocket_event) => v
             return socketItem;
         },
         socket:browserSocket = {
-            call: socketCall,
             interval: null,
+            invoke: socketCall,
             queueStore: [],
             queue: function core_queue(message:string):void {
+                // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
                 const instance:browserSocket = this;
                 if (instance.socket === null || instance.socket.readyState !== 1) {
                     instance.queueStore.push(message);
@@ -43,10 +44,6 @@ const core = function core(open:() => void, message:(event:websocket_event) => v
                 }
             },
             socket: null
-        },
-        capitalize = function core_capitalize():string {
-            // eslint-disable-next-line no-restricted-syntax
-            return this.charAt(0).toUpperCase() + this.slice(1);
         },
         dom = function core_dom():void {
             // addClass - adds a new class value to an element's class attribute if not already present
@@ -361,7 +358,6 @@ const core = function core(open:() => void, message:(event:websocket_event) => v
             Element.prototype.lowName                = lowName;
             Element.prototype.removeClass            = removeClass;
             Element.prototype.removeHighlight        = removeHighlight;
-            String.prototype.capitalize              = capitalize;
         };
     dom();
     return socket;
