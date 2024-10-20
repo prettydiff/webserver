@@ -2,7 +2,6 @@
 import certificate from "./certificate.js";
 import file from "../utilities/file.js";
 import log from "../utilities/log.js";
-import read_certs from "../utilities/read_certs.js";
 import server from "../transmit/server.js";
 import vars from "../utilities/vars.js";
 

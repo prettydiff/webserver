@@ -34,7 +34,8 @@ const http_connect:http_action = function http_connect(headerList:string[], sock
         headers: [],
         proxy: socket,
         resource: null,
-        secure: (socket.encrypted === true)
+        secure: (socket.encrypted === true),
+        type: "http-proxy"
     });
 };
 

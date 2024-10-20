@@ -1,5 +1,4 @@
 
-import read_certs from "./utilities/read_certs.js";
 import server from "./transmit/server.js";
 import server_create from "./commands/server_create.js";
 import startup from "./utilities/startup.js";
@@ -75,7 +74,7 @@ startup(function index():void {
                     }
                 }
                 portList[name][secure] = vars.servers[name].ports[secure];
-                if (count === callback_total) {
+                if (count === total) {
                     const logs:string[] = [
                             "Web Servers started.",
                             "",
@@ -95,12 +94,12 @@ startup(function index():void {
                         }
                         ports = ports + 1;
                     } while (ports < keys.length);
-                    
+                    // eslint-disable-next-line no-console
+                    console.log(logs.join("\n"));
                 }
             };
         let count:number = 0,
-            index:number = 0,
-            callback_total:number = total;
+            index:number = 0;
         do {
             server(servers[index], callback);
             index = index + 1;

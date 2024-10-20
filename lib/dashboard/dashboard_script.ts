@@ -65,10 +65,10 @@ const dashboard = function dashboard():void {
                             }
                         } else if (data.action === "activate" || data.action === "deactivate") {
                             payload.server_status[config.name] = config.ports;
+                            const color:type_activation_status = serverColor(config.name);
                             let oldPorts:HTMLElement = null,
                                 activate:HTMLButtonElement = null,
-                                deactivate:HTMLButtonElement = null,
-                                color:type_activation_status = serverColor(config.name);
+                                deactivate:HTMLButtonElement = null;
                             do {
                                 index = index - 1;
                                 if (list[index].getAttribute("data-name") === config.name) {
@@ -116,28 +116,28 @@ const dashboard = function dashboard():void {
             div.setAttribute("class", "active-ports");
             if (encryption === "both") {
                 if (payload.server_status[name_server].open === 0) {
-                    portItem.appendText(`Open - offline`);
+                    portItem.appendText("Open - offline");
                 } else {
                     portItem.appendText(`Open - ${payload.server_status[name_server].open}`);
                 }
                 ports.appendChild(portItem);
                 portItem = document.createElement("li");
                 if (payload.server_status[name_server].secure === 0) {
-                    portItem.appendText(`Secure - offline`);
+                    portItem.appendText("Secure - offline");
                 } else {
                     portItem.appendText(`Secure - ${payload.server_status[name_server].secure}`);
                 }
                 ports.appendChild(portItem);
             } else if (encryption === "open") {
                 if (payload.server_status[name_server].open === 0) {
-                    portItem.appendText(`Open - offline`);
+                    portItem.appendText("Open - offline");
                 } else {
                     portItem.appendText(`Open - ${payload.server_status[name_server].open}`);
                 }
                 ports.appendChild(portItem);
             } else {
                 if (payload.server_status[name_server].secure === 0) {
-                    portItem.appendText(`Secure - offline`);
+                    portItem.appendText("Secure - offline");
                 } else {
                     portItem.appendText(`Secure - ${payload.server_status[name_server].secure}`);
                 }
@@ -452,6 +452,7 @@ const dashboard = function dashboard():void {
             edit: function dashboard_serverEdit(event:type_user_event):void {
                 const target:HTMLElement = event.target,
                     listItem:HTMLElement = target.getAncestor("li", "tag"),
+                    dashboard:boolean = (listItem.getAttribute("data-name") === "dashboard"),
                     p:HTMLElement = listItem.getElementsByClassName("edit")[0].lastChild as HTMLElement,
                     textArea:HTMLTextAreaElement = listItem.getElementsByTagName("textarea")[0],
                     activate:HTMLButtonElement = document.createElement("button"),
@@ -460,9 +461,9 @@ const dashboard = function dashboard():void {
                     save:HTMLButtonElement = document.createElement("button"),
                     createServer:boolean = (target.getAttribute("class") === "server-new"),
                     clear:HTMLElement = p.getElementsByClassName("clear")[0] as HTMLElement,
-                    creation:HTMLElement = document.createElement("p");
+                    note:HTMLElement = document.createElement("p");
                 save.disabled = true;
-                if (createServer === false && listItem.getAttribute("data-name") !== "dashboard") {
+                if (createServer === false && dashboard === false) {
                     destroy.appendText("✘ Destroy");
                     destroy.setAttribute("class", "server-destroy");
                     destroy.onclick = server.message;
@@ -499,8 +500,13 @@ const dashboard = function dashboard():void {
                 p.removeChild(clear);
                 p.appendChild(clear);
                 if (createServer === true) {
-                    creation.textContent = "Please be patient with new secure server activation as creating new TLS certificates requires several seconds.";
-                    p.parentNode.appendChild(creation);
+                    note.textContent = "Please be patient with new secure server activation as creating new TLS certificates requires several seconds.";
+                    note.setAttribute("class", "note");
+                    p.parentNode.appendChild(note);
+                } else if (dashboard === false) {
+                    note.textContent = "Deleting a server will delete all associated file system artifacts. Back up your data first.";
+                    note.setAttribute("class", "note");
+                    p.parentNode.appendChild(note);
                 }
                 textArea.readOnly = false;
                 textArea.onkeyup = server.validate;

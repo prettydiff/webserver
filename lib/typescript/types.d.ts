@@ -1,7 +1,7 @@
 
 type type_activation_status = ["amber" | "green" | "red", "deactivated" | "new" | "offline" | "online" | "partially online"];
 type type_certKey = "ca" | "crt" | "key";
-type type_dashboard_action = "activate" | "add" | "deactivate" | type_halt_action;
+type type_dashboard_action = type_halt_action | "activate" | "add" | "deactivate";
 type type_dashboard_config = config_websocket_create | config_websocket_server | node_childProcess_ExecException | node_error | server | services_dashboard_activate;
 type type_dashboard_status = "error" | "informational" | "success";
 type type_dashboard_type = "log" | "port" | "server" | "socket";

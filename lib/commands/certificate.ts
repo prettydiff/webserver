@@ -1,6 +1,6 @@
 
-import error from "../utilities/error.js";
 import file from "../utilities/file.js";
+import log from "../utilities/log.js";
 import node from "../utilities/node.js";
 import vars from "../utilities/vars.js";
 
@@ -23,7 +23,13 @@ const certificate = function commands_certificate(config:config_certificate):voi
                             config.callback();
                             }
                         } else {
-                            error([`Error executing command: ${commands[index]}`], erChild, true);
+                            log({
+                                action: "add",
+                                config: vars.servers[config.name],
+                                message: `Error executing command: ${commands[index]}`,
+                                status: "error",
+                                type: "server"
+                            });
                         }
                     });
                 },
@@ -174,18 +180,18 @@ const certificate = function commands_certificate(config:config_certificate):voi
             file.write({
                 callback: create,
                 contents: cert_extensions,
-                error_terminate: true,
+                error_terminate: vars.servers[config.name],
                 location: `${cert_path}extensions.cnf`
             });
         };
     file.stat({
         callback: cert,
-        error_terminate: true,
+        error_terminate: vars.servers[config.name],
         location: cert_path,
         no_file: function commands_certificate_mkdir():void {
             file.mkdir({
                 callback: cert,
-                error_terminate: true,
+                error_terminate: vars.servers[config.name],
                 location: cert_path
             });
         }

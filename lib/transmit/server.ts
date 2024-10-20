@@ -9,7 +9,6 @@ import read_certs from "../utilities/read_certs.js";
 import redirection from "./redirection.js";
 import socket_extension from "./socketExtension.js";
 import vars from "../utilities/vars.js";
-import { TlsOptions } from "tls";
 
 const server = function transmit_server(name:string, callback:(name:string, secure:"open"|"secure") => void):void {
     const connection = function transmit_server_connection(TLS_socket:node_tls_TLSSocket):void {
