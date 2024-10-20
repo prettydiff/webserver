@@ -13,7 +13,7 @@ import vars from "../utilities/vars.js";
 // 5. launch servers
 // 6. call the callback
 
-const server_create = function commands_serverCreate(config:server, read_certificates:boolean, callback:() => void):void {
+const server_create = function commands_serverCreate(config:server, callback:() => void):void {
     let count:number = 0;
     const path_config:string = `${vars.path.project}config.json`,
         path_servers:string = `${vars.path.project}servers${vars.sep}`,
@@ -27,10 +27,8 @@ const server_create = function commands_serverCreate(config:server, read_certifi
         complete = function commands_serverCreate_complete(input:"config"|"dir"):void {
             flags[input] = true;
             if (flags.config === true && flags.dir === true) {
-                // 4. create server's certificates
                 let server_count:number = 0;
-                const config_server:config_websocket_server = {
-                    callback: function commands_serverCreate_complete_certificate_callbackBoth():void {
+                const serverCallback = function commands_serverCreate_complete_serverCallback():void {
                         server_count = server_count + 1;
                         if ((server_count > 1 && config.encryption === "both") || config.encryption !== "both") {
                             // 6. call the callback
@@ -39,9 +37,14 @@ const server_create = function commands_serverCreate(config:server, read_certifi
                             }
                         }
                     },
-                    name: config.name,
-                    options: null
-                };
+                    // 5. launch servers
+                    certCallback = function commands_serverCreate_complete_certificate():void {
+                        if (config.activate === true) {
+                            server(config.name, serverCallback);
+                        } else if (callback !== null) {
+                            callback();
+                        }
+                    };
                 log({
                     action: "add",
                     config: config,
@@ -49,27 +52,12 @@ const server_create = function commands_serverCreate(config:server, read_certifi
                     status: "success",
                     type: "server"
                 });
+                // 4. create server's certificates
                 if (config.encryption === "open") {
-                    server(config_server);
+                    certCallback();
                 } else {
                     certificate({
-                        callback: function commands_serverCreate_complete_certificate():void {
-                            if (read_certificates === true) {
-                                read_certs(config.name, function index_readCerts(name:string, tlsOptions:transmit_tlsOptions):void {
-                                    // 5. launch servers
-                                    if (vars.servers[name].encryption === "both") {
-                                        server(config_server);
-                                    }
-                                    config_server.options = tlsOptions;
-                                    server(config_server);
-                                });
-                            } else {
-                                // 6. call the callback
-                                if (callback !== null) {
-                                    callback();
-                                }
-                            }
-                        },
+                        callback: certCallback,
                         days: 65535,
                         domain_default: null,
                         name: config.name,

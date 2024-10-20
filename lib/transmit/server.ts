@@ -5,11 +5,13 @@ import http from "../http/index.js";
 import log from "../utilities/log.js";
 import message_handler from "./messageHandler.js";
 import node from "../utilities/node.js";
+import read_certs from "../utilities/read_certs.js";
 import redirection from "./redirection.js";
 import socket_extension from "./socketExtension.js";
 import vars from "../utilities/vars.js";
+import { TlsOptions } from "tls";
 
-const server = function transmit_server(config:config_websocket_server):node_net_Server {
+const server = function transmit_server(name:string, callback:(name:string, secure:"open"|"secure") => void):void {
     const connection = function transmit_server_connection(TLS_socket:node_tls_TLSSocket):void {
             // eslint-disable-next-line no-restricted-syntax
             const server_name:string = this.name,
@@ -100,7 +102,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                     identifier: `http-${process.hrtime.bigint().toString()}`,
                                     proxy: null,
                                     role: "server",
-                                    server: wsServer.name,
+                                    server: server_name,
                                     socket: socket,
                                     type: type
                                 });
@@ -129,7 +131,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                         identifier: `browserSocket-${hashOutput.hash}`,
                                         proxy: null,
                                         role: "server",
-                                        server: wsServer.name,
+                                        server: server_name,
                                         socket: socket,
                                         type: type
                                     });
@@ -198,7 +200,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                 identifier: `${domain}-${now}`,
                                 proxy: proxy,
                                 role: "server",
-                                server: wsServer.name,
+                                server: server_name,
                                 socket: socket,
                                 type: type
                             });
@@ -209,7 +211,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                 identifier: `${domain}-${now}-proxy`,
                                 proxy: socket,
                                 role: "client",
-                                server: wsServer.name,
+                                server: server_name,
                                 socket: proxy,
                                 type: type
                             });
@@ -245,113 +247,123 @@ const server = function transmit_server(config:config_websocket_server):node_net
             });
             socket.once("data", handshake);
         },
-        server_error = function transmit_server_serverError(ser:node_error):void {
-            // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
-            const server:server_instance = this;
-            if (ser.code === "EADDRINUSE") {
-                port_conflict(server.name, server.secure, true);
-            }
-        },
-        wsServer:server_instance = (config.options === null)
-            // options are of type TlsOptions
-            ? node.net.createServer()
-            : node.tls.createServer({
-                ca: config.options.options.ca,
-                cert: config.options.options.cert,
-                key: config.options.options.key
-            }, connection),
-        listenerCallback = function transmit_server_listenerCallback():void {
-            // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
-            const server:server_instance = this,
-                address:node_net_AddressInfo = server.address() as node_net_AddressInfo,
-                secure:"open"|"secure" = (server.secure === true)
-                    ? "secure"
-                    : "open";
-            port_conflict(server.name, server.secure, false);
-            vars.store_server[secure][config.name] = server;
-            vars.server_status[config.name][secure] = address.port;
-            log({
-                action: "activate",
-                config: {
-                    name: config.name,
-                    ports: vars.server_status[config.name]
+        start = function transmit_server_start(options:transmit_tlsOptions):void {
+            const wsServer:server_instance = (options === null)
+                    // options are of type TlsOptions
+                    ? node.net.createServer()
+                    : node.tls.createServer({
+                        ca: options.options.ca,
+                        cert: options.options.cert,
+                        key: options.options.key
+                    }, connection),
+                secureType:"open"|"secure" = (options === null)
+                    ? "open"
+                    : "secure",
+                listenerCallback = function transmit_server_start_listenerCallback():void {
+                    // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
+                    const server:server_instance = this,
+                        address:node_net_AddressInfo = server.address() as node_net_AddressInfo,
+                        secure:"open"|"secure" = (server.secure === true)
+                            ? "secure"
+                            : "open";
+                    port_conflict(server.name, server.secure, false);
+                    vars.store_server[secure][name] = server;
+                    vars.server_status[name][secure] = address.port;
+                    log({
+                        action: "activate",
+                        config: {
+                            name: name,
+                            ports: vars.server_status[name]
+                        },
+                        message: `${secure.capitalize()} server ${server.name} came online.`,
+                        status: "informational",
+                        type: "server"
+                    });
+                    if (callback !== null) {
+                        callback(server.name, secure);
+                    }
                 },
-                message: `${secure.capitalize()} server ${server.name} came online.`,
-                status: "informational",
-                type: "server"
-            });
-            if (config.callback !== null) {
-                config.callback(server.name, secure);
+                server_error = function transmit_server_start_serverError(ser:node_error):void {
+                    // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
+                    const server:server_instance = this;
+                    if (ser.code === "EADDRINUSE") {
+                        port_conflict(server.name, server.secure, true);
+                    }
+                },
+                // error messaging for port conflicts
+                port_conflict = function transmit_server_start_portConflict(name:string, secure:boolean, input:boolean):void {
+                    vars.port_conflict.push([name, secure, input]);
+                    const total:number = vars.port_conflict.length;
+                    let index:number = 0,
+                        test:boolean = false;
+                    if (total === Object.keys(vars.servers).length * 2) {
+                        const errorText:string[] = [`Port conflict on server ${name} with the following ports:`];
+                        vars.port_conflict.sort(function transmit_server_portConflict_sort(a:type_port_conflict, b:type_port_conflict):-1|1 {
+                            if (vars.servers[a[0]].ports[(a[1] === true) ? "secure" : "open"] < vars.servers[b[0]].ports[(b[1] === true) ? "secure" : "open"]) {
+                                return -1;
+                            }
+                            return 1;
+                        });
+
+                        // validate there are port conflicts
+                        do {
+                            if (vars.port_conflict[index][2] === true) {
+                                test = true;
+                                break;
+                            }
+                            index = index + 1;
+                        } while (index < total);
+                        if (test === false) {
+                            return;
+                        }
+
+                        // write the messaging
+                        index = 0;
+                        do {
+                            if (vars.port_conflict[index][2] === true) {
+                                errorText.push(`${vars.text.angry}*${vars.text.none} Port ${vars.text.angry + vars.servers[vars.port_conflict[index][0]].ports[(vars.port_conflict[index][1] === true) ? "secure" : "open"].toString() + vars.text.none} for server ${vars.text.cyan + vars.port_conflict[index][0]}, ${((vars.port_conflict[index][1]) === true ? "secure" : "open") + vars.text.none}.`);
+                            }
+                            index = index + 1;
+                        } while (index < total);
+                        log({
+                            action: "activate",
+                            config: vars.servers[name],
+                            message: errorText.join("\n"),
+                            status: "error",
+                            type: "server"
+                        });
+                    }
+                };
+            // type identification assignment
+            wsServer.secure = (options === null)
+                ? false
+                : true;
+            wsServer.name = name;
+            wsServer.on("error", server_error);
+
+            // insecure connection listener
+            if (options === null) {
+                wsServer.on("connection", connection);
             }
-        },
-        // error messaging for port conflicts
-        port_conflict = function transmit_server_portConflict(name:string, secure:boolean, input:boolean):void {
-            vars.port_conflict.push([name, secure, input]);
-            const total:number = vars.port_conflict.length;
-            let index:number = 0,
-                test:boolean = false;
-            if (total === Object.keys(vars.servers).length * 2) {
-                const errorText:string[] = [`Port conflict on server ${config.name} with the following ports:`];
-                vars.port_conflict.sort(function transmit_server_portConflict_sort(a:type_port_conflict, b:type_port_conflict):-1|1 {
-                    if (vars.servers[a[0]].ports[(a[1] === true) ? "secure" : "open"] < vars.servers[b[0]].ports[(b[1] === true) ? "secure" : "open"]) {
-                        return -1;
-                    }
-                    return 1;
-                });
 
-                // validate there are port conflicts
-                do {
-                    if (vars.port_conflict[index][2] === true) {
-                        test = true;
-                        break;
-                    }
-                    index = index + 1;
-                } while (index < total);
-                if (test === false) {
-                    return;
-                }
-
-                // write the messaging
-                index = 0;
-                do {
-                    if (vars.port_conflict[index][2] === true) {
-                        errorText.push(`${vars.text.angry}*${vars.text.none} Port ${vars.text.angry + vars.servers[vars.port_conflict[index][0]].ports[(vars.port_conflict[index][1] === true) ? "secure" : "open"].toString() + vars.text.none} for server ${vars.text.cyan + vars.port_conflict[index][0]}, ${((vars.port_conflict[index][1]) === true ? "secure" : "open") + vars.text.none}.`);
-                    }
-                    index = index + 1;
-                } while (index < total);
-                log({
-                    action: "activate",
-                    config: config,
-                    message: errorText.join("\n"),
-                    status: "error",
-                    type: "server"
-                });
+            // secure connection listener
+            wsServer.listen({
+                port: vars.servers[name].ports[secureType]
+            }, listenerCallback);
+        };
+    if (vars.sockets[name] === undefined) {
+        vars.sockets[name] = [];
+    }
+    if (vars.servers[name].encryption === "open") {
+        start(null);
+    } else {
+        read_certs(name, function transmit_server_readCerts(name:string, options:transmit_tlsOptions):void {
+            if (vars.servers[name].encryption === "both") {
+                start(null);
             }
-        },
-        secureType:"open"|"secure" = (config.options === null)
-            ? "open"
-            : "secure";
-
-    // type identification assignment
-    wsServer.secure = (config.options === null)
-        ? false
-        : true;
-    wsServer.name = config.name;
-    wsServer.on("error", server_error);
-    if (vars.sockets[config.name] === undefined) {
-        vars.sockets[config.name] = [];
+            start(options);
+        });
     }
-
-    // insecure connection listener
-    if (config.options === null) {
-        wsServer.on("connection", connection);
-    }
-
-    // secure connection listener
-    wsServer.listen({
-        port: vars.servers[config.name].ports[secureType]
-    }, listenerCallback);
-    return wsServer;
 };
 
 export default server;

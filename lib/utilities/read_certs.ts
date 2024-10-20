@@ -1,9 +1,9 @@
 
-import error from "./error.js";
+import log from "./log.js";
 import node from "./node.js";
 import vars from "./vars.js";
 
-const readCerts = function utilities_readCerts(name:string, callback:(name:string, options:transmit_tlsOptions) => void):void {
+const read_certs = function utilities_readCerts(name:string, callback:(name:string, options:transmit_tlsOptions) => void):void {
     const certLocation:string = `${vars.path.project}servers${vars.sep + name + vars.sep}certs${vars.sep}`,
         certName:string = "server",
         caName:string = "int",
@@ -22,11 +22,13 @@ const readCerts = function utilities_readCerts(name:string, callback:(name:strin
         certCheck = function utilities_readCerts_certCheck():void {
             if (https.fileFlag.ca === true && https.fileFlag.crt === true && https.fileFlag.key === true) {
                 if (https.options.ca === "" || https.options.cert === "" || https.options.key === "") {
-                    error([
-                        `${vars.text.angry}Required certificate files are missing.${vars.text.none}`,
-                        "Run the build again:",
-                        `${vars.text.cyan}npm run build${vars.text.none}`
-                    ], null, true);
+                    log({
+                        action: "activate",
+                        config: vars.servers[name],
+                        message: `Required certificate files are missing for server ${name}.`,
+                        status: "error",
+                        type: "server"
+                    });
                 } else {
                     callback(name, https);
                 }
@@ -67,4 +69,4 @@ const readCerts = function utilities_readCerts(name:string, callback:(name:strin
     httpsFile("key");
 };
 
-export default readCerts;
+export default read_certs;

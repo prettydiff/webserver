@@ -1,7 +1,7 @@
 
 
 interface services_dashboard_action {
-    action: "server-create" | "server-destroy" | "server-save";
+    action: type_dashboard_action;
     configuration: server;
 }
 

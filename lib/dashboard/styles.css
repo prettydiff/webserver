@@ -104,18 +104,29 @@ td .icon{display:inline-block;width:1.5em}
 #servers label span.text{background:transparent;border-style:none;display:inline-block;font-size:1em;font-weight:bold;line-height:2.5;width:12em}
 #servers label span.details-redundant{text-indent:-2000em}
 #servers textarea{font-size:1em;height:1em;line-height:1;padding:0.4em;width:100%}
+#servers .server-activate,
+#servers .server-add,
+#servers .server-deactivate,
 #servers .server-cancel,
-#servers .server-create,
 #servers .server-destroy,
 #servers .server-edit,
-#servers .server-save{font-size:1em}
+#servers .server-modify{font-size:1em}
+#servers .server-activate,
+#servers .server-add,
+#servers .server-deactivate,
 #servers .server-cancel,
-#servers .server-create,
-#servers .server-save,
+#servers .server-modify,
 #servers .server-destroy{margin:1em 3em}
-#servers .server-create,
-#servers .server-save{color:#090;float:right}
+#servers .server-activate,
+#servers .server-add,
+#servers .server-modify{float:right}
+#servers .server-deactivate,
+#servers .server-destroy{float:left}
+#servers .server-add,
+#servers .server-modify{color:#090}
 #servers .server-edit{color:#ca3;display:block;margin:1em auto}
+#servers .server-activate,
+#servers .server-deactivate,
 #servers .server-cancel{color:#ca3}
 #servers .server-destroy{color:#911}
 #servers .server-new{margin:2em 0}

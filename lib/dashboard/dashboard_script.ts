@@ -63,25 +63,39 @@ const dashboard = function dashboard():void {
                                     }
                                 } while (index > 0);
                             }
-                        } else if (data.action === "activate") {
+                        } else if (data.action === "activate" || data.action === "deactivate") {
                             payload.server_status[config.name] = config.ports;
                             let oldPorts:HTMLElement = null,
-                                color:type_server_color = serverColor(config.name),
-                                status:string = (color === "amber")
-                                    ? "partially online"
-                                    : (color === "green")
-                                        ? "online"
-                                        : "offline";
+                                activate:HTMLButtonElement = null,
+                                deactivate:HTMLButtonElement = null,
+                                color:type_activation_status = serverColor(config.name);
                             do {
                                 index = index - 1;
                                 if (list[index].getAttribute("data-name") === config.name) {
-                                    list[index].setAttribute("class", color);
-                                    if (color === "amber")
-                                    list[index].getElementsByTagName("h4")[0].getElementsByTagName("button")[0].lastChild.textContent = `${config.name} - ${status}`;
+                                    if (color[0] !== null) {
+                                        list[index].setAttribute("class", color[0]);
+                                    }
+                                    list[index].getElementsByTagName("h4")[0].getElementsByTagName("button")[0].lastChild.textContent = `${config.name} - ${color[1]}`;
                                     oldPorts = list[index].getElementsByClassName("active-ports")[0] as HTMLElement;
+                                    activate = list[index].getElementsByClassName("server-activate")[0] as HTMLButtonElement;
+                                    deactivate = list[index].getElementsByClassName("server-deactivate")[0] as HTMLButtonElement;
                                     if (oldPorts !== undefined) {
                                         oldPorts.parentNode.insertBefore(activePorts(config.name), oldPorts);
                                         oldPorts.parentNode.removeChild(oldPorts);
+                                    }
+                                    if (activate !== undefined) {
+                                        if (color[0] === "green") {
+                                            activate.disabled = true;
+                                        } else {
+                                            activate.disabled = false;
+                                        }
+                                    }
+                                    if (deactivate !== undefined) {
+                                        if (color[0] === "red") {
+                                            deactivate.disabled = true;
+                                        } else {
+                                            deactivate.disabled = false;
+                                        }
                                     }
                                     break;
                                 }
@@ -132,31 +146,34 @@ const dashboard = function dashboard():void {
             div.appendChild(ports);
             return div;
         },
-        serverColor = function dashboard_serverColor(name_server:string):type_server_color {
-            if (name_server === null || payload.servers[name_server].activate === false) {
-                return null;
+        serverColor = function dashboard_serverColor(name_server:string):type_activation_status {
+            if (name_server === null) {
+                return [null, "new"];
+            }
+            if (payload.servers[name_server].activate === false) {
+                return [null, "deactivated"];
             }
             const encryption:type_encryption = payload.servers[name_server].encryption;
             if (encryption === "both") {
                 if (payload.server_status[name_server].open === 0 && payload.server_status[name_server].secure === 0) {
-                    return "red";
+                    return ["red", "offline"];
                 }
                 if (payload.server_status[name_server].open > 0 && payload.server_status[name_server].secure > 0) {
-                    return "green";
+                    return ["green", "online"];
                 }
-                return "amber";
+                return ["amber", "partially online"];
             }
             if (encryption === "open") {
                 if (payload.server_status[name_server].open === 0) {
-                    return "red";
+                    return ["red", "offline"];
                 }
-                return "green";
+                return ["green", "online"];
             }
             if (encryption === "secure") {
                 if (payload.server_status[name_server].secure === 0) {
-                    return "red";
+                    return ["red", "offline"];
                 }
-                return "green";
+                return ["green", "online"];
             }
         },
         socket:browserSocket = core(socketOpen, socketMessage, "browser"),
@@ -174,24 +191,18 @@ const dashboard = function dashboard():void {
             if (name_server === null) {
                 expand.appendText(name);
             } else {
-                const color:type_server_color = serverColor(name_server),
-                    statusLabel:string = (name_server === null)
-                        ? "new"
-                        : (payload.servers[name_server].activate === false)
-                            ? "deactivated"
-                            : (color === "amber")
-                                ? "partially online"
-                                : (color === "green")
-                                    ? "online"
-                                    : "offline";
+                const color:type_activation_status = serverColor(name_server);
                 span.appendText("Expand");
                 span.setAttribute("class", "expand");
                 expand.appendChild(span);
                 expand.onclick = server.details;
                 li.setAttribute("data-name", name);
-                expand.appendText(`${name} - ${statusLabel}`);
-                if (status !== null) {
-                    li.setAttribute("class", serverColor(name_server));
+                expand.appendText(`${name} - ${color[1]}`);
+                if (color[0] !== null) {
+                    li.setAttribute("class", color[0]);
+                }
+                if (payload.servers[name_server].modification_name === null || payload.servers[name_server].modification_name === undefined) {
+                    payload.servers[name_server].modification_name = name_server;
                 }
             }
             h4.appendChild(expand);
@@ -409,8 +420,6 @@ const dashboard = function dashboard():void {
                     textArea.value = value;
                     textArea.spellcheck = false;
                     textArea.readOnly = true;
-                    textArea.onkeyup = server.validate;
-                    textArea.onfocus = server.validate;
                     details.setAttribute("class", "edit");
                     span.setAttribute("class", "text");
                     span.appendText("Server Configuration");
@@ -445,31 +454,57 @@ const dashboard = function dashboard():void {
                     listItem:HTMLElement = target.getAncestor("li", "tag"),
                     p:HTMLElement = listItem.getElementsByClassName("edit")[0].lastChild as HTMLElement,
                     textArea:HTMLTextAreaElement = listItem.getElementsByTagName("textarea")[0],
+                    activate:HTMLButtonElement = document.createElement("button"),
+                    deactivate:HTMLButtonElement = document.createElement("button"),
                     destroy:HTMLButtonElement = document.createElement("button"),
                     save:HTMLButtonElement = document.createElement("button"),
-                    createServer:boolean = (target.getAttribute("class") === "server-new");
+                    createServer:boolean = (target.getAttribute("class") === "server-new"),
+                    clear:HTMLElement = p.getElementsByClassName("clear")[0] as HTMLElement,
+                    creation:HTMLElement = document.createElement("p");
                 save.disabled = true;
                 if (createServer === false && listItem.getAttribute("data-name") !== "dashboard") {
                     destroy.appendText("✘ Destroy");
                     destroy.setAttribute("class", "server-destroy");
                     destroy.onclick = server.message;
-                    p.insertBefore(destroy, p.firstChild);
+                    activate.appendText("⌁ Activate");
+                    activate.setAttribute("class", "server-activate");
+                    if (listItem.getAttribute("class") === "green") {
+                        activate.disabled = true;
+                    }
+                    deactivate.onclick = server.message;
+                    deactivate.appendText("። Deactivate");
+                    deactivate.setAttribute("class", "server-deactivate");
+                    deactivate.onclick = server.message;
+                    if (listItem.getAttribute("class") === "red") {
+                        deactivate.disabled = true;
+                    }
+                    p.appendChild(deactivate);
+                    p.appendChild(activate);
+                    p.appendChild(destroy);
                 }
                 if (createServer === true) {
                     destroy.appendText("⚠ Cancel");
                     destroy.setAttribute("class", "server-cancel");
                     destroy.onclick = server.cancel;
-                    p.insertBefore(destroy, p.firstChild);
+                    p.appendChild(destroy);
                     save.appendText("✔ Create");
-                    save.setAttribute("class", "server-create");
+                    save.setAttribute("class", "server-add");
                 } else {
                     p.removeChild(p.getElementsByClassName("server-edit")[0]);
-                    save.appendText("🖪 Save");
-                    save.setAttribute("class", "server-save");
+                    save.appendText("🖪 Modify");
+                    save.setAttribute("class", "server-modify");
                 }
                 save.onclick = server.message;
-                p.insertBefore(save, p.firstChild);
+                p.appendChild(save);
+                p.removeChild(clear);
+                p.appendChild(clear);
+                if (createServer === true) {
+                    creation.textContent = "Please be patient with new secure server activation as creating new TLS certificates requires several seconds.";
+                    p.parentNode.appendChild(creation);
+                }
                 textArea.readOnly = false;
+                textArea.onkeyup = server.validate;
+                textArea.onfocus = server.validate;
                 textArea.focus();
             },
             list: function dashboard_serverList():void {
@@ -505,7 +540,7 @@ const dashboard = function dashboard():void {
                 const target:HTMLElement = event.target,
                     li:HTMLElement = target.getAncestor("li", "tag"),
                     textArea:HTMLTextAreaElement = li.getElementsByTagName("textarea")[0],
-                    action:"create"|"destroy"|"save" = target.getAttribute("class").replace("server-", "") as "create"|"destroy"|"save",
+                    action:type_dashboard_action = target.getAttribute("class").replace("server-", "") as type_dashboard_action,
                     cancel:HTMLElement = li.getElementsByClassName("server-cancel")[0] as HTMLElement,
                     configuration:server = (function dashboard_serverMessage_configuration():server {
                         const config:server = JSON.parse(textArea.value);
@@ -513,7 +548,7 @@ const dashboard = function dashboard():void {
                         return config;
                     }()),
                     payload:services_dashboard_action = {
-                        action: `server-${action}`,
+                        action: action,
                         configuration: configuration
                     },
                     message:socket_data = {
@@ -523,6 +558,13 @@ const dashboard = function dashboard():void {
                 socket.queue(JSON.stringify(message));
                 if (cancel !== undefined) {
                     server.cancel(event);
+                } else {
+                    const buttons:HTMLCollectionOf<HTMLButtonElement> = li.getElementsByTagName("button");
+                    let index:number = buttons.length;
+                    do {
+                        index = index - 1;
+                        buttons[index].disabled = true;
+                    } while (index > 0);
                 }
             },
             validate: function dashboard_serverValidate(event:type_user_event):void {
@@ -553,8 +595,8 @@ const dashboard = function dashboard():void {
                     },
                     disable = function dashboard_serverValidate_disable():void {
                         const save:HTMLButtonElement = (name_attribute === null)
-                            ? listItem.getElementsByClassName("server-create")[0] as HTMLButtonElement
-                            : listItem.getElementsByClassName("server-save")[0] as HTMLButtonElement;
+                            ? listItem.getElementsByClassName("server-add")[0] as HTMLButtonElement
+                            : listItem.getElementsByClassName("server-modify")[0] as HTMLButtonElement;
                         summary.removeChild(summary.getElementsByTagName("ul")[0]);
                         summary.appendChild(ul);
                         if (failures > 0) {
@@ -728,7 +770,10 @@ const dashboard = function dashboard():void {
                                 }
                             }
                         }
-                    };
+                    },
+                    rootProperties:string[] = (name_attribute === null)
+                        ? ["activate", "block_list", "domain_local", "encryption", "http", "name", "path", "ports", "redirect_domain", "redirect_internal"]
+                        : ["activate", "block_list", "domain_local", "encryption", "http", "modification_name", "name", "path", "ports", "redirect_domain", "redirect_internal"];
                 let serverData:server = null,
                     failures:number = 0;
                 summary.style.display = "block";
@@ -740,6 +785,9 @@ const dashboard = function dashboard():void {
                     populate(false, error.message);
                     disable();
                     return;
+                }
+                if (name_attribute !== null) {
+                    serverData.modification_name = payload.servers[name_server].modification_name;
                 }
                 // activate
                 if (typeof serverData.activate === "boolean") {
@@ -825,7 +873,7 @@ const dashboard = function dashboard():void {
                     name: null,
                     required_name: false,
                     required_property: true,
-                    supported: ["activate", "block_list", "domain_local", "encryption", "http", "name", "path", "ports", "redirect_domain", "redirect_internal"],
+                    supported: rootProperties,
                     type: null
                 });
                 disable();
