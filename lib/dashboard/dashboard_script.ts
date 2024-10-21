@@ -63,7 +63,7 @@ const dashboard = function dashboard():void {
                                     }
                                 } while (index > 0);
                             }
-                        } else if (data.action === "activate" || data.action === "deactivate") {
+                        } else if (data.action === "activate") {
                             payload.server_status[config.name] = config.ports;
                             const color:type_activation_status = serverColor(config.name);
                             let oldPorts:HTMLElement = null,
@@ -96,6 +96,43 @@ const dashboard = function dashboard():void {
                                         } else {
                                             deactivate.disabled = false;
                                         }
+                                    }
+                                    break;
+                                }
+                            } while (index > 0);
+                        } else if (data.action === "deactivate") {
+                            payload.server_status[config.name] = (config.encryption === "both")
+                                ? {
+                                    open: 0,
+                                    secure: 0
+                                }
+                                : (config.encryption === "open")
+                                    ? {
+                                        open: 0
+                                    }
+                                    : {
+                                        secure: 0
+                                    };
+                            let oldPorts:HTMLElement = null,
+                                activate:HTMLButtonElement = null,
+                                deactivate:HTMLButtonElement = null
+                            do {
+                                index = index - 1;
+                                if (list[index].getAttribute("data-name") === config.name) {
+                                    list[index].setAttribute("class", "red");
+                                    list[index].getElementsByTagName("h4")[0].getElementsByTagName("button")[0].lastChild.textContent = `${config.name} - offline`;
+                                    oldPorts = list[index].getElementsByClassName("active-ports")[0] as HTMLElement;
+                                    activate = list[index].getElementsByClassName("server-activate")[0] as HTMLButtonElement;
+                                    deactivate = list[index].getElementsByClassName("server-deactivate")[0] as HTMLButtonElement;
+                                    if (oldPorts !== undefined) {
+                                        oldPorts.parentNode.insertBefore(activePorts(config.name), oldPorts);
+                                        oldPorts.parentNode.removeChild(oldPorts);
+                                    }
+                                    if (activate !== undefined) {
+                                        activate.disabled = false;
+                                    }
+                                    if (deactivate !== undefined) {
+                                        deactivate.disabled = true;
                                     }
                                     break;
                                 }
@@ -472,7 +509,7 @@ const dashboard = function dashboard():void {
                     if (listItem.getAttribute("class") === "green") {
                         activate.disabled = true;
                     }
-                    deactivate.onclick = server.message;
+                    activate.onclick = server.message;
                     deactivate.appendText("። Deactivate");
                     deactivate.setAttribute("class", "server-deactivate");
                     deactivate.onclick = server.message;
@@ -564,13 +601,6 @@ const dashboard = function dashboard():void {
                 socket.queue(JSON.stringify(message));
                 if (cancel !== undefined) {
                     server.cancel(event);
-                } else {
-                    const buttons:HTMLCollectionOf<HTMLButtonElement> = li.getElementsByTagName("button");
-                    let index:number = buttons.length;
-                    do {
-                        index = index - 1;
-                        buttons[index].disabled = true;
-                    } while (index > 0);
                 }
             },
             validate: function dashboard_serverValidate(event:type_user_event):void {

@@ -320,7 +320,7 @@ const server = function transmit_server(name:string, callback:(name:string, secu
                         index = 0;
                         do {
                             if (vars.port_conflict[index][2] === true) {
-                                errorText.push(`${vars.text.angry}*${vars.text.none} Port ${vars.text.angry + vars.servers[vars.port_conflict[index][0]].ports[(vars.port_conflict[index][1] === true) ? "secure" : "open"].toString() + vars.text.none} for server ${vars.text.cyan + vars.port_conflict[index][0]}, ${((vars.port_conflict[index][1]) === true ? "secure" : "open") + vars.text.none}.`);
+                                errorText.push(`* Port ${vars.servers[vars.port_conflict[index][0]].ports[(vars.port_conflict[index][1] === true) ? "secure" : "open"].toString()} for server ${vars.port_conflict[index][0]}, ${((vars.port_conflict[index][1]) === true ? "secure" : "open")}.`);
                             }
                             index = index + 1;
                         } while (index < total);

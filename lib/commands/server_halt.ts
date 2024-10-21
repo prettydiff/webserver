@@ -1,26 +1,26 @@
 
 import file from "../utilities/file.js";
 import log from "../utilities/log.js";
+import server from "../transmit/server.js";
 import vars from "../utilities/vars.js";
 
-// 1. turn off active servers
+// 1. turn off active servers and delete their corresponding objects
 // 2. kill all sockets on the server
-// 3. delete server objects
-// 4. delete vars.sockets[server]
-// 5. delete server from vars.server
-// 6. remove server's directory
-// 7. modify the server
-// 8. remove server from the config.json file
-// 9. call the callback
+// 3. delete vars.sockets[server]
+// 4. delete server from vars.server
+// 5. remove server's directory
+// 6. modify the server
+// 7. remove server from the config.json file
+// 8. call the callback
 
-const server_halt = function commands_serverHalt(server:server, action:type_halt_action, callback:() => void):void {
-    const name:string = (typeof server.modification_name === "string")
-            ? server.modification_name
-            : server.name;
+const server_halt = function commands_serverHalt(config:server, action:type_halt_action, callback:() => void):void {
+    const name:string = (typeof config.modification_name === "string")
+            ? config.modification_name
+            : config.name;
     if (vars.servers[name] === undefined) {
         log({
             action: action,
-            config: server,
+            config: config,
             message: `Server named ${name} does not exist.  Called on library server_halt.`,
             status: "error",
             type: "log"
@@ -40,14 +40,17 @@ const server_halt = function commands_serverHalt(server:server, action:type_halt
             complete = function commands_serverHalt_complete(flag:"config"|"remove"|"restart"):void {
                 flags[flag] = true;
                 if (flags.config === true && flags.remove === true && flags.restart === true) {
+                    const actionText:string = (action.charAt(action.length - 1) === "e")
+                        ? `${action}d`
+                        : `${action}ed`;
                     if (callback !== null) {
-                        // 9. call the callback
+                        // 8. call the callback
                         callback();
                     }
                     log({
                         action: action,
-                        config: server,
-                        message: `Server named ${server.name} ${action}ed.`,
+                        config: config,
+                        message: `Server named ${config.name} ${actionText}.`,
                         status: "success",
                         type: "server"
                     });
@@ -57,21 +60,30 @@ const server_halt = function commands_serverHalt(server:server, action:type_halt
                 callback: function commands_serverHalt_remove():void {
                     complete("remove");
                 },
-                error_terminate: server,
+                error_terminate: config,
                 exclusions: [],
                 location: path_name
+            },
+            server_restart = function commands_serverHalt_serverRestart():void {
+                complete("restart");
             },
             sockets:websocket_client[] = vars.sockets[name];
         let index:number = (sockets === undefined)
             ? 0
             : sockets.length;
-        // 1. turn off active servers
+        // 1. turn off active servers and delete their corresponding objects
         if (vars.store_server.open[name] !== undefined) {
             vars.store_server.open[name].close();
+            delete vars.store_server.open[name];
         }
         if (vars.store_server.secure[name] !== undefined) {
             vars.store_server.secure[name].close();
+            delete vars.store_server.secure[name];
         }
+        vars.server_status[name] = {
+            open: 0,
+            secure: 0
+        };
         // 2. kill all sockets on the server
         if (index > 0) {
             do {
@@ -79,36 +91,35 @@ const server_halt = function commands_serverHalt(server:server, action:type_halt
                 sockets[index].destroy();
             } while (index > 0);
         }
-        // 3. delete server objects
-        delete vars.store_server.open[name];
-        delete vars.store_server.secure[name];
-        // 4. delete vars.sockets[server]
+        // 3. delete vars.sockets[name]
         delete vars.sockets[name];
         if (action === "destroy") {
-            // 5. delete server from vars.server
+            // 4. delete server from vars.server
             delete vars.servers[name];
-            delete vars.server_status[name];
-            // 6. remove server's directory
+            // 5. remove server's directory
             file.remove(file_remove);
+        } else {
+            complete("remove");
         }
-        // 7. restart the server
-        if (action === "modify") {
-            const modName:string = server.modification_name;
-            if (modName !== server.name && vars.servers[modName] !== undefined) {
-                delete server.modification_name;
-                vars.servers[server.name] = vars.servers[modName];
-                delete vars.servers[modName];
-            }
+        // 6. modify the server
+        if (action === "modify" && config.activate === true) {
+            server(config.name, server_restart);
+        } else {
+            complete("restart");
         }
-        // 8. modify the config.json file
-        file.write({
-            callback: function commands_serverHalt_readConfig_callback():void {
-                complete("config");
-            },
-            contents: JSON.stringify(vars.servers),
-            error_terminate: server,
-            location: path_config
-        });
+        if (action === "destroy" || action === "modify") {
+            // 7. modify the config.json file
+            file.write({
+                callback: function commands_serverHalt_readConfig_callback():void {
+                    complete("config");
+                },
+                contents: JSON.stringify(vars.servers),
+                error_terminate: config,
+                location: path_config
+            });
+        } else {
+            complete("config");
+        }
     }
 };
 

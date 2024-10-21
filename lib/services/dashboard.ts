@@ -14,7 +14,10 @@ const dashboard = function services_dashboard(socketData:socket_data):void {
     } else if (data.action === "destroy") {
         // destroy existing server
         server_halt(data.configuration, "destroy", null);
-    } else {
+    } else if (data.action === "deactivate") {
+        // destroy existing server
+        server_halt(data.configuration, "deactivate", null);
+    } else if (data.action === "modify") {
         // modify existing server
         server_halt(data.configuration, "modify", null);
     }
