@@ -53,47 +53,42 @@ startup(function index():void {
     start = function index_start():void {
         const servers:string[] = Object.keys(vars.servers),
             total:number = servers.length,
-            portList:store_ports = {},
-            callback = function index_start_serverCallback(name:string, secure:"open"|"secure"):void {
-                const encryption:type_encryption = vars.servers[name].encryption;
+            callback = function index_start_serverCallback(name:string):void {
                 count = count + 1;
-                if (portList[name] === undefined) {
-                    if (encryption === "both") {
-                        portList[name] = {
-                            open: 0,
-                            secure: 0
-                        };
-                    } else if (encryption === "open") {
-                        portList[name] = {
-                            open: 0
-                        };
-                    } else if (encryption === "secure") {
-                        portList[name] = {
-                            secure: 0
-                        };
-                    }
-                }
-                portList[name][secure] = vars.servers[name].ports[secure];
                 if (count === total) {
                     const logs:string[] = [
                             "Web Servers started.",
                             "",
                             "Ports:",
                         ],
-                        keys:string[] = Object.keys(portList);
-                    keys.sort();
-                    let ports:number = 0;
+                        logItem = function index_start_serverCallback_logItem(name:string, encryption:"open"|"secure"):void {
+                            const conflict:boolean = (vars.server_status[name][encryption] === 0),
+                                portNumber = (conflict === true)
+                                    ? vars.servers[name].ports[encryption]
+                                    : vars.server_status[name][encryption],
+                                portDisplay:string = (conflict === true)
+                                    ? vars.text.angry + portNumber + vars.text.none
+                                    : portNumber.toString();
+                            const str:string = `${vars.text.angry}*${vars.text.none} ${name} - ${portDisplay}, ${encryption}`;
+                            if (conflict === true) {
+                                logs.push(`${str} (server offline due to port conflict or other server error)`);
+                            } else {
+                                logs.push(str);
+                            }
+                        };
+                    servers.sort();
+                    let items:number = 0;
                     do {
-                        if (vars.servers[keys[ports]].encryption === "both") {
-                            logs.push(`${vars.text.angry}*${vars.text.none} ${portList[keys[ports]].open} - ${keys[ports]}, open`);
-                            logs.push(`${vars.text.angry}*${vars.text.none} ${portList[keys[ports]].secure} - ${keys[ports]}, secure`);
-                        } else if (vars.servers[keys[ports]].encryption === "open") {
-                            logs.push(`${vars.text.angry}*${vars.text.none} ${portList[keys[ports]].open} - ${keys[ports]}, open`);
-                        } else if (vars.servers[keys[ports]].encryption === "secure") {
-                            logs.push(`${vars.text.angry}*${vars.text.none} ${portList[keys[ports]].secure} - ${keys[ports]}, secure`);
+                        if (vars.servers[servers[items]].encryption === "both") {
+                            logItem(servers[items], "open");
+                            logItem(servers[items], "secure");
+                        } else if (vars.servers[servers[items]].encryption === "open") {
+                            logItem(servers[items], "open");
+                        } else if (vars.servers[servers[items]].encryption === "secure") {
+                            logItem(servers[items], "secure");
                         }
-                        ports = ports + 1;
-                    } while (ports < keys.length);
+                        items = items + 1;
+                    } while (items < servers.length);
                     // eslint-disable-next-line no-console
                     console.log(logs.join("\n"));
                 }

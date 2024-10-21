@@ -10,7 +10,8 @@ import redirection from "./redirection.js";
 import socket_extension from "./socketExtension.js";
 import vars from "../utilities/vars.js";
 
-const server = function transmit_server(name:string, callback:(name:string, secure:"open"|"secure") => void):void {
+const server = function transmit_server(name:string, callback:(name:string) => void):void {
+    let count:number = 0;
     const connection = function transmit_server_connection(TLS_socket:node_tls_TLSSocket):void {
             // eslint-disable-next-line no-restricted-syntax
             const server_name:string = this.name,
@@ -258,15 +259,20 @@ const server = function transmit_server(name:string, callback:(name:string, secu
                 secureType:"open"|"secure" = (options === null)
                     ? "open"
                     : "secure",
+                complete = function transmit_server_start_complete():void {
+                    count = count + 1;
+                    if (callback !== null && ((vars.servers[name].encryption === "both" && count > 1) || vars.servers[name].encryption !== "both")) {
+                        callback(name);
+                    }
+                },
                 listenerCallback = function transmit_server_start_listenerCallback():void {
                     // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
-                    const server:server_instance = this,
-                        address:node_net_AddressInfo = server.address() as node_net_AddressInfo,
-                        secure:"open"|"secure" = (server.secure === true)
+                    const serverItem:server_instance = this,
+                        address:node_net_AddressInfo = serverItem.address() as node_net_AddressInfo,
+                        secure:"open"|"secure" = (serverItem.secure === true)
                             ? "secure"
                             : "open";
-                    port_conflict(server.name, server.secure, false);
-                    vars.store_server[secure][name] = server;
+                    vars.store_server[secure][name] = serverItem;
                     vars.server_status[name][secure] = address.port;
                     log({
                         action: "activate",
@@ -278,60 +284,32 @@ const server = function transmit_server(name:string, callback:(name:string, secu
                         status: "informational",
                         type: "server"
                     });
-                    if (callback !== null) {
-                        callback(server.name, secure);
-                    }
+                    complete();
                 },
                 server_error = function transmit_server_start_serverError(ser:node_error):void {
                     // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
-                    const server:server_instance = this;
+                    const serverItem:server_instance = this;
                     if (ser.code === "EADDRINUSE") {
-                        port_conflict(server.name, server.secure, true);
-                    }
-                },
-                // error messaging for port conflicts
-                port_conflict = function transmit_server_start_portConflict(name:string, secure:boolean, input:boolean):void {
-                    vars.port_conflict.push([name, secure, input]);
-                    const total:number = vars.port_conflict.length;
-                    let index:number = 0,
-                        test:boolean = false;
-                    if (total === Object.keys(vars.servers).length * 2) {
-                        const errorText:string[] = [`Port conflict on server ${name} with the following ports:`];
-                        vars.port_conflict.sort(function transmit_server_portConflict_sort(a:type_port_conflict, b:type_port_conflict):-1|1 {
-                            if (vars.servers[a[0]].ports[(a[1] === true) ? "secure" : "open"] < vars.servers[b[0]].ports[(b[1] === true) ? "secure" : "open"]) {
-                                return -1;
-                            }
-                            return 1;
-                        });
-
-                        // validate there are port conflicts
-                        do {
-                            if (vars.port_conflict[index][2] === true) {
-                                test = true;
-                                break;
-                            }
-                            index = index + 1;
-                        } while (index < total);
-                        if (test === false) {
-                            return;
-                        }
-
-                        // write the messaging
-                        index = 0;
-                        do {
-                            if (vars.port_conflict[index][2] === true) {
-                                errorText.push(`* Port ${vars.servers[vars.port_conflict[index][0]].ports[(vars.port_conflict[index][1] === true) ? "secure" : "open"].toString()} for server ${vars.port_conflict[index][0]}, ${((vars.port_conflict[index][1]) === true ? "secure" : "open")}.`);
-                            }
-                            index = index + 1;
-                        } while (index < total);
+                        const secure:"open"|"secure" = (serverItem.secure === true)
+                            ? "secure"
+                            : "open";
                         log({
                             action: "activate",
                             config: vars.servers[name],
-                            message: errorText.join("\n"),
+                            message: `Port conflict on port ${vars.servers[serverItem.name].ports[secure]} of ${secure} server named ${serverItem.name}.`,
+                            status: "error",
+                            type: "server"
+                        });
+                    } else {
+                        log({
+                            action: "activate",
+                            config: ser,
+                            message: `Error activating ${(serverItem.secure === true) ? "secure" : "open"} server ${serverItem.name}.`,
                             status: "error",
                             type: "server"
                         });
                     }
+                    complete();
                 };
             // type identification assignment
             wsServer.secure = (options === null)

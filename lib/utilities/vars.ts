@@ -8,7 +8,6 @@ const vars:vars = {
     path: {
         project: ""
     },
-    port_conflict: [],
     processes: {},
     sep: node.path.sep,
     server_status: {},

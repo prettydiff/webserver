@@ -314,6 +314,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
             write(html({
                 content: [
                     `<input type="hidden" value='${JSON.stringify(payload).replace(/'/g, "&#39;")}'/>`,
+                    "<p id=\"connection-status\" class=\"connection-online\">Dashboard Connection: <strong>Online</strong></p>",
                     "<nav><ul>",
                     "<li><button class=\"nav-focus\" data-section=\"servers\">Servers</button></li><li><button data-section=\"logs\">Logs</button></li><li><button data-section=\"ports\">Port Summary</button></li><li><button data-section=\"sockets\">Socket Summary</button></li><li><button data-section=\"compose\">Docker Compose</button></li>",
                     "</ul></nav>",

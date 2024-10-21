@@ -133,7 +133,6 @@ interface vars {
     path: {
         project: string;
     };
-    port_conflict: type_port_conflict[];
     processes: {
         [key:string]: node_childProcess_ChildProcess;
     };

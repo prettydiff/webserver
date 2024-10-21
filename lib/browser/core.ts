@@ -1,5 +1,5 @@
 
-const core = function core(open:() => void, message:(event:websocket_event) => void, type:string):browserSocket {
+const core = function core(message:(event:websocket_event) => void, type:string, log?:(item:services_dashboard_status) => void):socket_object {
     const socketCall = function core_socketCall():WebSocket {
             const port:string = (location.protocol === "http:")
                     ? "80"
@@ -8,15 +8,33 @@ const core = function core(open:() => void, message:(event:websocket_event) => v
                     ? location.origin
                     : `${location.origin}:${port}`,
                 socketItem:WebSocket = new WebSocket(address, [type]),
-                close = function core_close():void {
-                    socket.interval = setInterval(core_socketCall, 10000);
+                close = function core_socketCall_close():void {
+                    const status:HTMLElement = document.getElementById("connection-status");
+                    if (status !== null && document.getElementsByTagName("body")[0].getAttribute("id") === "dashboard") {
+                        status.getElementsByTagName("strong")[0].textContent = "Offline";
+                        status.setAttribute("class", "connection-offline");
+                    }
+                    if (log !== undefined) {
+                        log({
+                            action: "activate",
+                            configuration: null,
+                            message: "Dashboard connection offline.",
+                            status: "error",
+                            time: Date.now(),
+                            type: "log"
+                        });
+                    }
+                    setTimeout(function core_close_delay():void {
+                        core_socketCall();
+                    }, 10000);
                 };
             socketItem.onmessage = message;
-            socketItem.onopen = function core_socket_open(event:Event):void {
-                const target:WebSocket = event.target as WebSocket;
-                if (socket.interval !== null) {
-                    clearInterval(socket.interval);
-                    socket.interval = null;
+            socketItem.onopen = function core_socketCall_open(event:Event):void {
+                const target:WebSocket = event.target as WebSocket,
+                    status:HTMLElement = document.getElementById("connection-status");
+                if (status !== null && document.getElementsByTagName("body")[0].getAttribute("id") === "dashboard") {
+                    status.getElementsByTagName("strong")[0].textContent = "Online";
+                    status.setAttribute("class", "connection-online");
                 }
                 socket.socket = target;
                 if (socket.queueStore.length > 0) {
@@ -25,18 +43,26 @@ const core = function core(open:() => void, message:(event:websocket_event) => v
                         socket.queueStore.splice(0, 1);
                     } while (socket.queueStore.length > 0);
                 }
-                open();
+                if (log !== undefined) {
+                    log({
+                        action: "activate",
+                        configuration: null,
+                        message: "Dashboard connection online.",
+                        status: "informational",
+                        time: Date.now(),
+                        type: "log"
+                    });
+                }
             };
-            socketItem.onclose = close;
+            socketItem.onerror = close;
             return socketItem;
         },
-        socket:browserSocket = {
-            interval: null,
+        socket:socket_object = {
             invoke: socketCall,
             queueStore: [],
             queue: function core_queue(message:string):void {
                 // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
-                const instance:browserSocket = this;
+                const instance:socket_object = this;
                 if (instance.socket === null || instance.socket.readyState !== 1) {
                     instance.queueStore.push(message);
                 } else {

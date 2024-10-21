@@ -65,6 +65,7 @@ table{border-collapse:collapse}
 td{font-family:monospace;padding:0.5em}
 td .icon{display:inline-block;width:1.5em}
 
+#connection-status{border-color:#ccc;border-style:solid;border-width:0.1em;padding:0.2em}
 #dashboard button{background:#444;border-color:#ccc;border-style:solid;border-radius:0;border-width:0.065em;font-size:1.2em;font-weight:bold;text-shadow:0.05em 0.05em #111;width:10em}
 #dashboard button:hover{background:#666}
 #dashboard button:hover:disabled{background:#444;color:#666;cursor:auto}
@@ -81,7 +82,9 @@ td .icon{display:inline-block;width:1.5em}
 #servers .server-list h4{cursor:pointer}
 #servers .server-list h4:hover{background:rgba(0,0,0,0.25)}
 #servers .server-list > ul > .amber{background:#443}
+#connection-status.connection-online,
 #servers .server-list > ul > .green{background:#121}
+#connection-status.connection-offline,
 #servers .server-list > ul > .red{background:#422}
 #servers h5{font-size:1em;margin:0}
 #servers div.edit,

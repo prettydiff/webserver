@@ -8,7 +8,54 @@ const dashboard = function dashboard():void {
     // 4. server type as an option (type of protocol/service)
 
 
-    const socketOpen = function dashboard_socketOpen():void {},
+    const log = function dashboard_log(item:services_dashboard_status):void {
+            let li:HTMLElement = document.createElement("li"),
+                timeElement:HTMLElement = document.createElement("time");
+            const ul:HTMLElement = document.getElementById("logs").getElementsByTagName("ul")[0],
+                strong:HTMLElement = document.createElement("strong"),
+                time:string = (function dashboard_log_time():string {
+                    const output:string[] = [],
+                        day:string = ul.getAttribute("data-day"),
+                        date:Date = new Date(item.time),
+                        hours:string = date.getHours().toString(),
+                        minutes:string = date.getMinutes().toString(),
+                        seconds:string = date.getSeconds().toString(),
+                        milliseconds:string = date.getMilliseconds().toString(),
+                        mil:string = (milliseconds.length === 1)
+                            ? `00${milliseconds}`
+                            : (milliseconds.length === 2)
+                                ? `0${milliseconds}`
+                                : milliseconds;
+                    output.push((hours.length < 2)
+                        ? `0${hours}`
+                        : hours);
+                    output.push((minutes.length < 2)
+                        ? `0${minutes}`
+                        : minutes);
+                    output.push((seconds.length < 2)
+                        ? `0${seconds}`
+                        : seconds);
+                    if (day === null || date.getDate().toString() !== day) {
+                        timeElement.appendText(`[${date.toDateString()}]`);
+                        li.appendChild(timeElement);
+                        ul.appendChild(li);
+                        li = document.createElement("li");
+                        timeElement = document.createElement("time");
+                        ul.setAttribute("data-day", date.getDate().toString());
+                    }
+                    return `[${output.join(":")}.${mil}]`;
+                }());
+            timeElement.appendText(time);
+            li.appendChild(timeElement);
+            li.setAttribute("class", `log-${item.status}`);
+            if (item.status === "error") {
+                strong.appendText(item.message);
+                li.appendChild(strong);
+            } else {
+                li.appendText(item.message);
+            }
+            ul.appendChild(li);
+        },
         socketMessage = function dashboard_socketMessage(event:websocket_event):void {
             if (typeof event.data === "string") {
                 const data:services_dashboard_status = JSON.parse(event.data).data;
@@ -213,7 +260,7 @@ const dashboard = function dashboard():void {
                 return ["green", "online"];
             }
         },
-        socket:browserSocket = core(socketOpen, socketMessage, "browser"),
+        socket:socket_object = core(socketMessage, "browser", log),
         payload:transmit_dashboard = JSON.parse(document.getElementsByTagName("input")[0].value),
         server_new:HTMLButtonElement = document.getElementsByClassName("server-new")[0] as HTMLButtonElement,
         definitions:HTMLButtonElement = document.getElementsByClassName("server-definitions")[0].getElementsByTagName("button")[0],
@@ -914,54 +961,6 @@ const dashboard = function dashboard():void {
                 });
                 disable();
             }
-        },
-        log = function dashboard_log(item:services_dashboard_status):void {
-            let li:HTMLElement = document.createElement("li"),
-                timeElement:HTMLElement = document.createElement("time");
-            const ul:HTMLElement = document.getElementById("logs").getElementsByTagName("ul")[0],
-                strong:HTMLElement = document.createElement("strong"),
-                time:string = (function dashboard_log_time():string {
-                    const output:string[] = [],
-                        day:string = ul.getAttribute("data-day"),
-                        date:Date = new Date(item.time),
-                        hours:string = date.getHours().toString(),
-                        minutes:string = date.getMinutes().toString(),
-                        seconds:string = date.getSeconds().toString(),
-                        milliseconds:string = date.getMilliseconds().toString(),
-                        mil:string = (milliseconds.length === 1)
-                            ? `00${milliseconds}`
-                            : (milliseconds.length === 2)
-                                ? `0${milliseconds}`
-                                : milliseconds;
-                    output.push((hours.length < 2)
-                        ? `0${hours}`
-                        : hours);
-                    output.push((minutes.length < 2)
-                        ? `0${minutes}`
-                        : minutes);
-                    output.push((seconds.length < 2)
-                        ? `0${seconds}`
-                        : seconds);
-                    if (day === null || date.getDate().toString() !== day) {
-                        timeElement.appendText(`[${date.toDateString()}]`);
-                        li.appendChild(timeElement);
-                        ul.appendChild(li);
-                        li = document.createElement("li");
-                        timeElement = document.createElement("time");
-                        ul.setAttribute("data-day", date.getDate().toString());
-                    }
-                    return `[${output.join(":")}.${mil}]`;
-                }());
-            timeElement.appendText(time);
-            li.appendChild(timeElement);
-            li.setAttribute("class", `log-${item.status}`);
-            if (item.status === "error") {
-                strong.appendText(item.message);
-                li.appendChild(strong);
-            } else {
-                li.appendText(item.message);
-            }
-            ul.appendChild(li);
         },
         navigation = function dashboard_navigation(event:MouseEvent):void {
             const target:HTMLElement = event.target,

@@ -14,7 +14,6 @@ type type_halt_action = "deactivate" | "destroy" | "modify";
 type type_hash_input = "direct" | "file";
 type type_http_method = "connect" | "delete" | "get" | "head" | "post" | "put";
 type type_paths = "storage" | "web_root";
-type type_port_conflict = [string, boolean, boolean];
 type type_search = "fragment" | "negation" | "regex";
 type type_selector = "class" | "id" | "tag";
 type type_server_property = "block_list" | "domain_local" | "encryption" | "http" | "name" | "path" | "ports" | "redirect_domain" | "redirect_internal";
