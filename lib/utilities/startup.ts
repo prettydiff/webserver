@@ -21,11 +21,6 @@ const startup = function utilities_startup(callback:() => void):void {
                     server.domain_local.push(input);
                 }
             },
-            paths = function utilities_startup_read_instructions_paths(input:type_paths):void {
-                if (server.path === undefined || server.path === null || typeof server.path[input] !== "string" || server.path[input] === "") {
-                    server.path[input] = `${vars.path.project}lib${vars.sep}assets${vars.sep + keys_srv[index_srv]}/`;
-                }
-            },
             interfaces:{ [index: string]: node_os_NetworkInterfaceInfo[]; } = node.os.networkInterfaces(),
             keys_int:string[] = Object.keys(interfaces),
             keys_srv:string[] = (config === null)
@@ -65,8 +60,6 @@ const startup = function utilities_startup(callback:() => void):void {
                         referrer: []
                     };
                 }
-                paths("storage");
-                paths("web_root");
                 includes("127.0.0.1");
                 includes("::1");
                 includes("[::1]");
@@ -78,10 +71,6 @@ const startup = function utilities_startup(callback:() => void):void {
                         includes(interfaces[keys_int[index_int]][sub].address);
                     } while (sub > 0);
                 } while (index_int > 0);
-                vars.server_status[keys_srv[index_srv]] = {
-                    open: 0,
-                    secure: 0
-                };
             } while (index_srv > 0);
         }
         if (errorList.length > 2) {

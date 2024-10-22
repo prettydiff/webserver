@@ -65,6 +65,50 @@ interface project_config {
     [key:string]: server;
 }
 
+interface server {
+    activate: boolean;
+    block_list?: {
+        host: string[];
+        ip: string[];
+        referrer: string[];
+    };
+    domain_local?: string[];
+    encryption: type_encryption;
+    http?: {
+        delete?: string;
+        post?: string;
+        put?: string;
+    };
+    modification_name?: string;
+    name: string;
+    ports: server_ports;
+    redirect_domain?: {
+        [key:string]: [string, number];
+    };
+    redirect_internal?: {
+        [key:string]: store_string;
+    };
+    ws?: string;
+}
+
+interface server_content {
+    [key:string]: (property:type_server_property, parent:HTMLElement) => void;
+}
+
+interface server_meta {
+    [key:string]: {
+        server: {
+            open: server_instance;
+            secure: server_instance;
+        };
+        sockets: {
+            open: websocket_client[];
+            secure: websocket_client[];
+        };
+        status: server_ports;
+    };
+}
+
 interface server_ports {
     open?: number;
     secure?: number;
@@ -94,40 +138,6 @@ interface store_string {
     [key:string]: string;
 }
 
-interface server {
-    activate: boolean;
-    block_list?: {
-        host: string[];
-        ip: string[];
-        referrer: string[];
-    };
-    domain_local?: string[];
-    encryption: type_encryption;
-    http?: {
-        delete?: string;
-        post?: string;
-        put?: string;
-    };
-    modification_name?: string;
-    name: string;
-    path: {
-        certificates: string;
-        storage: string;
-        web_root: string;
-    };
-    ports: server_ports;
-    redirect_domain?: {
-        [key:string]: [string, number];
-    };
-    redirect_internal?: {
-        [key:string]: store_string;
-    };
-}
-
-interface server_content {
-    [key:string]: (property:type_server_property, parent:HTMLElement) => void;
-}
-
 interface vars {
     logs: services_dashboard_status[];
     path: {
@@ -137,17 +147,8 @@ interface vars {
         [key:string]: node_childProcess_ChildProcess;
     };
     sep: string;
-    server_status: store_ports;
+    server_meta: server_meta;
     servers: project_config;
-    sockets: store_sockets;
     start_time: bigint;
-    store_server: {
-        open: {
-            [key:string]: server_instance;
-        };
-        secure: {
-            [key:string]: server_instance;
-        };
-    };
     text: store_string;
 }

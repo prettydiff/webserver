@@ -6,13 +6,16 @@ const socket_end = function transmit_socketEnd(socket_input:websocket_client):vo
             ? socket_input
             // eslint-disable-next-line no-restricted-syntax
             : this,
+        encryption:"open"|"secure" = (socket.secure === true)
+            ? "secure"
+            : "open",
         list:string = socket.server;
     let index:number = list.length;
     socket.status = "end";
     do {
         index = index - 1;
-        if (vars.sockets[list][index] === socket) {
-            vars.sockets[list].splice(index, 1);
+        if (vars.server_meta[socket.server].sockets[encryption][index] === socket) {
+            vars.server_meta[socket.server].sockets[encryption].splice(index, 1);
             break;
         }
     } while (index > 0);

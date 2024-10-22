@@ -6,8 +6,11 @@ import socket_end from "./socketEnd.js";
 import vars from "../utilities/vars.js";
 
 const socket_extension = function transmit_socketExtension(config:config_websocket_extensions):void {
+    const encryption:type_encryption = (config.socket.secure === true)
+        ? "secure"
+        : "open";
     // permit if the socket is not already created
-    if (vars.sockets[config.server] === undefined || vars.sockets[config.server].includes(config.socket) === false) {
+    if (vars.server_meta[config.server].sockets[encryption].includes(config.socket) === false) {
         const ping = function transmit_socketExtension_ping(ttl:number, callback:(err:node_error, roundtrip:bigint) => void):void {
                 const errorObject = function transmit_socketExtension_ping_errorObject(code:string, message:string):node_error {
                         const err:node_error = new Error();
@@ -42,7 +45,7 @@ const socket_extension = function transmit_socketExtension(config:config_websock
                     type: "socket"
                 });
             };
-        vars.sockets[config.server].push(config.socket);
+        vars.server_meta[config.server].sockets[encryption].push(config.socket);
         if (config.proxy === null) {
             config.socket.handler = config.handler;   // assigns an event handler to process incoming messages
             config.socket.on("data", receiver);

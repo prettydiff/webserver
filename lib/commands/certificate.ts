@@ -7,7 +7,7 @@ import vars from "../utilities/vars.js";
 // cspell:word addstore, CAcreateserial, certutil, delstore, extfile, genpkey, keyid, pathlen
 
 const certificate = function commands_certificate(config:config_certificate):void {
-    const cert_path:string = vars.servers[config.name].path.certificates,
+    const cert_path:string = `${vars.path.project}servers${vars.sep + config.name + vars.sep}certs${vars.sep}`,
         cert = function commands_certificate_cert():void {
             let index:number = 0;
             const commands:string[] = [],

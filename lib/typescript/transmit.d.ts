@@ -31,9 +31,8 @@ interface transmit_addresses_socket {
 
 interface transmit_dashboard {
     logs: services_dashboard_status[];
-    server_status: store_ports;
+    server_meta: server_meta;
     servers: project_config;
-    sockets: store_sockets;
 }
 
 interface transmit_receiver {

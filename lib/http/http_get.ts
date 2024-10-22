@@ -19,9 +19,10 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
         method:"GET"|"HEAD" = (index0.indexOf("HEAD") === 0)
             ? "HEAD"
             : "GET",
+        server_name:string = socket.server,
+        path:string = `${vars.path.project}servers${vars.sep + server_name + vars.sep}assets${vars.sep}`,
         resource:string = index0[1],
         asset:string[] = resource.split("/"),
-        server_name:string = socket.server,
         fileFragment:string = asset.join(vars.sep).replace(/^(\\|\/)/, ""),
         payload = function http_get_payload(heading:string[], body:string):string {
             if (method === "HEAD") {
@@ -307,14 +308,13 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
         if (server_name === "dashboard") {
             const payload:transmit_dashboard = {
                 logs: vars.logs,
-                server_status: vars.server_status,
                 servers: vars.servers,
-                sockets: vars.sockets
+                server_meta: vars.server_meta
             };
             write(html({
                 content: [
                     `<input type="hidden" value='${JSON.stringify(payload).replace(/'/g, "&#39;")}'/>`,
-                    "<p id=\"connection-status\" class=\"connection-online\">Dashboard Connection: <strong>Online</strong></p>",
+                    "<p id=\"connection-status\" class=\"connection-offline\">Dashboard Connection: <strong>Offline</strong></p>",
                     "<nav><ul>",
                     "<li><button class=\"nav-focus\" data-section=\"servers\">Servers</button></li><li><button data-section=\"logs\">Logs</button></li><li><button data-section=\"ports\">Port Summary</button></li><li><button data-section=\"sockets\">Socket Summary</button></li><li><button data-section=\"compose\">Docker Compose</button></li>",
                     "</ul></nav>",
@@ -331,6 +331,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                     "<dt>ports</dt><dd>The ports on which the server operates.</dd>",
                     "<dt>redirect_domain</dt><dd>Redirects traffic to a different location, such as vanity domains. Each value is an array of two indexes.  The first index, a string, identifies where to redirect the traffic to as in a IP address, hostname, or domain name.  An empty string or non-string value will redirect traffic onto a different port of the same local machine.  The second index is a number representing a port to redirect traffic to.</dd>",
                     "<dt>redirect_internal</dt><dd>Redirects resource paths within the given server based upon the hostname in the HTTP request header. This is useful for dynamic or vanity endpoints on a given server.</dd>",
+                    "<dt>ws</dt><dd>A file path location to a script for custom WebSocket message handling, executed as a child process.</dd>",
                     "</dl></div>",
                     "<p><button class=\"server-new\">Create Server</button></p></div>",
                     "<div id=\"ports\"><h2>Port Summary</h2></div>",
@@ -348,14 +349,14 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
             }));
         } else {
             // server root html file takes the name of the server, not index.html
-            input = `${vars.servers[server_name].path.web_root}index.html`;
+            input = `${path}index.html`;
         }
-    } else if (fileFragment.indexOf(".js") === fileFragment.length - 3 && fileFragment.includes("/js/lib/assets/") === false && vars.servers[server_name].path.web_root === `${vars.path.project}lib${vars.sep}assets${vars.sep + server_name}/`) {
+    } else if (fileFragment.indexOf(".js") === fileFragment.length - 3 && fileFragment.includes("/js/lib/assets/") === false) {
         // normalizes compiled JS path to web_root path
-        input = vars.servers[server_name].path.web_root.replace(/(\/|\\)lib(\/|\\)assets(\/|\\)/, `${vars.sep}js${vars.sep}lib${vars.sep}assets${vars.sep}`) + decodeURI(fileFragment);
+        input = path.replace(/(\/|\\)lib(\/|\\)assets(\/|\\)/, `${vars.sep}js${vars.sep}lib${vars.sep}assets${vars.sep}`) + decodeURI(fileFragment);
     } else {
         // all other HTTP requests
-        input = vars.servers[server_name].path.web_root + decodeURI(fileFragment);
+        input = path + decodeURI(fileFragment);
     }
     file.stat({
         callback: statTest,

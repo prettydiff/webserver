@@ -45,7 +45,7 @@ interface config_log {
 }
 
 interface config_validate_serverKeys {
-    name: "block_list" | "http" | "path" | "ports" | "redirect_domain" | "redirect_internal";
+    name: "block_list" | "http" | "ports" | "redirect_domain" | "redirect_internal";
     required_name: boolean;
     required_property: boolean;
     supported: string[];

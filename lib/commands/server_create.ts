@@ -112,10 +112,6 @@ const server_create = function commands_serverCreate(config:server, callback:() 
             }
         }
         vars.servers[config.name] = config;
-        vars.server_status[config.name] = {
-            open: 0,
-            secure: 0
-        };
         // 2. add server to config.json file
         file.write({
             callback: function commands_serverCreate_writeConfig_callback():void {

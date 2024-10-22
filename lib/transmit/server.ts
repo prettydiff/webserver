@@ -272,13 +272,13 @@ const server = function transmit_server(name:string, callback:(name:string) => v
                         secure:"open"|"secure" = (serverItem.secure === true)
                             ? "secure"
                             : "open";
-                    vars.store_server[secure][name] = serverItem;
-                    vars.server_status[name][secure] = address.port;
+                    vars.server_meta[name].server[secure] = serverItem;
+                    vars.server_meta[name].status[secure] = address.port;
                     log({
                         action: "activate",
                         config: {
                             name: name,
-                            ports: vars.server_status[name]
+                            ports: vars.server_meta[name].status
                         },
                         message: `${secure.capitalize()} server ${server.name} came online.`,
                         status: "informational",
@@ -328,8 +328,21 @@ const server = function transmit_server(name:string, callback:(name:string) => v
                 port: vars.servers[name].ports[secureType]
             }, listenerCallback);
         };
-    if (vars.sockets[name] === undefined) {
-        vars.sockets[name] = [];
+    if (vars.server_meta[name] === undefined) {
+        vars.server_meta[name] = {
+            server: {
+                open: null,
+                secure: null
+            },
+            sockets: {
+                open: [],
+                secure: []
+            },
+            status: {
+                open: 0,
+                secure: 0
+            }
+        };
     }
     if (vars.servers[name].encryption === "open") {
         start(null);

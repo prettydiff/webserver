@@ -12,17 +12,17 @@ const core = function core(message:(event:websocket_event) => void, type:string,
                     const status:HTMLElement = document.getElementById("connection-status");
                     if (status !== null && document.getElementsByTagName("body")[0].getAttribute("id") === "dashboard") {
                         status.getElementsByTagName("strong")[0].textContent = "Offline";
+                        if (log !== undefined && status.getAttribute("class") === "connection-online") {
+                            log({
+                                action: "activate",
+                                configuration: null,
+                                message: "Dashboard browser connection offline.",
+                                status: "error",
+                                time: Date.now(),
+                                type: "log"
+                            });
+                        }
                         status.setAttribute("class", "connection-offline");
-                    }
-                    if (log !== undefined) {
-                        log({
-                            action: "activate",
-                            configuration: null,
-                            message: "Dashboard connection offline.",
-                            status: "error",
-                            time: Date.now(),
-                            type: "log"
-                        });
                     }
                     setTimeout(function core_close_delay():void {
                         core_socketCall();
@@ -34,6 +34,16 @@ const core = function core(message:(event:websocket_event) => void, type:string,
                     status:HTMLElement = document.getElementById("connection-status");
                 if (status !== null && document.getElementsByTagName("body")[0].getAttribute("id") === "dashboard") {
                     status.getElementsByTagName("strong")[0].textContent = "Online";
+                    if (log !== undefined && status.getAttribute("class") === "connection-offline") {
+                        log({
+                            action: "activate",
+                            configuration: null,
+                            message: "Dashboard browser connection online.",
+                            status: "informational",
+                            time: Date.now(),
+                            type: "log"
+                        });
+                    }
                     status.setAttribute("class", "connection-online");
                 }
                 socket.socket = target;
@@ -42,16 +52,6 @@ const core = function core(message:(event:websocket_event) => void, type:string,
                         socket.socket.send(socket.queueStore[0]);
                         socket.queueStore.splice(0, 1);
                     } while (socket.queueStore.length > 0);
-                }
-                if (log !== undefined) {
-                    log({
-                        action: "activate",
-                        configuration: null,
-                        message: "Dashboard connection online.",
-                        status: "informational",
-                        time: Date.now(),
-                        type: "log"
-                    });
                 }
             };
             socketItem.onerror = close;

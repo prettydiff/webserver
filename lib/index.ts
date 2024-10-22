@@ -7,9 +7,7 @@ import vars from "./utilities/vars.js";
 startup(function index():void {
     const default_server = function index_defaultServer(name:string):server {
         const path_servers:string = `${vars.path.project}servers${vars.sep}`,
-            path_name:string = path_servers + name + vars.sep,
-            path_assets:string = `${path_name}assets${vars.sep}`,
-            path_certs:string = `${path_name}certs${vars.sep}`;
+            path_name:string = path_servers + name + vars.sep;
         return {
             activate: true,
             block_list: {
@@ -29,13 +27,6 @@ startup(function index():void {
                 put: ""
             },
             name: name,
-            path: {
-                certificates: path_certs,
-                storage: path_assets,
-                web_root: (name === "dashboard")
-                    ? `${vars.path.project}lib${vars.sep}dashboard${vars.sep}`
-                    : path_assets
-            },
             ports: {
                 open: 0,
                 secure: 0
@@ -53,7 +44,7 @@ startup(function index():void {
     start = function index_start():void {
         const servers:string[] = Object.keys(vars.servers),
             total:number = servers.length,
-            callback = function index_start_serverCallback(name:string):void {
+            callback = function index_start_serverCallback():void {
                 count = count + 1;
                 if (count === total) {
                     const logs:string[] = [
@@ -62,14 +53,14 @@ startup(function index():void {
                             "Ports:",
                         ],
                         logItem = function index_start_serverCallback_logItem(name:string, encryption:"open"|"secure"):void {
-                            const conflict:boolean = (vars.server_status[name][encryption] === 0),
-                                portNumber = (conflict === true)
+                            const conflict:boolean = (vars.server_meta[name].status[encryption] === 0),
+                                portNumber:number = (conflict === true)
                                     ? vars.servers[name].ports[encryption]
-                                    : vars.server_status[name][encryption],
+                                    : vars.server_meta[name].status[encryption],
                                 portDisplay:string = (conflict === true)
                                     ? vars.text.angry + portNumber + vars.text.none
-                                    : portNumber.toString();
-                            const str:string = `${vars.text.angry}*${vars.text.none} ${name} - ${portDisplay}, ${encryption}`;
+                                    : portNumber.toString(),
+                                str:string = `${vars.text.angry}*${vars.text.none} ${name} - ${portDisplay}, ${encryption}`;
                             if (conflict === true) {
                                 logs.push(`${str} (server offline due to port conflict or other server error)`);
                             } else {

@@ -78,18 +78,10 @@ const dashboard = function dashboard():void {
                             payload.servers[config.name] = config;
                             const names:string[] = Object.keys(payload.servers),
                                 ul:HTMLElement = document.getElementById("servers").getElementsByClassName("server-list")[0].getElementsByTagName("ul")[0];
-                            payload.server_status[config.name] = (config.encryption === "both")
-                                ? {
-                                    open: 0,
-                                    secure: 0
-                                }
-                                : (config.encryption === "open")
-                                    ? {
-                                        open: 0
-                                    }
-                                    : {
-                                        secure: 0
-                                    };
+                            payload.server_meta[config.name].status = {
+                                open: 0,
+                                secure: 0
+                            };
                             names.sort(function dashboard_serverList_sort(a:string, b:string):-1|1 {
                                 if (a < b) {
                                     return -1;
@@ -111,7 +103,7 @@ const dashboard = function dashboard():void {
                                 } while (index > 0);
                             }
                         } else if (data.action === "activate") {
-                            payload.server_status[config.name] = config.ports;
+                            payload.server_meta[config.name].status = config.ports;
                             const color:type_activation_status = serverColor(config.name);
                             let oldPorts:HTMLElement = null,
                                 activate:HTMLButtonElement = null,
@@ -148,21 +140,13 @@ const dashboard = function dashboard():void {
                                 }
                             } while (index > 0);
                         } else if (data.action === "deactivate") {
-                            payload.server_status[config.name] = (config.encryption === "both")
-                                ? {
-                                    open: 0,
-                                    secure: 0
-                                }
-                                : (config.encryption === "open")
-                                    ? {
-                                        open: 0
-                                    }
-                                    : {
-                                        secure: 0
-                                    };
+                            payload.server_meta[config.name].status = {
+                                open: 0,
+                                secure: 0
+                            };
                             let oldPorts:HTMLElement = null,
                                 activate:HTMLButtonElement = null,
-                                deactivate:HTMLButtonElement = null
+                                deactivate:HTMLButtonElement = null;
                             do {
                                 index = index - 1;
                                 if (list[index].getAttribute("data-name") === config.name) {
@@ -192,42 +176,43 @@ const dashboard = function dashboard():void {
         activePorts = function dashboard_activePorts(name_server:string):HTMLElement {
             const div:HTMLElement = document.createElement("div"),
                 h5:HTMLElement = document.createElement("h5"),
-                ports:HTMLElement = document.createElement("ul"),
-                encryption:type_encryption = payload.servers[name_server].encryption;
+                portList:HTMLElement = document.createElement("ul"),
+                encryption:type_encryption = payload.servers[name_server].encryption,
+                ports:server_ports = payload.server_meta[name_server].status;
             let portItem:HTMLElement = document.createElement("li");
             h5.appendText("Active Ports");
             div.appendChild(h5);
             div.setAttribute("class", "active-ports");
             if (encryption === "both") {
-                if (payload.server_status[name_server].open === 0) {
+                if (ports.open === 0) {
                     portItem.appendText("Open - offline");
                 } else {
-                    portItem.appendText(`Open - ${payload.server_status[name_server].open}`);
+                    portItem.appendText(`Open - ${ports.open}`);
                 }
-                ports.appendChild(portItem);
+                portList.appendChild(portItem);
                 portItem = document.createElement("li");
-                if (payload.server_status[name_server].secure === 0) {
+                if (ports.secure === 0) {
                     portItem.appendText("Secure - offline");
                 } else {
-                    portItem.appendText(`Secure - ${payload.server_status[name_server].secure}`);
+                    portItem.appendText(`Secure - ${ports.secure}`);
                 }
-                ports.appendChild(portItem);
+                portList.appendChild(portItem);
             } else if (encryption === "open") {
-                if (payload.server_status[name_server].open === 0) {
+                if (ports.open === 0) {
                     portItem.appendText("Open - offline");
                 } else {
-                    portItem.appendText(`Open - ${payload.server_status[name_server].open}`);
+                    portItem.appendText(`Open - ${ports.open}`);
                 }
-                ports.appendChild(portItem);
+                portList.appendChild(portItem);
             } else {
-                if (payload.server_status[name_server].secure === 0) {
+                if (ports.secure === 0) {
                     portItem.appendText("Secure - offline");
                 } else {
-                    portItem.appendText(`Secure - ${payload.server_status[name_server].secure}`);
+                    portItem.appendText(`Secure - ${ports.secure}`);
                 }
-                ports.appendChild(portItem);
+                portList.appendChild(portItem);
             }
-            div.appendChild(ports);
+            div.appendChild(portList);
             return div;
         },
         serverColor = function dashboard_serverColor(name_server:string):type_activation_status {
@@ -237,24 +222,25 @@ const dashboard = function dashboard():void {
             if (payload.servers[name_server].activate === false) {
                 return [null, "deactivated"];
             }
-            const encryption:type_encryption = payload.servers[name_server].encryption;
+            const encryption:type_encryption = payload.servers[name_server].encryption,
+                ports:server_ports = payload.server_meta[name_server].status;
             if (encryption === "both") {
-                if (payload.server_status[name_server].open === 0 && payload.server_status[name_server].secure === 0) {
+                if (ports.open === 0 && ports.secure === 0) {
                     return ["red", "offline"];
                 }
-                if (payload.server_status[name_server].open > 0 && payload.server_status[name_server].secure > 0) {
+                if (ports.open > 0 && ports.secure > 0) {
                     return ["green", "online"];
                 }
                 return ["amber", "partially online"];
             }
             if (encryption === "open") {
-                if (payload.server_status[name_server].open === 0) {
+                if (ports.open === 0) {
                     return ["red", "offline"];
                 }
                 return ["green", "online"];
             }
             if (encryption === "secure") {
-                if (payload.server_status[name_server].secure === 0) {
+                if (ports.secure === 0) {
                     return ["red", "offline"];
                 }
                 return ["green", "online"];
@@ -420,11 +406,6 @@ const dashboard = function dashboard():void {
                                             put: ""
                                         },
                                         name: "new_server",
-                                        path: {
-                                            certificates: payload.servers.dashboard.path.certificates.replace("dashboard", "new_server"),
-                                            storage: payload.servers.dashboard.path.storage.replace("dashboard", "new_server"),
-                                            web_root: payload.servers.dashboard.path.web_root.replace("dashboard", "new_server")
-                                        },
                                         ports: {
                                             open: 0,
                                             secure: 0
@@ -471,11 +452,6 @@ const dashboard = function dashboard():void {
                             } else {
                                 output.push(`"name": "${sanitize(name_server)}",`);
                             }
-                            output.push("\"path\": {");
-                            output.push(`    "certificates": "${sanitize(serverData.path.certificates)}",`);
-                            output.push(`    "storage": "${sanitize(serverData.path.storage)}",`);
-                            output.push(`    "web_root": "${sanitize(serverData.path.web_root)}"`);
-                            output.push("},");
                             output.push("\"ports\": {");
                             if (serverData.encryption === "both") {
                                 output.push(`    "open": ${serverData.ports.open},`);
@@ -854,9 +830,7 @@ const dashboard = function dashboard():void {
                             }
                         }
                     },
-                    rootProperties:string[] = (name_attribute === null)
-                        ? ["activate", "block_list", "domain_local", "encryption", "http", "name", "path", "ports", "redirect_domain", "redirect_internal"]
-                        : ["activate", "block_list", "domain_local", "encryption", "http", "modification_name", "name", "path", "ports", "redirect_domain", "redirect_internal"];
+                    rootProperties:string[] = ["activate", "block_list", "domain_local", "encryption", "http", "name", "ports", "redirect_domain", "redirect_internal, ws"];
                 let serverData:server = null,
                     failures:number = 0;
                 summary.style.display = "block";
@@ -871,6 +845,7 @@ const dashboard = function dashboard():void {
                 }
                 if (name_attribute !== null) {
                     serverData.modification_name = payload.servers[name_server].modification_name;
+                    rootProperties.push("modification_name");
                 }
                 // activate
                 if (typeof serverData.activate === "boolean") {
@@ -916,14 +891,6 @@ const dashboard = function dashboard():void {
                 } else {
                     populate(false, "Required property 'name' is not assigned an appropriate string value.");
                 }
-                // path
-                keys({
-                    name: "path",
-                    required_name: true,
-                    required_property: true,
-                    supported: ["certificates", "storage", "web_root"],
-                    type: "path"
-                });
                 // ports
                 if ((serverData.ports.open === 0 && (serverData.encryption === "both" || serverData.encryption === "open")) || (serverData.ports.secure === 0 && (serverData.encryption === "both" || serverData.encryption === "secure"))) {
                     populate(null, "A port value of 0 will assign a randomly available port from the local machine. A number greater than 0 and less than 65535 is preferred.");
@@ -951,6 +918,16 @@ const dashboard = function dashboard():void {
                     supported: [],
                     type: "store"
                 });
+                // ws
+                if (typeof serverData.ws === "string") {
+                    populate(true, "Optional property 'ws' is of type string.");
+                } else if (serverData.ws === null) {
+                    populate(true, "Optional property 'ws' is null.");
+                } else if (serverData.ws === undefined) {
+                    populate(true, "Optional property 'ws' is null.");
+                } else {
+                    populate(false, "Optional property 'ws' contains a value that is not type string.");
+                }
                 // parent properties
                 keys({
                     name: null,

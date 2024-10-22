@@ -59,7 +59,7 @@ const youtube_download = function services_youtubeDownload(socketData:socket_dat
                 name:string = (originalMediaType === "video" && mediaType === "audio")
                     ? "audio-video.conf"
                     : `${mediaType}-${types[1]}.conf`,
-                script:string = `yt-dlp --config-locations ${vars.servers[socket.server].path.storage + name + options} ${data.address}`,
+                script:string = `yt-dlp --config-locations ${vars.path.project}servers${vars.sep + socket.server + vars.sep + name + options} ${data.address}`,
                 spawn:node_childProcess_ChildProcess = node.child_process.spawn(script, spawnOpts);
             vars.processes[spawn.pid] = spawn;
             message(`[COMMAND] ${script}`, spawn.pid);

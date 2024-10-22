@@ -10,14 +10,9 @@ const vars:vars = {
     },
     processes: {},
     sep: node.path.sep,
-    server_status: {},
     servers: {},
-    sockets: {},
+    server_meta: {},
     start_time: process.hrtime.bigint(),
-    store_server: {
-        open: {},
-        secure: {}
-    },
     text: {
         angry    : "\u001b[1m\u001b[31m",
         blue     : "\u001b[34m",
