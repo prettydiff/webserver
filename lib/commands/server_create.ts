@@ -12,9 +12,10 @@ import vars from "../utilities/vars.js";
 // 5. launch servers
 // 6. call the callback
 
-const server_create = function commands_serverCreate(config:server, callback:() => void):void {
+const server_create = function commands_serverCreate(data:services_dashboard_action, callback:() => void):void {
     let count:number = 0;
-    const path_config:string = `${vars.path.project}config.json`,
+    const config:server_configuration = data.configuration,
+        path_config:string = `${vars.path.project}config.json`,
         path_servers:string = `${vars.path.project}servers${vars.sep}`,
         path_name:string = path_servers + config.name + vars.sep,
         path_assets:string = `${path_name}assets${vars.sep}`,
@@ -39,7 +40,7 @@ const server_create = function commands_serverCreate(config:server, callback:() 
                     // 5. launch servers
                     certCallback = function commands_serverCreate_complete_certificate():void {
                         if (config.activate === true) {
-                            server(config.name, serverCallback);
+                            server(data, serverCallback);
                         } else if (callback !== null) {
                             callback();
                         }
@@ -77,6 +78,25 @@ const server_create = function commands_serverCreate(config:server, callback:() 
                 error_terminate: config,
                 location: location
             });
+        },
+        write = function commands_serverCreate_write():void {
+            const servers:store_server_config = {},
+                keys:string[] = Object.keys(vars.servers),
+                total:number = keys.length - 1;
+            let index:number = 0;
+            do {
+                delete vars.servers[keys[index]].config.modification_name;
+                servers[keys[index]] = vars.servers[keys[index]].config;
+                index = index + 1;
+            } while (index < total);
+            file.write({
+                callback: function commands_serverHalt_writeConfig():void {
+                    complete("config");
+                },
+                contents: JSON.stringify(servers),
+                error_terminate: config,
+                location: path_config
+            });
         };
     // 1. add server to the vars.servers object
     if (vars.servers[config.name] === undefined) {
@@ -111,16 +131,16 @@ const server_create = function commands_serverCreate(config:server, callback:() 
                 };
             }
         }
-        vars.servers[config.name] = config;
+        vars.servers[config.name] = {
+            config: config,
+            sockets: [],
+            status: {
+                open: 0,
+                secure: 0
+            }
+        };
         // 2. add server to config.json file
-        file.write({
-            callback: function commands_serverCreate_writeConfig_callback():void {
-                complete("config");
-            },
-            contents: JSON.stringify(vars.servers),
-            error_terminate: config,
-            location: path_config
-        });
+        write();
     } else {
         log({
             action: "add",

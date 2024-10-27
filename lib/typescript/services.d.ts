@@ -1,8 +1,16 @@
 
+interface services_dashboard {
+    "activate": type_server_action;
+    "add": type_server_action;
+    "deactivate": type_server_action;
+    "destroy": type_server_action;
+    "modify": type_server_action;
+    "ports-refresh": type_server_action;
+}
 
 interface services_dashboard_action {
     action: type_dashboard_action;
-    configuration: server;
+    configuration: server_configuration;
 }
 
 interface services_dashboard_activate {

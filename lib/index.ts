@@ -5,9 +5,7 @@ import startup from "./utilities/startup.js";
 import vars from "./utilities/vars.js";
 
 startup(function index():void {
-    const default_server = function index_defaultServer(name:string):server {
-        const path_servers:string = `${vars.path.project}servers${vars.sep}`,
-            path_name:string = path_servers + name + vars.sep;
+    const default_server = function index_defaultServer(name:string):server_configuration {
         return {
             activate: true,
             block_list: {
@@ -35,8 +33,8 @@ startup(function index():void {
                 "": ["", 0]
             },
             redirect_internal: {
-                "": {
-                    "": ""
+                "localhost": {
+                    "/lib/assets/*": "/lib/dashboard/*"
                 }
             }
         };
@@ -53,10 +51,10 @@ startup(function index():void {
                             "Ports:",
                         ],
                         logItem = function index_start_serverCallback_logItem(name:string, encryption:"open"|"secure"):void {
-                            const conflict:boolean = (vars.server_meta[name].status[encryption] === 0),
+                            const conflict:boolean = (vars.servers[name].status[encryption] === 0),
                                 portNumber:number = (conflict === true)
-                                    ? vars.servers[name].ports[encryption]
-                                    : vars.server_meta[name].status[encryption],
+                                    ? vars.servers[name].config.ports[encryption]
+                                    : vars.servers[name].status[encryption],
                                 portDisplay:string = (conflict === true)
                                     ? vars.text.angry + portNumber + vars.text.none
                                     : portNumber.toString(),
@@ -70,12 +68,12 @@ startup(function index():void {
                     servers.sort();
                     let items:number = 0;
                     do {
-                        if (vars.servers[servers[items]].encryption === "both") {
+                        if (vars.servers[servers[items]].config.encryption === "both") {
                             logItem(servers[items], "open");
                             logItem(servers[items], "secure");
-                        } else if (vars.servers[servers[items]].encryption === "open") {
+                        } else if (vars.servers[servers[items]].config.encryption === "open") {
                             logItem(servers[items], "open");
-                        } else if (vars.servers[servers[items]].encryption === "secure") {
+                        } else if (vars.servers[servers[items]].config.encryption === "secure") {
                             logItem(servers[items], "secure");
                         }
                         items = items + 1;
@@ -87,12 +85,18 @@ startup(function index():void {
         let count:number = 0,
             index:number = 0;
         do {
-            server(servers[index], callback);
+            server({
+                action: "activate",
+                configuration: vars.servers[servers[index]].config
+            }, callback);
             index = index + 1;
         } while (index < total);
     };
     if (vars.servers.dashboard === undefined) {
-        server_create(default_server("dashboard"), function index_startDashboard():void {
+        server_create({
+            action: "add",
+            configuration: default_server("dashboard")
+        }, function index_startDashboard():void {
             start();
         });
     } else {

@@ -42,6 +42,32 @@ interface TouchEvent {
     target: HTMLElement;
 }
 
+interface module_message {
+    ports_active: (name_server:string) => HTMLElement;
+    receiver: (event:websocket_event) => void;
+    server_color: (name_server:string) => type_activation_status;
+    socket_add: (config:socket_summary) => void;
+    socket_destroy: (hash:string) => void;
+}
+
+interface module_port {
+    external: (input:type_external_port[]) => void;
+    internal: () => void;
+    refresh: () => void;
+}
+
+interface module_server {
+    cancel: (event:MouseEvent) => void;
+    create: (event:MouseEvent) => void;
+    definitions: (event:MouseEvent) => void;
+    details: (event:MouseEvent) => void;
+    edit: (event:MouseEvent) => void;
+    list: () => void;
+    message: (event:MouseEvent) => void;
+    title: (name_server:string) => HTMLElement;
+    validate: (event:FocusEvent|KeyboardEvent) => void;
+}
+
 interface socket_object {
     invoke: () => void;
     queue: (message:string) => void;

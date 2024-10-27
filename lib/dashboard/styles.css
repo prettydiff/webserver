@@ -72,8 +72,9 @@ td .icon{display:inline-block;width:1.5em}
 #dashboard button:disabled{color:#666}
 #dashboard nav ul{border-color:#ccc;border-style:none none solid;border-width:0.1em;margin:0 0 4em;padding:0 0 1em}
 #dashboard nav li{border-color:#ccc;border-style:none solid none none;border-width:0.1em;display:inline-block;padding:0 0.5em}
-#dashboard nav button{background:transparent;border-style:none;box-shadow:none;font-size:0.8em}
-#dashboard nav .nav-focus{background:#222}
+#dashboard nav button{background:transparent;border-style:none;box-shadow:none;color:#aaa;font-size:0.8em}
+#dashboard nav .nav-focus{background:#111;color:#ccc}
+#dashboard nav button:hover{color:#ccc}
 #dashboard h1,
 #servers .detail_item p{margin:0 0 0.5em}
 #servers p,
@@ -158,3 +159,7 @@ td .icon{display:inline-block;width:1.5em}
 #logs li.log-success{color:#090}
 #logs li.log-error{color:#911}
 #logs time{color:#39f;display:inline-block;margin:0 1em 0 0}
+#dashboard table{border-collapse:collapse;margin:0 0 4em}
+#dashboard td,
+#dashboard th{border-color:#666;border-style:solid;border-width:0.1em;padding:0.2em;text-align:left}
+#dashboard th{background:#222}

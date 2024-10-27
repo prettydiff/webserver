@@ -14,12 +14,12 @@ import vars from "../utilities/vars.js";
 // 7. remove server from the config.json file
 // 8. call the callback
 
-const server_halt = function commands_serverHalt(config:server, action:type_halt_action, callback:() => void):void {
-    const old:string = config.modification_name;
+const server_halt = function commands_serverHalt(data:services_dashboard_action, callback:() => void):void {
+    const old:string = data.configuration.modification_name;
     if (vars.servers[old] === undefined) {
         log({
-            action: action,
-            config: config,
+            action: data.action,
+            config: data.configuration,
             message: `Server named ${old} does not exist.  Called on library server_halt.`,
             status: "error",
             type: "log"
@@ -29,27 +29,27 @@ const server_halt = function commands_serverHalt(config:server, action:type_halt
             path_name:string = `${vars.path.project}servers${vars.sep + old + vars.sep}`,
             flags:store_flag = {
                 config: false,
-                remove: (action === "destroy")
+                remove: (data.action === "destroy")
                     ? false
                     : true,
-                restart: (action === "modify")
+                restart: (data.action === "modify")
                     ? false
                     : true
             },
             complete = function commands_serverHalt_complete(flag:"config"|"remove"|"restart"):void {
                 flags[flag] = true;
                 if (flags.config === true && flags.remove === true && flags.restart === true) {
-                    const actionText:string = (action.charAt(action.length - 1) === "e")
-                        ? `${action}d`
-                        : `${action}ed`;
+                    const actionText:string = (data.action.charAt(data.action.length - 1) === "e")
+                        ? `${data.action}d`
+                        : `${data.action}ed`;
                     if (callback !== null) {
                         // 8. call the callback
                         callback();
                     }
                     log({
-                        action: action,
-                        config: config,
-                        message: `Server named ${config.name} ${actionText}.`,
+                        action: data.action,
+                        config: data.configuration,
+                        message: `Server named ${data.configuration.name} ${actionText}.`,
                         status: "success",
                         type: "server"
                     });
@@ -59,12 +59,12 @@ const server_halt = function commands_serverHalt(config:server, action:type_halt
                 callback: function commands_serverHalt_remove():void {
                     complete("remove");
                 },
-                error_terminate: config,
+                error_terminate: data.configuration,
                 exclusions: [],
                 location: path_name
             },
             server_restart = function commands_serverHalt_serverRestart():void {
-                node.fs.cp(path_name, `${vars.path.project}servers${vars.sep + config.name + vars.sep}`, {
+                node.fs.cp(path_name, `${vars.path.project}servers${vars.sep + data.configuration.name + vars.sep}`, {
                     recursive: true
                 }, function server_restart_cp(erc:node_error):void {
                     if (erc === null) {
@@ -73,7 +73,7 @@ const server_halt = function commands_serverHalt(config:server, action:type_halt
                     } else {
                         log({
                             action: "modify",
-                            config: config,
+                            config: data.configuration,
                             message: "Error copying files from old server location to new server location.",
                             status: "error",
                             type: "server"
@@ -93,6 +93,10 @@ const server_halt = function commands_serverHalt(config:server, action:type_halt
         if (vars.server_meta[old].server.secure !== undefined) {
             vars.server_meta[old].server.open.close();
         }
+        vars.servers[old].status = {
+            open: 0,
+            secure: 0
+        };
         // 2. kill all sockets on the server
         if (index > 0) {
             do {
@@ -111,33 +115,45 @@ const server_halt = function commands_serverHalt(config:server, action:type_halt
         }
         delete vars.server_meta[old];
         // 3. delete vars.sockets[name]
-        if (action === "destroy") {
+        if (data.action === "destroy") {
             // 4. delete server from vars.server
             delete vars.servers[old];
             // 5. remove server's directory
             file.remove(file_remove);
-        } else if (action !== "modify") {
+        } else if (data.action !== "modify") {
             complete("remove");
         }
         // 6. modify the server
-        if (action === "modify") {
-            delete config.modification_name;
-            server_create(config, server_restart);
-            if (config.name !== old) {
+        if (data.action === "modify") {
+            delete data.configuration.modification_name;
+            server_create({
+                action: "add",
+                configuration: data.configuration
+            }, server_restart);
+            if (data.configuration.name !== old) {
                 delete vars.servers[old];
             }
-            vars.servers[config.name] = config;
+            vars.servers[data.configuration.name].config = data.configuration;
         } else {
             complete("restart");
         }
-        if (action === "destroy" || action === "modify") {
+        if (data.action === "destroy" || data.action === "modify") {
             // 7. modify the config.json file
+            const servers:store_server_config = {},
+                keys:string[] = Object.keys(vars.servers),
+                total:number = keys.length - 1;
+            let index:number = 0;
+            do {
+                delete vars.servers[keys[index]].config.modification_name;
+                servers[keys[index]] = vars.servers[keys[index]].config;
+                index = index + 1;
+            } while (index < total);
             file.write({
                 callback: function commands_serverHalt_writeConfig():void {
                     complete("config");
                 },
-                contents: JSON.stringify(vars.servers),
-                error_terminate: config,
+                contents: JSON.stringify(servers),
+                error_terminate: data.configuration,
                 location: path_config
             });
         } else {

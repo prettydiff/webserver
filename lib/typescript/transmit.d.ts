@@ -1,9 +1,4 @@
 
-interface server_instance extends node_net_Server {
-    name?: string;
-    secure?: boolean;
-}
-
 interface socket_data {
     data: type_socket_data;
     service: type_service;
@@ -31,8 +26,8 @@ interface transmit_addresses_socket {
 
 interface transmit_dashboard {
     logs: services_dashboard_status[];
-    server_meta: server_meta;
-    servers: project_config;
+    ports: type_external_port[];
+    servers: store_servers;
 }
 
 interface transmit_receiver {

@@ -308,8 +308,8 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
         if (server_name === "dashboard") {
             const payload:transmit_dashboard = {
                 logs: vars.logs,
-                servers: vars.servers,
-                server_meta: vars.server_meta
+                ports: vars.system_ports,
+                servers: vars.servers
             };
             write(html({
                 content: [
@@ -327,17 +327,17 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                     "<dt>encryption</dt><dd>Whether to create an encrypted server for HTTPS and WSS protocols, an unencrypted server for HTTP and WS protocols, or both. Accepted values are 'both, 'open', or 'secure'.</dd>",
                     "<dt>http</dt><dd>File system paths to external utilities for handling the supported HTTP methods: delete, post, and put.  HTTP request bodies are passed into an environmental variable on the respective child process named 'payload'.</dd>",
                     "<dt>name</dt><dd>The name of this server.</dd>",
-                    "<dt>path</dt><dd>Stores absolute file system paths used by the server.  The storage path is for any dynamically written data, such as logs.  The web_root directory is where web pages and web page assets are sourced from. The certificates path is only used for secure servers to store their respective TLS certificates.</dd>",
+                    "<dt>path</dt><dd>Stores absolute file system paths used by the server. The storage path is for any dynamically written data, such as logs. The web_root directory is where web pages and web page assets are sourced from. The certificates path is only used for secure servers to store their respective TLS certificates.</dd>",
                     "<dt>ports</dt><dd>The ports on which the server operates.</dd>",
-                    "<dt>redirect_domain</dt><dd>Redirects traffic to a different location, such as vanity domains. Each value is an array of two indexes.  The first index, a string, identifies where to redirect the traffic to as in a IP address, hostname, or domain name.  An empty string or non-string value will redirect traffic onto a different port of the same local machine.  The second index is a number representing a port to redirect traffic to.</dd>",
-                    "<dt>redirect_internal</dt><dd>Redirects resource paths within the given server based upon the hostname in the HTTP request header. This is useful for dynamic or vanity endpoints on a given server.</dd>",
+                    "<dt>redirect_domain</dt><dd>Redirects traffic to a different location, such as vanity domain that may or may not be served from the same server. Each instance uses the structure of \"domain: ['new domain', port_number]\" because each server can represent 0 or more domain names. If the 'new domain' is an empty string the requested domain will be used. If the port number is not a number or 0 the current server's port number will be used.</dd>",
+                    "<dt>redirect_internal</dt><dd>Redirects resource paths within the given server based upon the hostname in the HTTP request header. This is useful for dynamic or vanity endpoints on a given server. Each instance uses the structure of \"domain: {'resource location': 'new location'}\" because each server can represent 0 or more domain names.</dd>",
                     "<dt>ws</dt><dd>A file path location to a script for custom WebSocket message handling, executed as a child process.</dd>",
                     "</dl></div>",
                     "<p><button class=\"server-new\">Create Server</button></p></div>",
-                    "<div id=\"ports\"><h2>Port Summary</h2></div>",
-                    "<div id=\"sockets\"><h2>Socket Summary</h2></div>",
+                    "<div id=\"ports\"><h2>Port Summary</h2><h3>System Ports Outside This Application</h3><p><button>⟳ Refresh</button></p><table class=\"ports-external\"><thead><tr><th>Port</th><th>Protocol</th><th>Utility</th></tr></thead><tbody></tbody></table><h3>Internal Application Ports</h3><table><thead><tr><th>Port</th><th>Protocol</th><th>Type</th><th>Container Name</th><th>Description</th></tr></thead><tbody></tbody></table></div>",
+                    "<div id=\"sockets\"><h2>Socket Summary</h2><p>A list of connected sockets.  Sockets not of 'type' http are WebSocket connections. Proxy identifies the id of the paired socket or null if not piped to another socket.</p><table><thead><tr><th>Server</th><th>ID</th><th>Type Descriptor</th><th>Role</th><th>Proxy</th><th>Local IP</th><th>Local Port</th><th>Remote IP</th><th>Remote Port</th></tr></thead><tbody></tbody></table></div>",
                     "<div id=\"compose\"><h2>Docker Compose</h2></div>",
-                    "<div id=\"logs\"><h2>Logs</h2><ul></ul></div>",
+                    "<div id=\"logs\"><h2>Logs</h2><p>At this time logs are not saved outside the application, but do persist for the life of the application runtime.</p><ul></ul></div>",
                     "</main>"
                 ],
                 content_type: "text/html; utf8",
@@ -351,6 +351,8 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
             // server root html file takes the name of the server, not index.html
             input = `${path}index.html`;
         }
+    } else if (server_name === "dashboard") {
+        input = `${vars.path.project}lib${vars.sep}dashboard${vars.sep}` + decodeURI(fileFragment);
     } else if (fileFragment.indexOf(".js") === fileFragment.length - 3 && fileFragment.includes("/js/lib/assets/") === false) {
         // normalizes compiled JS path to web_root path
         input = path.replace(/(\/|\\)lib(\/|\\)assets(\/|\\)/, `${vars.sep}js${vars.sep}lib${vars.sep}assets${vars.sep}`) + decodeURI(fileFragment);

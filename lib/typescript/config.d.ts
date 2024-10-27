@@ -62,6 +62,7 @@ interface config_websocket_create {
     proxy: websocket_client;
     resource: string;
     secure: boolean;
+    server: string;
     type: string;
 }
 

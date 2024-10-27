@@ -22,9 +22,9 @@ const http_post:http_action = function http_post(headerList:string[], socket:web
                         : JSON.stringify(err)
                 ].join("\r\n");
         };
-    if (vars.servers[server_name].http !== null && vars.servers[server_name].http !== undefined) {
-        if (typeof vars.servers[server_name].http[methodName as "delete"] === "string") {
-            node.child_process.exec(vars.servers[server_name].http[methodName as "delete"], {
+    if (vars.servers[server_name].config.http !== null && vars.servers[server_name].config.http !== undefined) {
+        if (typeof vars.servers[server_name].config.http[methodName as "delete"] === "string") {
+            node.child_process.exec(vars.servers[server_name].config.http[methodName as "delete"], {
                 env: {
                     payload: payload.toString()
                 }

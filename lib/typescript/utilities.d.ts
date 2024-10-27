@@ -61,11 +61,13 @@ interface hash_output {
     hash: string;
 }
 
-interface project_config {
-    [key:string]: server;
+interface server {
+    config: server_configuration;
+    sockets: socket_summary[];
+    status: server_ports;
 }
 
-interface server {
+interface server_configuration {
     activate: boolean;
     block_list?: {
         host: string[];
@@ -95,6 +97,11 @@ interface server_content {
     [key:string]: (property:type_server_property, parent:HTMLElement) => void;
 }
 
+interface server_instance extends node_net_Server {
+    name?: string;
+    secure?: boolean;
+}
+
 interface server_meta {
     [key:string]: {
         server: {
@@ -105,7 +112,6 @@ interface server_meta {
             open: websocket_client[];
             secure: websocket_client[];
         };
-        status: server_ports;
     };
 }
 
@@ -114,8 +120,13 @@ interface server_ports {
     secure?: number;
 }
 
-interface store_action {
-    [key:string]: (event?:type_user_event) => void;
+interface socket_summary {
+    address: transmit_addresses_socket;
+    hash: string;
+    proxy: string;
+    role: "client" | "server";
+    server: string;
+    type: string;
 }
 
 interface store_flag {
@@ -128,6 +139,14 @@ interface store_number {
 
 interface store_ports {
     [key:string]: server_ports;
+}
+
+interface store_server_config {
+    [key:string]: server_configuration;
+}
+
+interface store_servers {
+    [key:string]: server;
 }
 
 interface store_sockets {
@@ -148,7 +167,8 @@ interface vars {
     };
     sep: string;
     server_meta: server_meta;
-    servers: project_config;
+    servers: store_servers;
+    system_ports: type_external_port[];
     start_time: bigint;
     text: store_string;
 }

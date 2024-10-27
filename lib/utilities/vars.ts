@@ -12,6 +12,7 @@ const vars:vars = {
     sep: node.path.sep,
     servers: {},
     server_meta: {},
+    system_ports: [],
     start_time: process.hrtime.bigint(),
     text: {
         angry    : "\u001b[1m\u001b[31m",

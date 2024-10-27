@@ -10,12 +10,13 @@ import redirection from "./redirection.js";
 import socket_extension from "./socketExtension.js";
 import vars from "../utilities/vars.js";
 
-const server = function transmit_server(name:string, callback:(name:string) => void):void {
+const server = function transmit_server(data:services_dashboard_action, callback:(name:string) => void):void {
     let count:number = 0;
-    const connection = function transmit_server_connection(TLS_socket:node_tls_TLSSocket):void {
+    const name:string = data.configuration.name,
+        connection = function transmit_server_connection(TLS_socket:node_tls_TLSSocket):void {
             // eslint-disable-next-line no-restricted-syntax
             const server_name:string = this.name,
-                server:server = vars.servers[server_name],
+                server:server_configuration = vars.servers[server_name].config,
                 socket:websocket_client = TLS_socket as websocket_client,
                 handshake = function transmit_server_connection_handshake(data:Buffer):void {
                     let nonceHeader:string = null,
@@ -104,7 +105,7 @@ const server = function transmit_server(name:string, callback:(name:string) => v
                                     role: "server",
                                     server: server_name,
                                     socket: socket,
-                                    type: type
+                                    type: "http"
                                 });
                             } else {
                                 // local domain websocket support
@@ -261,7 +262,7 @@ const server = function transmit_server(name:string, callback:(name:string) => v
                     : "secure",
                 complete = function transmit_server_start_complete():void {
                     count = count + 1;
-                    if (callback !== null && ((vars.servers[name].encryption === "both" && count > 1) || vars.servers[name].encryption !== "both")) {
+                    if (callback !== null && ((vars.servers[name].config.encryption === "both" && count > 1) || vars.servers[name].config.encryption !== "both")) {
                         callback(name);
                     }
                 },
@@ -273,14 +274,14 @@ const server = function transmit_server(name:string, callback:(name:string) => v
                             ? "secure"
                             : "open";
                     vars.server_meta[name].server[secure] = serverItem;
-                    vars.server_meta[name].status[secure] = address.port;
+                    vars.servers[name].status[secure] = address.port;
                     log({
                         action: "activate",
                         config: {
                             name: name,
-                            ports: vars.server_meta[name].status
+                            ports: vars.servers[name].status
                         },
-                        message: `${secure.capitalize()} server ${server.name} came online.`,
+                        message: `${secure.capitalize()} server ${name} came online.`,
                         status: "informational",
                         type: "server"
                     });
@@ -296,7 +297,7 @@ const server = function transmit_server(name:string, callback:(name:string) => v
                         log({
                             action: "activate",
                             config: vars.servers[name],
-                            message: `Port conflict on port ${vars.servers[serverItem.name].ports[secure]} of ${secure} server named ${serverItem.name}.`,
+                            message: `Port conflict on port ${vars.servers[serverItem.name].config.ports[secure]} of ${secure} server named ${serverItem.name}.`,
                             status: "error",
                             type: "server"
                         });
@@ -325,7 +326,7 @@ const server = function transmit_server(name:string, callback:(name:string) => v
 
             // secure connection listener
             wsServer.listen({
-                port: vars.servers[name].ports[secureType]
+                port: vars.servers[name].config.ports[secureType]
             }, listenerCallback);
         };
     if (vars.server_meta[name] === undefined) {
@@ -337,18 +338,14 @@ const server = function transmit_server(name:string, callback:(name:string) => v
             sockets: {
                 open: [],
                 secure: []
-            },
-            status: {
-                open: 0,
-                secure: 0
             }
         };
     }
-    if (vars.servers[name].encryption === "open") {
+    if (vars.servers[name].config.encryption === "open") {
         start(null);
     } else {
         read_certs(name, function transmit_server_readCerts(name:string, options:transmit_tlsOptions):void {
-            if (vars.servers[name].encryption === "both") {
+            if (vars.servers[name].config.encryption === "both") {
                 start(null);
             }
             start(options);

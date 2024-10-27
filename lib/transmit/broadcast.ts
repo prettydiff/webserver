@@ -15,7 +15,12 @@ const broadcast = function transmit_broadcast(server:string, type:string, messag
                 } while (index > 0);
             }
         },
-        encryptionType:type_encryption = vars.servers[server].encryption;
+        encryptionType:type_encryption = (vars.servers[server] === undefined || vars.servers[server] === null)
+            ? null
+            : vars.servers[server].config.encryption;
+    if (encryptionType === null) {
+        return;
+    }
     if (encryptionType === "both") {
         perServer("open");
         perServer("secure");

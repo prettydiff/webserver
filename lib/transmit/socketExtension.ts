@@ -1,4 +1,5 @@
 
+import get_address from "../utilities/getAddress.js";
 import log from "../utilities/log.js";
 import receiver from "./receiver.js";
 import send from "./send.js";
@@ -44,8 +45,32 @@ const socket_extension = function transmit_socketExtension(config:config_websock
                     status: "error",
                     type: "socket"
                 });
+            },
+            encryption:"open"|"secure" = (config.socket.secure === true)
+                ? "secure"
+                : "open",
+            socket_summary:socket_summary = {
+                address: get_address({
+                    socket: config.socket,
+                    type: "ws"
+                }),
+                hash: config.identifier,
+                proxy: (config.socket.proxy === undefined || config.socket.proxy === null)
+                    ? null
+                    : config.socket.proxy.hash,
+                role: config.role,
+                server: config.server,
+                type: config.type
+            },
+            log_config:config_log = {
+                action: "add",
+                config: socket_summary,
+                message: `Socket ${config.identifier} opened on ${encryption} server ${config.server}.`,
+                status: "success",
+                type: "socket"
             };
         vars.server_meta[config.server].sockets[encryption].push(config.socket);
+        vars.servers[config.server].sockets.push(socket_summary);
         if (config.proxy === null) {
             config.socket.handler = config.handler;   // assigns an event handler to process incoming messages
             config.socket.on("data", receiver);
@@ -71,6 +96,7 @@ const socket_extension = function transmit_socketExtension(config:config_websock
         if (config.callback !== null && config.callback !== undefined) {
             config.callback(config.socket);
         }
+        log(log_config);
     }
 };
 

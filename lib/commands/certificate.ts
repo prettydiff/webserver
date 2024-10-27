@@ -34,9 +34,9 @@ const certificate = function commands_certificate(config:config_certificate):voi
                     });
                 },
                 cert_extensions:string = (function commands_certificate_cert_extensions():string {
-                    const server:server = (vars.servers[config.name] === undefined)
+                    const server:server_configuration = (vars.servers[config.name] === undefined)
                             ? null
-                            : vars.servers[config.name],
+                            : vars.servers[config.name].config,
                         output:string[] = [
                         `[ ca ]
         basicConstraints       = CA:false

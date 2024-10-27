@@ -1,7 +1,9 @@
 
+import log from "../utilities/log.js";
 import vars from "../utilities/vars.js";
 
 const socket_end = function transmit_socketEnd(socket_input:websocket_client):void {
+    let index:number = 0;
     const socket:websocket_client = (typeof socket_input === "object")
             ? socket_input
             // eslint-disable-next-line no-restricted-syntax
@@ -9,8 +11,26 @@ const socket_end = function transmit_socketEnd(socket_input:websocket_client):vo
         encryption:"open"|"secure" = (socket.secure === true)
             ? "secure"
             : "open",
-        list:string = socket.server;
-    let index:number = list.length;
+        list:string = socket.server,
+        log_config:config_log = {
+            action: "destroy",
+            config: null,
+            message: `Socket ${socket.hash} closed on ${encryption} server ${socket.server}.`,
+            status: "success",
+            type: "socket"
+        },
+        sockets:socket_summary[] = vars.servers[socket.server].sockets;
+    index = sockets.length;
+    if (index > 0) {
+        do {
+            index = index - 1;
+            if (sockets[index].hash === socket.hash) {
+                log_config.config = sockets[index];
+                sockets.splice(index, 1);
+            }
+        } while (index > 0);
+    }
+    index = list.length;
     socket.status = "end";
     do {
         index = index - 1;
@@ -23,6 +43,7 @@ const socket_end = function transmit_socketEnd(socket_input:websocket_client):vo
     if (socket.proxy !== null) {
         socket.proxy.destroy();
     }
+    log(log_config);
 };
 
 export default socket_end;

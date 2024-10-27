@@ -1,6 +1,7 @@
 
 import file from "./file.js";
 import log from "./log.js";
+import port_map from "./port_map.js";
 import node from "./node.js";
 import vars from "./vars.js";
 
@@ -9,16 +10,16 @@ import vars from "./vars.js";
 const startup = function utilities_startup(callback:() => void):void {
     const read = function utilities_startup_read(fileContents:Buffer):void {
         const configStr:string = fileContents.toString(),
-            config:project_config = (configStr === "" || (/^\s*\{/).test(configStr) === false || (/\}\s*$/).test(configStr) === false)
+            config:store_server_config = (configStr === "" || (/^\s*\{/).test(configStr) === false || (/\}\s*$/).test(configStr) === false)
                 ? null
-                : JSON.parse(configStr) as project_config,
+                : JSON.parse(configStr) as store_server_config,
             errorList:string[] = [
                 "Errors on server configurations from the config.json file.",
                 ""
             ],
             includes = function utilities_startup_read_instructions_includes(input:string):void {
-                if (server.domain_local.includes(input) === false && input.toLowerCase().indexOf("fe80") !== 0) {
-                    server.domain_local.push(input);
+                if (server.config.domain_local.includes(input) === false && input.toLowerCase().indexOf("fe80") !== 0) {
+                    server.config.domain_local.push(input);
                 }
             },
             interfaces:{ [index: string]: node_os_NetworkInterfaceInfo[]; } = node.os.networkInterfaces(),
@@ -32,29 +33,33 @@ const startup = function utilities_startup(callback:() => void):void {
                 : keys_srv.length,
             server:server = null,
             sub:number = 0;
-        vars.servers = (config === null)
-            ? {}
-            : config;
         if (index_srv > 0) {
             do {
                 index_srv = index_srv - 1;
                 index_int = keys_int.length;
-                server = vars.servers[keys_srv[index_srv]];
-                if (server.ports === null || server.ports === undefined) {
-                    server.ports = {
+                server = {
+                    config: config[keys_srv[index_srv]],
+                    sockets: [],
+                    status: {
+                        open: 0,
+                        secure: 0
+                    }
+                };
+                if (server.config.ports === null || server.config.ports === undefined) {
+                    server.config.ports = {
                         open: 0,
                         secure: 0
                     };
                 } else {
-                    if (typeof server.ports.open !== "number") {
-                        server.ports.open = 0;
+                    if (typeof server.config.ports.open !== "number") {
+                        server.config.ports.open = 0;
                     }
-                    if (typeof server.ports.secure !== "number") {
-                        server.ports.secure = 0;
+                    if (typeof server.config.ports.secure !== "number") {
+                        server.config.ports.secure = 0;
                     }
                 }
-                if (server.block_list === undefined || server.block_list === null) {
-                    server.block_list = {
+                if (server.config.block_list === undefined || server.config.block_list === null) {
+                    server.config.block_list = {
                         host: [],
                         ip: [],
                         referrer: []
@@ -71,6 +76,7 @@ const startup = function utilities_startup(callback:() => void):void {
                         includes(interfaces[keys_int[index_int]][sub].address);
                     } while (sub > 0);
                 } while (index_int > 0);
+                vars.servers[server.config.name] = server;
             } while (index_srv > 0);
         }
         if (errorList.length > 2) {
@@ -111,11 +117,13 @@ const startup = function utilities_startup(callback:() => void):void {
 
     options("no_color", "text");
     vars.path.project = process.argv[1].slice(0, process.argv[1].indexOf(`${vars.sep}js${vars.sep}`)) + vars.sep;
-    file.read({
-        callback: read,
-        error_terminate: null,
-        location: `${vars.path.project}config.json`,
-        no_file: null
+    port_map(null, function utilities_startup_portMap():void {
+        file.read({
+            callback: read,
+            error_terminate: null,
+            location: `${vars.path.project}config.json`,
+            no_file: null
+        });
     });
 };
 

@@ -60,7 +60,7 @@ const create_socket = function transmit_createSocket(config:config_websocket_cre
                             identifier: config.hash,
                             proxy: config.proxy,
                             role: "client",
-                            server: "client",
+                            server: config.server,
                             socket: client,
                             type: config.type
                         });
