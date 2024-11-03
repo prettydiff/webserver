@@ -2,6 +2,7 @@
 
 body{
     --border-color:#999;
+    --textArea-border: #676767;
 }
 
 html{font-size:10px}
@@ -33,7 +34,7 @@ em{color:#c96}
 textarea{background:#222;border-style:solid;border-width:0.065em;color:#ccc}
 #terminal .xterm{border-color:#666;overflow:scroll}
 #terminal .xterm-viewport{overflow:hidden}
-textarea{border-color:#444;box-shadow:0 0 0.1em #000}
+textarea{border-color:var(--textArea-border);box-shadow:0 0 0.1em #000}
 .clear{background:transparent;border-style:none;display:block;clear:both;float:none}
 
 .delay{height:50%;width:50%}
@@ -160,13 +161,13 @@ td .icon{display:inline-block;width:1.5em}
 #dashboard .pass-false{color:#f33}
 #dashboard .pass-true{color:#090}
 #dashboard .pass-warn{color:#ca3}
-#logs > ul{background:#222;border-color:var(--border-color);border-style:solid;border-width:0.1em;padding:0.5em}
+#logs > ul{background:#222;border-color:var(--textArea-border);border-style:solid;border-width:0.1em;padding:0.5em}
 #compose,
 #logs,
 #ports,
 #sockets,
 #terminal{display:none}
-#logs ul{height:80em;overflow:scroll}
+#logs ul{height:85.695em;overflow:scroll}
 #logs li{font-family:monospace;list-style:none;margin:0.5em 0 0;white-space:pre}
 #logs li.log-success{color:#090}
 #logs li.log-error{color:#911}
@@ -175,5 +176,4 @@ td .icon{display:inline-block;width:1.5em}
 #dashboard td,
 #dashboard th{border-color:#666;border-style:solid;border-width:0.1em;padding:0.2em;text-align:left}
 #dashboard th{background:#222}
-#terminal .terminal-output{margin:-1em 0 0}
 #terminal .terminal-input{height:5em;overflow:scroll}

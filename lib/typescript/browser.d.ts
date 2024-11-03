@@ -83,7 +83,7 @@ declare global {
     interface module_terminal {
         events: {
             data: (event:websocket_event) => void;
-            input: (event:KeyboardEvent) => void;
+            input: (input:terminal_input) => void;
         };
         info: {
             entries: string[];
@@ -94,7 +94,6 @@ declare global {
         init: () => void;
         item: Terminal;
         nodes: {
-            input: HTMLTextAreaElement;
             output: HTMLElement;
         };
         socket: WebSocket;

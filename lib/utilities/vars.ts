@@ -17,7 +17,7 @@ const vars:vars = {
     start_time: process.hrtime.bigint(),
     terminal: {
         cols: 130,
-        rows: 40
+        rows: 50
     },
     text: {
         angry    : "\u001b[1m\u001b[31m",

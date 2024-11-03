@@ -69,6 +69,7 @@ const terminal:terminal_library = {
                 cols: vars.terminal.cols,
                 cwd: vars.path.project,
                 env: process.env,
+                name: socket.server,
                 rows: vars.terminal.rows
             }),
             close = function services_terminalShell_close():void {
@@ -84,6 +85,7 @@ const terminal:terminal_library = {
                         delete vars.servers[socket.server];
                     });
                 }
+                pty.kill();
             },
             error = function services_terminalShell_error(err:node_error):void {
                 const config:config_log = {
@@ -97,15 +99,16 @@ const terminal:terminal_library = {
                 close();
             },
             handler = function services_terminalShell_handler(data:Buffer):void {
-                input = `${data.toString()}\r`;
+                input = data.toString();
                 pty.write(input);
             },
             out = function services_terminalShell_out(output:string):void {
-                send(output.replace(input, ""), socket, 3);
+                send(output, socket, 3);
             };
         let input:string = null;
         socket.handler = handler;
         pty.onData(out);
+        pty.onExit(close);
         socket.on("close", close);
         socket.on("end", close);
         socket.on("error", error);

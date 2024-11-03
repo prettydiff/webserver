@@ -1206,38 +1206,8 @@ const dashboard = function dashboard():void {
                 data: function dashboard_terminalData(event:websocket_event):void {
                     terminal.write(event.data);
                 },
-                input: function dashboard_terminalInput(event:KeyboardEvent):boolean {
-                    const key:string = event.key;
-                    if (key === "Enter") {
-                        const value:string = terminal.nodes.input.value;
-                        terminal.socket.send(value);
-                        terminal.write(value);
-                        if (terminal.info.entries[terminal.info.lenVert - 1] !== value) {
-                            terminal.info.entries.push(value);
-                            terminal.info.lenVert = terminal.info.entries.length;
-                            terminal.info.posVert = terminal.info.lenVert;
-                        }
-                        terminal.nodes.input.value = "";
-                        return false;
-                    }
-                    if (key === "ArrowUp") {
-                        if (terminal.info.posVert > 0) {
-                            terminal.info.posVert = terminal.info.posVert - 1;
-                            terminal.nodes.input.value = terminal.info.entries[terminal.info.posVert];
-                        }
-                        return false;
-                    }
-                    if (key === "ArrowDown") {
-                        if (terminal.info.posVert < terminal.info.lenVert - 1) {
-                            terminal.info.posVert = terminal.info.posVert + 1;
-                            terminal.nodes.input.value = terminal.info.entries[terminal.info.posVert];
-                        } else {
-                            terminal.info.posVert = terminal.info.lenVert;
-                            terminal.nodes.input.value = "";
-                        }
-                        return false;
-                    }
-                    return true;
+                input: function dashboard_terminalInput(input:terminal_input):void {
+                    terminal.socket.send(input.key);
                 }
             },
             info: {
@@ -1261,7 +1231,7 @@ const dashboard = function dashboard():void {
                             }
                         }
                     },
-                    message:socket_data = {
+                    terminal_message:socket_data = {
                         data: server,
                         service: "dashboard-terminal"
                     };
@@ -1278,14 +1248,13 @@ const dashboard = function dashboard():void {
                     }
                 });
                 terminal.item.open(terminal.nodes.output);
+                terminal.item.onKey(terminal.events.input);
                 terminal.write("Terminal emulator running...");
-                // terminal.item.onData(terminal.events.data);
-                terminal.nodes.input.onkeydown = terminal.events.input;
-                socket.queue(JSON.stringify(message));
+                // client-side terminal is ready, so alert the backend to initiate a pseudo-terminal
+                socket.queue(JSON.stringify(terminal_message));
             },
             item: null,
             nodes: {
-                input: document.getElementById("terminal").getElementsByClassName("terminal-input")[0] as HTMLTextAreaElement,
                 output: document.getElementById("terminal").getElementsByClassName("terminal-output")[0] as HTMLElement
             },
             socket: null,
