@@ -8,12 +8,12 @@ import node from "../utilities/node.js";
 import read_certs from "../utilities/read_certs.js";
 import redirection from "./redirection.js";
 import socket_extension from "./socketExtension.js";
+import terminal from "../services/terminal.js";
 import vars from "../utilities/vars.js";
 
 const server = function transmit_server(data:services_dashboard_action, callback:(name:string) => void):void {
     let count:number = 0;
-    const name:string = data.configuration.name,
-        connection = function transmit_server_connection(TLS_socket:node_tls_TLSSocket):void {
+    const connection = function transmit_server_connection(TLS_socket:node_tls_TLSSocket):void {
             // eslint-disable-next-line no-restricted-syntax
             const server_name:string = this.name,
                 server:server_configuration = vars.servers[server_name].config,
@@ -111,30 +111,40 @@ const server = function transmit_server(data:services_dashboard_action, callback
                                 // local domain websocket support
                                 const callback = function transmit_server_connection_handshake_hash(hashOutput:hash_output):void {
                                     const client_respond = function transmit_server_connection_handshake_hash_clientRespond():void {
-                                        const headers:string[] = [
-                                                "HTTP/1.1 101 Switching Protocols",
-                                                "Upgrade: websocket",
-                                                "Connection: Upgrade",
-                                                `Sec-WebSocket-Accept: ${hashOutput.hash}`,
-                                                "Access-Control-Allow-Origin: *",
-                                                "Server: webserver"
-                                            ];
-                                        if (nonceHeader !== null) {
-                                            headers.push(nonceHeader);
-                                        }
-                                        headers.push("");
-                                        headers.push("");
-                                        socket.write(headers.join("\r\n"));
-                                    };
+                                            const headers:string[] = [
+                                                    "HTTP/1.1 101 Switching Protocols",
+                                                    "Upgrade: websocket",
+                                                    "Connection: Upgrade",
+                                                    `Sec-WebSocket-Accept: ${hashOutput.hash}`,
+                                                    "Access-Control-Allow-Origin: *",
+                                                    "Server: webserver"
+                                                ];
+                                            if (nonceHeader !== null) {
+                                                headers.push(nonceHeader);
+                                            }
+                                            headers.push("");
+                                            headers.push("");
+                                            socket.write(headers.join("\r\n"));
+                                            if (terminalFlag === true) {
+                                                terminal.shell(socket);
+                                            }
+                                        },
+                                        terminalFlag:boolean = (server_name.indexOf("dashboard-terminal-") === 0),
+                                        identifier:string = (terminalFlag === true)
+                                            ? server_name
+                                            : `browserSocket-${hashOutput.hash}`,
+                                        typeValue:string = (terminalFlag === true)
+                                            ? "dashboard-terminal"
+                                            : type;
                                     socket_extension({
                                         callback: client_respond,
                                         handler: message_handler,
-                                        identifier: `browserSocket-${hashOutput.hash}`,
+                                        identifier: identifier,
                                         proxy: null,
                                         role: "server",
                                         server: server_name,
                                         socket: socket,
-                                        type: type
+                                        type: typeValue
                                     });
                                 };
                                 hash({
@@ -218,7 +228,6 @@ const server = function transmit_server(data:services_dashboard_action, callback
                             });
                         };
                     headerList.forEach(headerEach);
-
                     if (
                         referer === true ||
                         server.block_list.host.includes(domain) === true ||
@@ -260,10 +269,10 @@ const server = function transmit_server(data:services_dashboard_action, callback
                 secureType:"open"|"secure" = (options === null)
                     ? "open"
                     : "secure",
-                complete = function transmit_server_start_complete():void {
+                complete = function transmit_server_start_complete(server_name:string):void {
                     count = count + 1;
-                    if (callback !== null && ((vars.servers[name].config.encryption === "both" && count > 1) || vars.servers[name].config.encryption !== "both")) {
-                        callback(name);
+                    if (callback !== null && ((vars.servers[server_name].config.encryption === "both" && count > 1) || vars.servers[server_name].config.encryption !== "both")) {
+                        callback(server_name);
                     }
                 },
                 listenerCallback = function transmit_server_start_listenerCallback():void {
@@ -273,19 +282,19 @@ const server = function transmit_server(data:services_dashboard_action, callback
                         secure:"open"|"secure" = (serverItem.secure === true)
                             ? "secure"
                             : "open";
-                    vars.server_meta[name].server[secure] = serverItem;
-                    vars.servers[name].status[secure] = address.port;
+                    vars.server_meta[serverItem.name].server[secure] = serverItem;
+                    vars.servers[serverItem.name].status[secure] = address.port;
                     log({
                         action: "activate",
                         config: {
-                            name: name,
-                            ports: vars.servers[name].status
+                            name: serverItem.name,
+                            ports: vars.servers[serverItem.name].status
                         },
-                        message: `${secure.capitalize()} server ${name} came online.`,
+                        message: `${secure.capitalize()} server ${serverItem.name} came online.`,
                         status: "informational",
                         type: "server"
                     });
-                    complete();
+                    complete(serverItem.name);
                 },
                 server_error = function transmit_server_start_serverError(ser:node_error):void {
                     // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
@@ -296,7 +305,7 @@ const server = function transmit_server(data:services_dashboard_action, callback
                             : "open";
                         log({
                             action: "activate",
-                            config: vars.servers[name],
+                            config: vars.servers[serverItem.name],
                             message: `Port conflict on port ${vars.servers[serverItem.name].config.ports[secure]} of ${secure} server named ${serverItem.name}.`,
                             status: "error",
                             type: "server"
@@ -310,13 +319,13 @@ const server = function transmit_server(data:services_dashboard_action, callback
                             type: "server"
                         });
                     }
-                    complete();
+                    complete(serverItem.name);
                 };
             // type identification assignment
             wsServer.secure = (options === null)
                 ? false
                 : true;
-            wsServer.name = name;
+            wsServer.name = data.configuration.name;
             wsServer.on("error", server_error);
 
             // insecure connection listener
@@ -326,11 +335,32 @@ const server = function transmit_server(data:services_dashboard_action, callback
 
             // secure connection listener
             wsServer.listen({
-                port: vars.servers[name].config.ports[secureType]
+                port: vars.servers[data.configuration.name].config.ports[secureType]
             }, listenerCallback);
         };
-    if (vars.server_meta[name] === undefined) {
-        vars.server_meta[name] = {
+    if (data.configuration.block_list === null || data.configuration.block_list === undefined) {
+        data.configuration.block_list = {
+            host: [],
+            ip: [],
+            referrer: []
+        };
+    }
+    if (Array.isArray(data.configuration.domain_local) === false) {
+        data.configuration.domain_local = [
+            "localhost",
+            "127.0.0.1",
+            "::1",
+            "[::1]"
+        ];
+    }
+    if (data.configuration.redirect_domain === null || data.configuration.redirect_domain === undefined) {
+        data.configuration.redirect_domain = {};
+    }
+    if (data.configuration.redirect_internal === null || data.configuration.redirect_internal === undefined) {
+        data.configuration.redirect_internal = {};
+    }
+    if (vars.server_meta[data.configuration.name] === undefined) {
+        vars.server_meta[data.configuration.name] = {
             server: {
                 open: null,
                 secure: null
@@ -341,11 +371,11 @@ const server = function transmit_server(data:services_dashboard_action, callback
             }
         };
     }
-    if (vars.servers[name].config.encryption === "open") {
+    if (vars.servers[data.configuration.name].config.encryption === "open") {
         start(null);
     } else {
-        read_certs(name, function transmit_server_readCerts(name:string, options:transmit_tlsOptions):void {
-            if (vars.servers[name].config.encryption === "both") {
+        read_certs(data.configuration.name, function transmit_server_readCerts(name:string, options:transmit_tlsOptions):void {
+            if (vars.servers[data.configuration.name].config.encryption === "both") {
                 start(null);
             }
             start(options);

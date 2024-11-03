@@ -15,7 +15,9 @@ import vars from "../utilities/vars.js";
 // 8. call the callback
 
 const server_halt = function commands_serverHalt(data:services_dashboard_action, callback:() => void):void {
-    const old:string = data.configuration.modification_name;
+    const old:string = (data.configuration.modification_name === undefined)
+        ? data.configuration.name
+        : data.configuration.modification_name;
     if (vars.servers[old] === undefined) {
         log({
             action: data.action,
@@ -47,7 +49,9 @@ const server_halt = function commands_serverHalt(data:services_dashboard_action,
                         callback();
                     }
                     log({
-                        action: data.action,
+                        action: (old.indexOf("dashboard-terminal-") === 0)
+                            ? "destroy"
+                            : data.action,
                         config: data.configuration,
                         message: `Server named ${data.configuration.name} ${actionText}.`,
                         status: "success",
@@ -106,7 +110,7 @@ const server_halt = function commands_serverHalt(data:services_dashboard_action,
         }
         index = (sockets_secure === undefined)
             ? 0
-            : sockets_open.length;
+            : sockets_secure.length;
         if (index > 0) {
             do {
                 index = index - 1;

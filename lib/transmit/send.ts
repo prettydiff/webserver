@@ -1,7 +1,7 @@
 
 import log from "../utilities/log.js";
 
-const send = function transmit_send(body:Buffer|socket_data, socketItem:websocket_client, opcode:number):void {
+const send = function transmit_send(body:Buffer|socket_data|string, socketItem:websocket_client, opcode:number):void {
     const writeFrame = function transmit_send_writeFrame():void {
             const writeCallback = function transmit_send_writeFrame_writeCallback():void {
                 socketItem.queue.splice(0, 1);
@@ -21,12 +21,12 @@ const send = function transmit_send(body:Buffer|socket_data, socketItem:websocke
             }
         },
         socketData:socket_data = body as socket_data,
-        isBuffer:boolean = (socketItem === undefined || socketItem === null)
-            ? false
-            :  (socketData.service === undefined),
+        isBuffer:boolean = (opcode === 2),
         stringBody:string = (isBuffer === true)
             ? null
-            : JSON.stringify(socketData);
+            : (opcode === 3)
+                ? body.toString()
+                : JSON.stringify(socketData);
     let dataPackage:Buffer = (isBuffer === true)
         ? body as Buffer
         : Buffer.from(stringBody);
@@ -38,7 +38,8 @@ const send = function transmit_send(body:Buffer|socket_data, socketItem:websocke
     // 0 - continuation - fragments of a message payload following an initial fragment
     // 1 - text message
     // 2 - binary message
-    // 3-7 - reserved for future use
+    // 3 - in this application 3 means raw string, but officially it is reserved for future use
+    // 4-7 - officially (reserved for future use)
     //
     // ## Control Frames
     // 8 - close, the remote is destroying the socket

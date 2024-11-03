@@ -29,7 +29,7 @@ const receiver = function transmit_receiver(buf:Buffer):void {
             if (buf !== null && buf !== undefined) {
                 socket.frame = Buffer.concat([socket.frame, buf]);
             }
-            if (socket.frame.length < 2) {
+            if (socket === undefined || socket.frame.length < 2) {
                 return null;
             }
             return socket.frame;

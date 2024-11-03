@@ -158,6 +158,7 @@ interface store_string {
 }
 
 interface vars {
+    dashboard: string;
     logs: services_dashboard_status[];
     path: {
         project: string;
@@ -168,7 +169,7 @@ interface vars {
     sep: string;
     server_meta: server_meta;
     servers: store_servers;
-    system_ports: type_external_port[];
     start_time: bigint;
+    system_ports: type_external_port[];
     text: store_string;
 }

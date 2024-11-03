@@ -4,6 +4,7 @@ import node from "./node.js";
 /* cspell: words appdata */
 
 const vars:vars = {
+    dashboard: "",
     logs: [],
     path: {
         project: ""

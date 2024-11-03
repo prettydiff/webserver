@@ -81,18 +81,18 @@ const socket_extension = function transmit_socketExtension(config:config_websock
             config.socket.pong = {};                  // stores termination times and callbacks for pong handling
             config.socket.queue = [];                 // stores messages for transmit, because websocket protocol cannot intermix messages
             config.socket.status = "open";            // sets the status flag for the socket
-        } else {
-            config.socket.on("error", socketError);
         }
         config.socket.setKeepAlive(true, 0);      // standard method to retain socket against timeouts from inactivity until a close frame comes in
+        config.socket.server = config.server;     // identifies which local server the given socket is connected to
         config.socket.hash = config.identifier;   // assigns a unique identifier to the socket based upon the socket's credentials
         config.socket.proxy = config.proxy;       // stores the relationship between two sockets when they are piped as a proxy
         config.socket.role = config.role;         // assigns socket creation location
-        config.socket.server = config.server;     // identifies which local server the given socket is connected to
         config.socket.type = config.type;         // a classification identifier to functionally identify a common utility of sockets on a given server
-        config.socket.on("close", socket_end);
-        config.socket.on("end", socket_end);
-        config.socket.on("error", socketError);
+        if (config.server.indexOf("dashboard-terminal-") !== 0) {
+            config.socket.on("close", socket_end);
+            config.socket.on("end", socket_end);
+            config.socket.on("error", socketError);
+        }
         if (config.callback !== null && config.callback !== undefined) {
             config.callback(config.socket);
         }

@@ -4,7 +4,6 @@
 import commas from "../utilities/commas.js";
 import core from "../browser/core.js";
 import dateString from "../utilities/dateString.js";
-import dashboard from "../dashboard/dashboard_script.js";
 import directory from "../utilities/directory.js";
 import file from "../utilities/file.js";
 import file_list from "../browser/file_list.js";
@@ -53,9 +52,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                     ""
                 ];
             if (config.template === true) {
-                const name:string = (server_name === "dashboard")
-                        ? "Server Management"
-                        : server_name,
+                const name:string = server_name,
                     templateText:string[] = [
                         "<!doctype html>",
                         "<html lang=\"en\">",
@@ -78,9 +75,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                         "<link href=\"/styles.css\" media=\"all\" rel=\"stylesheet\" type=\"text/css\"/>",
                         "<link rel=\"icon\" type=\"image/png\" href=\"data:image/png;base64,iVBORw0KGgo=\"/>",
                         "</head>",
-                        `<body${(server_name === "dashboard")
-                            ? " id=\"dashboard\">"
-                            : ">"}`,
+                        "<body>",
                         `<h1>${name}</h1>`,
                         (config.status === 200)
                             ? ""
@@ -303,62 +298,39 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
             } else {
                 notFound();
             }
-        };
-    if (fileFragment === "") {
-        if (server_name === "dashboard") {
-            const payload:transmit_dashboard = {
-                logs: vars.logs,
-                ports: vars.system_ports,
-                servers: vars.servers
-            };
-            write(html({
-                content: [
-                    `<input type="hidden" value='${JSON.stringify(payload).replace(/'/g, "&#39;")}'/>`,
-                    "<p id=\"connection-status\" class=\"connection-offline\">Dashboard Connection: <strong>Offline</strong></p>",
-                    "<nav><ul>",
-                    "<li><button class=\"nav-focus\" data-section=\"servers\">Servers</button></li><li><button data-section=\"logs\">Logs</button></li><li><button data-section=\"ports\">Port Summary</button></li><li><button data-section=\"sockets\">Socket Summary</button></li><li><button data-section=\"compose\">Docker Compose</button></li>",
-                    "</ul></nav>",
-                    "<main>",
-                    "<div id=\"servers\"><h2>Servers</h2>",
-                    "<div class=\"server-definitions\"><h3>Definitions of Server Object Properties</h3><button class=\"expand\">Expand</button><dl>",
-                    "<dt>activate</dt><dd>Instructs the application to bring the server online.</dd>",
-                    "<dt>block_list</dt><dd>The block list contains three optional string arrays of criteria to determine if matching sockets should be instantly destroyed. At this time wildcards, CIDR notation, and ranges are not supported.</dd>",
-                    "<dt>domain_local</dt><dd>Sockets featuring HTTP request host names in this list will be served from this server.  Sockets featuring HTTP request host names not in this list or in the redirect_domain list will be destroyed.</dd>",
-                    "<dt>encryption</dt><dd>Whether to create an encrypted server for HTTPS and WSS protocols, an unencrypted server for HTTP and WS protocols, or both. Accepted values are 'both, 'open', or 'secure'.</dd>",
-                    "<dt>http</dt><dd>File system paths to external utilities for handling the supported HTTP methods: delete, post, and put.  HTTP request bodies are passed into an environmental variable on the respective child process named 'payload'.</dd>",
-                    "<dt>name</dt><dd>The name of this server.</dd>",
-                    "<dt>path</dt><dd>Stores absolute file system paths used by the server. The storage path is for any dynamically written data, such as logs. The web_root directory is where web pages and web page assets are sourced from. The certificates path is only used for secure servers to store their respective TLS certificates.</dd>",
-                    "<dt>ports</dt><dd>The ports on which the server operates.</dd>",
-                    "<dt>redirect_domain</dt><dd>Redirects traffic to a different location, such as vanity domain that may or may not be served from the same server. Each instance uses the structure of \"domain: ['new domain', port_number]\" because each server can represent 0 or more domain names. If the 'new domain' is an empty string the requested domain will be used. If the port number is not a number or 0 the current server's port number will be used.</dd>",
-                    "<dt>redirect_internal</dt><dd>Redirects resource paths within the given server based upon the hostname in the HTTP request header. This is useful for dynamic or vanity endpoints on a given server. Each instance uses the structure of \"domain: {'resource location': 'new location'}\" because each server can represent 0 or more domain names.</dd>",
-                    "<dt>ws</dt><dd>A file path location to a script for custom WebSocket message handling, executed as a child process.</dd>",
-                    "</dl></div>",
-                    "<p><button class=\"server-new\">Create Server</button></p></div>",
-                    "<div id=\"ports\"><h2>Port Summary</h2><h3>System Ports Outside This Application</h3><p><button>⟳ Refresh</button></p><table class=\"ports-external\"><thead><tr><th>Port</th><th>Protocol</th><th>Utility</th></tr></thead><tbody></tbody></table><h3>Internal Application Ports</h3><table><thead><tr><th>Port</th><th>Protocol</th><th>Type</th><th>Container Name</th><th>Description</th></tr></thead><tbody></tbody></table></div>",
-                    "<div id=\"sockets\"><h2>Socket Summary</h2><p>A list of connected sockets.  Sockets not of 'type' http are WebSocket connections. Proxy identifies the id of the paired socket or null if not piped to another socket.</p><table><thead><tr><th>Server</th><th>ID</th><th>Type Descriptor</th><th>Role</th><th>Proxy</th><th>Local IP</th><th>Local Port</th><th>Remote IP</th><th>Remote Port</th></tr></thead><tbody></tbody></table></div>",
-                    "<div id=\"compose\"><h2>Docker Compose</h2></div>",
-                    "<div id=\"logs\"><h2>Logs</h2><p>At this time logs are not saved outside the application, but do persist for the life of the application runtime.</p><ul></ul></div>",
-                    "</main>"
-                ],
-                content_type: "text/html; utf8",
-                core: true,
-                page_title: null,
-                script: dashboard,
-                status: 200,
-                template: true
-            }));
+        },
+        decoded:string = decodeURI(fileFragment);
+    if (server_name === "dashboard") {
+        if (decoded === "") {
+            const browser:transmit_dashboard = {
+                    logs: vars.logs,
+                    ports: vars.system_ports,
+                    servers: vars.servers
+                },
+                html:string = vars.dashboard.replace(" = replace_me,", ` = ${JSON.stringify(browser)},`),
+                headers:string[] = [
+                    "HTTP/1.1 200",
+                    "content-type: text/html",
+                    `content-length: ${Buffer.from(html).length}`,
+                    "server: prettydiff/webserver",
+                    "",
+                    ""
+                ];
+            write(headers.join("\r\n") + html);
+        } else if (decoded.includes("node_modules") === true) {
+            input = vars.path.project + decoded;
         } else {
-            // server root html file takes the name of the server, not index.html
-            input = `${path}index.html`;
+            input = `${vars.path.project}lib${vars.sep}dashboard${vars.sep}` + decoded;
         }
-    } else if (server_name === "dashboard") {
-        input = `${vars.path.project}lib${vars.sep}dashboard${vars.sep}` + decodeURI(fileFragment);
+    } else if (fileFragment === "") {
+        // server root html file takes the name of the server, not index.html
+        input = `${path}index.html`;
     } else if (fileFragment.indexOf(".js") === fileFragment.length - 3 && fileFragment.includes("/js/lib/assets/") === false) {
         // normalizes compiled JS path to web_root path
-        input = path.replace(/(\/|\\)lib(\/|\\)assets(\/|\\)/, `${vars.sep}js${vars.sep}lib${vars.sep}assets${vars.sep}`) + decodeURI(fileFragment);
+        input = path.replace(/(\/|\\)lib(\/|\\)assets(\/|\\)/, `${vars.sep}js${vars.sep}lib${vars.sep}assets${vars.sep}`) + decoded;
     } else {
         // all other HTTP requests
-        input = path + decodeURI(fileFragment);
+        input = path + decoded;
     }
     file.stat({
         callback: statTest,

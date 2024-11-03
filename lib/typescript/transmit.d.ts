@@ -24,6 +24,12 @@ interface transmit_addresses_socket {
     };
 }
 
+interface terminal_library {
+    delay: NodeJS.Timeout;
+    server: receiver;
+    shell: (socket:websocket_client) => void;
+}
+
 interface transmit_dashboard {
     logs: services_dashboard_status[];
     ports: type_external_port[];

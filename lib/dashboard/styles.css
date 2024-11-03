@@ -1,5 +1,9 @@
 /* cspell: words ytdownload, ytstatus */
 
+body{
+    --border-color:#999;
+}
+
 html{font-size:10px}
 body{background:#333;color:#ccc;font-family:sans-serif;max-width:120em}
 div.section{border-style:solid;border-width:0.1em;margin:2em;padding:2em}
@@ -17,7 +21,7 @@ dd{margin:0 0 1em 2.5em}
 dd p,li p{font-size:1em}
 li{margin:1em 0 0}
 code{display:block;font-family:monospace;font-size:0.9em;white-space:pre}
-fieldset{background:#181818;border-color:#ccc;border-style:solid;border-width:0.1em;margin:0 0 0 -2.8em;max-width:48.25em;padding:0 1em 1em;overflow:scroll}
+fieldset{background:#181818;border-color:var(--border-color);border-style:solid;border-width:0.1em;margin:0 0 0 -2.8em;max-width:48.25em;padding:0 1em 1em;overflow:scroll}
 a{color:#f66}
 button{background:#444;border-color:#666;border-radius:0.75em;border-style:revert;border-width:0.1em;box-shadow:0.1em 0.1em 0.25em #000;color:#eee;cursor:pointer;padding:0.25em 0.5em}
 button:hover{background:#333}
@@ -25,7 +29,11 @@ button:active{border-style:inset;box-shadow:-0.1em -0.1em 0.25em #111}
 th{min-width:10em}
 strong,
 em{color:#c96}
-textarea{background:#222;border-color:#666;border-style:solid;border-width:0.065em;color:#ccc}
+#terminal .xterm,
+textarea{background:#222;border-style:solid;border-width:0.065em;color:#ccc}
+#terminal .xterm{border-color:#666;overflow:scroll}
+#terminal .xterm-viewport{overflow:hidden}
+textarea{border-color:#444;box-shadow:0 0 0.1em #000}
 .clear{background:transparent;border-style:none;display:block;clear:both;float:none}
 
 .delay{height:50%;width:50%}
@@ -46,7 +54,7 @@ input[type="radio"]{visibility:hidden}
 th button{float:right;margin:0 1em}
 .controls p{margin:2em 0}
 .controls button{font-size:2em}
-label span{border-radius:50%;background:#999;border-color:#999;border-style:solid;border-width:0.2em;display:inline-block;height:0.8em;margin:0 0.5em 0 0;width:0.8em}
+label span{border-radius:50%;background:#999;border-color:var(--border-color);border-style:solid;border-width:0.2em;display:inline-block;height:0.8em;margin:0 0.5em 0 0;width:0.8em}
 label span.checked{background:#111}
 .linux-link{display:none;font-size:4em;font-weight:bold}
 .linux-options{margin:0;overflow:hidden}
@@ -65,26 +73,28 @@ table{border-collapse:collapse}
 td{font-family:monospace;padding:0.5em}
 td .icon{display:inline-block;width:1.5em}
 
-#connection-status{border-color:#ccc;border-style:solid;border-width:0.1em;padding:0.2em}
-#dashboard button{background:#444;border-color:#ccc;border-style:solid;border-radius:0;border-width:0.065em;font-size:1.2em;font-weight:bold;text-shadow:0.05em 0.05em #111;width:10em}
+#connection-status{border-color:var(--border-color);border-style:solid;border-width:0.1em;padding:0.2em}
+#dashboard button{background:#444;border-color:var(--border-color);border-style:solid;border-radius:0;border-width:0.065em;font-size:1.2em;font-weight:bold;text-shadow:0.05em 0.05em #111;width:10em}
 #dashboard button:hover{background:#666}
 #dashboard button:hover:disabled{background:#444;color:#666;cursor:auto}
 #dashboard button:disabled{color:#666}
-#dashboard nav ul{border-color:#ccc;border-style:none none solid;border-width:0.1em;margin:0 0 4em;padding:0 0 1em}
-#dashboard nav li{border-color:#ccc;border-style:none solid none none;border-width:0.1em;display:inline-block;padding:0 0.5em}
+#dashboard code {background:#222;border-color:var(--border-color);border-style:solid;border-width:0.1em;margin:0.5em 2em;padding:0.5em}
+#dashboard nav ul{border-color:var(--border-color);border-style:none none solid;border-width:0.1em;margin:0 0 4em;padding:0 0 1em}
+#dashboard nav li{border-color:var(--border-color);border-style:none solid none none;border-width:0.1em;display:inline-block;padding:0 0.5em}
 #dashboard nav button{background:transparent;border-style:none;box-shadow:none;color:#aaa;font-size:0.8em}
 #dashboard nav .nav-focus{background:#111;color:#ccc}
 #dashboard nav button:hover{color:#ccc}
+#dashboard .tab-description{border-color:#555;border-style:none none solid;border-width:0.1em;margin:0 0 2em;padding:0 0 0.5em}
 #dashboard h1,
 #servers .detail_item p{margin:0 0 0.5em}
 #servers p,
-#servers h2,
+#dashboard h2,
 #servers .server-list h4{margin:0 0 0.42em}
 #servers .server-list h4{cursor:pointer}
 #servers .server-list h4:hover{background:rgba(0,0,0,0.25)}
 #servers .server-list > ul > .amber{background:#443}
 #connection-status.connection-online,
-#servers .server-list > ul > .green{background:#121}
+#servers .server-list > ul > .green{background:#131}
 #connection-status.connection-offline,
 #servers .server-list > ul > .red{background:#422}
 #servers h5{font-size:1em;margin:0}
@@ -95,19 +105,20 @@ td .icon{display:inline-block;width:1.5em}
 #servers .server-list h4 button{background:none;border-style:none;box-shadow:none;display:block;font-size:1em;padding:0;text-align:left;width:100%}
 #servers .server-definitions .expand,
 #servers .server-list h4 .expand{display:block;float:right}
-#servers .server-definitions .expand{margin:-3em 0 0}
+#servers .server-definitions .expand{font-size:0.5em}
 #servers .server-list h4 .expand{font-size:0.5em}
 #servers ul{font-size:1em;margin:1em 0 0;padding:0}
 #servers .server-definitions,
 #servers .server-list,
-#servers li{border-color:#ccc;border-style:solid;border-width:0.1em;font-size:1em;padding:1em 1em 0}
+#servers li{border-color:var(--border-color);border-style:solid;border-width:0.1em;font-size:1em;padding:1em 1em 0}
 #servers .server-list{padding-bottom:1em}
 #servers li{list-style:none}
 #servers label{display:flex;width:100%}
 #servers label span.details-redundant,
-#servers label span.text{background:transparent;border-style:none;display:inline-block;font-size:1em;font-weight:bold;line-height:2.5;width:12em}
+#dashboard label span.text{background:transparent;border-style:none;display:inline-block;font-size:1em;font-weight:bold;line-height:2.5;width:12em}
 #servers label span.details-redundant{text-indent:-2000em}
-#servers textarea{font-size:1em;height:1em;line-height:1;padding:0.4em;width:100%}
+#dashboard textarea{font-size:1em;height:1em;line-height:1;padding:0.4em;width:100%}
+#terminal .terminal-input{border-radius:0;display:block}
 #servers .server-activate,
 #servers .server-add,
 #servers .server-deactivate,
@@ -134,9 +145,9 @@ td .icon{display:inline-block;width:1.5em}
 #servers .server-cancel{color:#ca3}
 #servers .server-destroy{color:#911}
 #servers .server-new{margin:2em 0}
-#servers .edit textarea{box-sizing:border-box;display:block;height:35em;margin:0 0 1em;overflow:scroll;width:100%}
+#dashboard .edit textarea{box-sizing:border-box;display:block;height:35em;margin:0 0 1em;overflow:scroll;width:100%}
 #servers .active-ports,
-#servers .summary{background:#333;border-color:#ccc;border-style:solid;border-width:0.1em;margin:0 0 1em;padding:1em 0.5em}
+#servers .summary{background:#333;border-color:var(--border-color);border-style:solid;border-width:0.1em;margin:0 0 1em;padding:1em 0.5em}
 #servers .summary{display:none}
 #servers .edit label,
 #servers .edit label span{display:block}
@@ -149,11 +160,12 @@ td .icon{display:inline-block;width:1.5em}
 #dashboard .pass-false{color:#f33}
 #dashboard .pass-true{color:#090}
 #dashboard .pass-warn{color:#ca3}
-#logs > ul{background:#222;border-color:#ccc;border-style:solid;border-width:0.1em;padding:0.5em}
+#logs > ul{background:#222;border-color:var(--border-color);border-style:solid;border-width:0.1em;padding:0.5em}
+#compose,
+#logs,
 #ports,
 #sockets,
-#compose,
-#logs{display:none}
+#terminal{display:none}
 #logs ul{height:80em;overflow:scroll}
 #logs li{font-family:monospace;list-style:none;margin:0.5em 0 0;white-space:pre}
 #logs li.log-success{color:#090}
@@ -163,3 +175,5 @@ td .icon{display:inline-block;width:1.5em}
 #dashboard td,
 #dashboard th{border-color:#666;border-style:solid;border-width:0.1em;padding:0.2em;text-align:left}
 #dashboard th{background:#222}
+#terminal .terminal-output{margin:-1em 0 0}
+#terminal .terminal-input{height:5em;overflow:scroll}

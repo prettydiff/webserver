@@ -1,12 +1,11 @@
 
 import core from "../browser/core.js";
+// @ts-expect-error - TypeScript claims xterm has no default export, but this is how the documentation says to use it.
+import Terminal from "@xterm/xterm";
+
+// cspell: words buildx, containerd, nmap, winget
 
 const dashboard = function dashboard():void {
-    // 1. test for port conflicts when creating servers from the dashboard
-    // 2. multiple instances and load balancing
-    // 3. page for arbitrary http requests and socket connections
-    // 4. server type as an option (type of protocol/service)
-
 
     const log = function dashboard_log(item:services_dashboard_status):void {
             let li:HTMLElement = document.createElement("li"),
@@ -56,6 +55,9 @@ const dashboard = function dashboard():void {
             }
             ul.appendChild(li);
         },
+        // docker:module_docker = {
+        //     // Download and install Docker to Windows with 'winget install --id=Docker.DockerCLI -e' and to Debian Linux with 'sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin'.
+        // },
         message:module_message = {
             ports_active: function dashboard_messagePortsActive(name_server:string):HTMLElement {
                 const div:HTMLElement = document.createElement("div"),
@@ -120,7 +122,14 @@ const dashboard = function dashboard():void {
                                     }
                                 } while (index > 0);
                             } else if (data.action === "add") {
-                                payload.servers[config.name].config = config;
+                                payload.servers[config.name] = {
+                                    config: config,
+                                    sockets: [],
+                                    status: {
+                                        open: 0,
+                                        secure: 0
+                                    }
+                                };
                                 const names:string[] = Object.keys(payload.servers),
                                     ul:HTMLElement = document.getElementById("servers").getElementsByClassName("server-list")[0].getElementsByTagName("ul")[0];
                                 payload.servers[config.name].status = {
@@ -184,6 +193,14 @@ const dashboard = function dashboard():void {
                                         break;
                                     }
                                 } while (index > 0);
+                                if (config.name.indexOf("dashboard-terminal-") === 0) {
+                                    const encryption:"open"|"secure" = payload.servers[config.name].config.encryption as "open"|"secure",
+                                        scheme:"ws"|"wss" = (encryption === "open")
+                                            ? "ws"
+                                            : "wss";
+                                    terminal.socket = new WebSocket(`${scheme}://${location.host.split(":")[0]}:${config.ports[encryption]}`, ["terminal"]);
+                                    terminal.socket.onmessage = terminal.events.data;
+                                }
                             } else if (data.action === "deactivate") {
                                 payload.servers[config.name].status = {
                                     open: 0,
@@ -222,6 +239,7 @@ const dashboard = function dashboard():void {
                             } else if (data.action === "destroy") {
                                 message.socket_destroy(config.hash);
                             }
+                            ports.internal();
                         } else if (data.type === "port") {
                             ports.external(data.configuration as type_external_port[]);
                         }
@@ -346,7 +364,22 @@ const dashboard = function dashboard():void {
                     return;
                 }
                 if (input[0] === null) {
-                    portElement.getElementsByTagName("p")[0].textContent = input[1][1];
+                    const ul:HTMLElement = document.createElement("ul"),
+                        p:HTMLElement = portElement.getElementsByTagName("p")[0];
+                    let li:HTMLElement = document.createElement("li"),
+                        code:HTMLElement = document.createElement("code");
+                    p.textContent = `${input[1][1]} Download and install NMap with these commands:`;
+                    li.appendText("Windows ");
+                    code.appendText("winget install -e --id Insecure.Nmap");
+                    li.appendChild(code);
+                    ul.appendChild(li);
+                    li = document.createElement("li");
+                    code = document.createElement("code");
+                    li.appendText("Debian Linux ");
+                    code.appendText("sudo apt-get install nmap");
+                    li.appendChild(code);
+                    ul.appendChild(li);
+                    p.parentNode.insertBefore(ul, p.nextSibling);
                     tbody_old.parentNode.style.display = "none";
                     return;
                 }
@@ -405,10 +438,10 @@ const dashboard = function dashboard():void {
                 do {
                     indexServers = indexServers - 1;
                     if (typeof payload.servers[servers[indexServers]].status.open === "number" && payload.servers[servers[indexServers]].status.open > 0) {
-                        output.push([payload.servers[servers[indexServers]].status.open, "tcp", "server", servers[indexServers], `Open server port`]);
+                        output.push([payload.servers[servers[indexServers]].status.open, "tcp", "server", servers[indexServers], "Open server port"]);
                     }
                     if (typeof payload.servers[servers[indexServers]].status.secure === "number" && payload.servers[servers[indexServers]].status.secure > 0) {
-                        output.push([payload.servers[servers[indexServers]].status.secure, "tcp", "server", servers[indexServers], `Secure server port`]);
+                        output.push([payload.servers[servers[indexServers]].status.secure, "tcp", "server", servers[indexServers], "Secure server port"]);
                     }
                 } while (indexServers > 0);
                 output.sort(function dashboard_portsInternal_sort(a:[number, string, string, string, string], b:[number, string, string, string, string]):-1|1 {
@@ -471,7 +504,8 @@ const dashboard = function dashboard():void {
             },
             definitions: function dashboard_serverDefinitions(event:MouseEvent):void {
                 const target:HTMLElement = event.target,
-                    dl:HTMLElement = target.parentNode.getElementsByTagName("dl")[0];
+                    div:HTMLElement = target.getAncestor("div", "tag"),
+                    dl:HTMLElement = div.parentNode.getElementsByTagName("dl")[0];
                 if (target.textContent === "Expand") {
                     dl.style.display = "block";
                     target.textContent = "Hide";
@@ -587,7 +621,8 @@ const dashboard = function dashboard():void {
                                             secure: 0
                                         },
                                         redirect_domain: {},
-                                        redirect_internal: {}
+                                        redirect_internal: {},
+                                        ws: ""
                                     }
                                     : payload.servers[name_server].config,
                                 output:string[] = [
@@ -638,8 +673,13 @@ const dashboard = function dashboard():void {
                                 output.push(`    "secure": ${serverData.ports.secure}`);
                             }
                             output.push("},");
-                            object("redirect_domain");
-                            object("redirect_internal");
+                            if (serverData.redirect_domain !== undefined && serverData.redirect_domain !== null) {
+                                object("redirect_domain");
+                            }
+                            if (serverData.redirect_internal !== undefined && serverData.redirect_internal !== null) {
+                                object("redirect_internal");
+                            }
+                            output.push("\"ws\": \"\"");
                             output[output.length - 1] = output[output.length - 1].replace(/,$/, "");
                             return `${output.join("\n    ")}\n}`;
                         }()),
@@ -759,8 +799,7 @@ const dashboard = function dashboard():void {
                     total:number = list.length;
                 let index:number = 0,
                     indexSocket:number = 0,
-                    totalSocket:number = 0,
-                    keys:string[] = null;
+                    totalSocket:number = 0;
     
                 if (list_old !== undefined) {
                     tag.removeChild(list_old);
@@ -774,7 +813,6 @@ const dashboard = function dashboard():void {
                 do {
                     ul.appendChild(server.title(list[index]));
                     totalSocket = payload.servers[list[index]].sockets.length;
-                    keys = Object.keys(payload.servers[list[index]].config.redirect_domain);
                     if (totalSocket > 0) {
                         indexSocket = 0;
                         do {
@@ -1156,7 +1194,98 @@ const dashboard = function dashboard():void {
                 disable();
             }
         },
-        payload:transmit_dashboard = JSON.parse(document.getElementsByTagName("input")[0].value),
+        terminal:module_terminal = {
+            call: function dashboard_terminalItem():void {
+                const encryption:type_encryption = (location.protocol === "https")
+                        ? "secure"
+                        : "open",
+                    server:services_dashboard_action = {
+                        action: "add",
+                        configuration: {
+                            activate: true,
+                            encryption: encryption,
+                            name: `dashboard-terminal-${Math.random() + Date.now()}`,
+                            ports: {
+                                [encryption]: 0
+                            }
+                        }
+                    },
+                    message:socket_data = {
+                        data: server,
+                        service: "dashboard-terminal"
+                    };
+                terminal.item = new Terminal({
+                    cols: terminal.info.cols + 1,
+                    convertEOL: true,
+                    cursorBlink: true,
+                    cursorStyle: "underline",
+                    disableStdin: false,
+                    theme: {
+                        background: "#222",
+                        selectionBackground: "#444"
+                    }
+                });
+                terminal.item.open(terminal.nodes.output);
+                terminal.write("Terminal emulator running...");
+                // terminal.item.onData(terminal.events.data);
+                terminal.nodes.input.onkeydown = terminal.events.input;
+                socket.queue(JSON.stringify(message));
+            },
+            info: {
+                cols: 130,
+                entries: [],
+                lenVert: 0,
+                posVert: 0
+            },
+            events: {
+                data: function dashboard_terminalData(event:websocket_event):void {
+                    terminal.write(event.data);
+                },
+                input: function dashboard_terminalInput(event:KeyboardEvent):boolean {
+                    if (event.key.toLowerCase() === "enter") {
+                        terminal.socket.send(terminal.nodes.input.value);
+                        terminal.nodes.input.value = "";
+                        return false;
+                    }
+                    return true;
+                }
+            },
+            item: null,
+            nodes: {
+                input: document.getElementById("terminal").getElementsByClassName("terminal-input")[0] as HTMLTextAreaElement,
+                output: document.getElementById("terminal").getElementsByClassName("terminal-output")[0] as HTMLElement
+            },
+            socket: null,
+            write: function dashboard_terminalWrite(input:string):void {
+                const now:Date = new Date(),
+                    time:string[] = [
+                        now.getHours().toString(),
+                        now.getMinutes().toString(),
+                        now.getSeconds().toString(),
+                        now.getMilliseconds().toString()
+                    ],
+                    pad = function dashboard_terminalWrite_pad(index:number):void {
+                        if (index === 3) {
+                            if (time[3].length < 2) {
+                                time[3] = `00${time[3]}`;
+                            } else if (time[3].length < 3) {
+                                time[3] = `0${time[3]}`;
+                            }
+                            time[2] = `${time[2]}.${time[3]}`;
+                            time.pop();
+                        } else if (time[index].length < 2) {
+                            time[index] = `0${time[index]}`;
+                        }
+                    };
+                pad(0);
+                pad(1);
+                pad(2);
+                pad(3);
+                terminal.item.write(`\u001b[32m\u001b[1m[${time.join(":")}]\u001b[0m\r\n${input}\r\n\r\n`);
+            }
+        },
+        // @ts-expect-error - replace_me is not a variable, but a text segment that is externally replaced at page http request time
+        payload:transmit_dashboard = replace_me,
         socket:socket_object = core(message.receiver, "dashboard", log);
 
     // start up logic for browser
@@ -1203,6 +1332,7 @@ const dashboard = function dashboard():void {
         ports.external(payload.ports);
         ports.internal();
         portRefresh.onclick = ports.refresh;
+        terminal.call();
     }
 };
 
