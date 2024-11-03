@@ -60,13 +60,14 @@ const terminal:terminal_library = {
         }, socket, 1);
     },
     shell: function services_terminalShell(socket:websocket_client):void {
-        const spawn:node_childProcess_ChildProcess = node.child_process.spawn("ps", {
+        const command:string = (process.platform === "win32")
+                ? "powershell.exe"
+                : "/bin/sh",
+            spawn:node_childProcess_ChildProcess = node.child_process.spawn(command, {
                 cwd: vars.path.project,
-                detached: true,
-                shell: true,
-                windowsHide: true
+                shell: true
             }),
-            close = function services_terminalShell_close():void {console.log(new Error().stack);
+            close = function services_terminalShell_close():void {
                 if (terminal.delay !== null) {
                     clearTimeout(terminal.delay);
                 }
@@ -81,7 +82,7 @@ const terminal:terminal_library = {
                     });
                 }
             },
-            error = function services_terminalShell_error(err:node_error):void {console.log(err);
+            error = function services_terminalShell_error(err:node_error):void {
                 const config:config_log = {
                     action: "activate",
                     config: err,
@@ -93,12 +94,25 @@ const terminal:terminal_library = {
                 close();
             },
             handler = function services_terminalShell_handler(data:Buffer):void {
-                spawn.stdin.write(data.toString());
+                input = `${data.toString()}\n`;
+                spawn.stdin.write(input);
             },
             out = function services_terminalShell_out(data:Buffer):void {
+                // const output:string = data.toString();
+                // if (input !== null && output !== input) {
+                //     if ((/^\s+$/).test(output) === true) {
+                //         send([input].concat(result).join("\r\n"), socket, 3);
+                //         result = [];
+                //     } else {
+                //         result.push(output.toString().replace(/\s+$/, ""));
+                //     }
+                // }
                 send(data, socket, 3);
             };
+        let input:string = null,
+            result:string[] = [];
         socket.handler = handler;
+        spawn.on("message", out);
         // spawn.stdout.on("data", out);
         // spawn.stderr.on("data", out);
         spawn.on("close", close);
