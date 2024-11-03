@@ -305,7 +305,8 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
             const browser:transmit_dashboard = {
                     logs: vars.logs,
                     ports: vars.system_ports,
-                    servers: vars.servers
+                    servers: vars.servers,
+                    terminal: vars.terminal
                 },
                 html:string = vars.dashboard.replace(" = replace_me,", ` = ${JSON.stringify(browser)},`),
                 headers:string[] = [

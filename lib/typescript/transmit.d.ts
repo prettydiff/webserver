@@ -34,6 +34,7 @@ interface transmit_dashboard {
     logs: services_dashboard_status[];
     ports: type_external_port[];
     servers: store_servers;
+    terminal: terminal_size;
 }
 
 interface transmit_receiver {

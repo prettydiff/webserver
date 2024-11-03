@@ -15,6 +15,10 @@ const vars:vars = {
     server_meta: {},
     system_ports: [],
     start_time: process.hrtime.bigint(),
+    terminal: {
+        cols: 130,
+        rows: 40
+    },
     text: {
         angry    : "\u001b[1m\u001b[31m",
         blue     : "\u001b[34m",

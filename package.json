@@ -7,6 +7,7 @@
     "command": "share",
     "description": "WebSocket first web server, HTTP over WebSockets.",
     "dependencies": {
+        "@lydell/node-pty": "1.0.2",
         "@xterm/xterm": "^5.5.0"
     },
     "devDependencies": {

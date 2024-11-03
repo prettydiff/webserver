@@ -1,5 +1,5 @@
 
-// cspell: words RSAPSS
+// cspell: words lydell, RSAPSS
 import { ChildProcess, ExecException, ExecOptions, SpawnOptions } from "node:child_process";
 import { ECDH, Hash, KeyObject, RSAKeyPairOptions } from "node:crypto";
 import { BigIntStats, ReadStream, Stats, WriteStream } from "node:fs";
@@ -11,6 +11,8 @@ import { Readable } from "node:stream";
 import { StringDecoder } from "node:string_decoder";
 import { TLSSocket, TLSSocketOptions } from "node:tls";
 import { BrotliCompress, BrotliDecompress } from "node:zlib";
+
+import { IPty } from "@lydell/node-pty";
 
 declare global {
     type node_childProcess_ChildProcess = ChildProcess;
@@ -45,4 +47,5 @@ declare global {
     type node_tls_TLSSocketOptions = TLSSocketOptions;
     type node_zlib_BrotliCompress = BrotliCompress;
     type node_zlib_BrotliDecompress = BrotliDecompress;
+    type pty = IPty;
 }

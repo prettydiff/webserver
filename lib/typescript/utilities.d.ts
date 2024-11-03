@@ -157,6 +157,11 @@ interface store_string {
     [key:string]: string;
 }
 
+interface terminal_size {
+    cols: number;
+    rows: number;
+}
+
 interface vars {
     dashboard: string;
     logs: services_dashboard_status[];
@@ -171,5 +176,6 @@ interface vars {
     servers: store_servers;
     start_time: bigint;
     system_ports: type_external_port[];
+    terminal: terminal_size;
     text: store_string;
 }

@@ -1202,51 +1202,6 @@ const dashboard = function dashboard():void {
             }
         },
         terminal:module_terminal = {
-            call: function dashboard_terminalItem():void {
-                const encryption:type_encryption = (location.protocol === "https")
-                        ? "secure"
-                        : "open",
-                    server:services_dashboard_action = {
-                        action: "add",
-                        configuration: {
-                            activate: true,
-                            encryption: encryption,
-                            name: `dashboard-terminal-${Math.random() + Date.now()}`,
-                            ports: {
-                                [encryption]: 0
-                            }
-                        }
-                    },
-                    message:socket_data = {
-                        data: server,
-                        service: "dashboard-terminal"
-                    };
-                terminal.item = new Terminal({
-                    cols: terminal.info.cols,
-                    convertEOL: true,
-                    cursorBlink: true,
-                    cursorStyle: "underline",
-                    disableStdin: false,
-                    rows: terminal.info.rows,
-                    theme: {
-                        background: "#222",
-                        selectionBackground: "#444"
-                    }
-                });
-                terminal.item.open(terminal.nodes.output);
-                terminal.write("Terminal emulator running...");
-                // terminal.item.onData(terminal.events.data);
-                terminal.nodes.input.onkeydown = terminal.events.input;
-                socket.queue(JSON.stringify(message));
-            },
-            info: {
-                cols: 130,
-                entries: [],
-                lenVert: 0,
-                posVert: 0,
-                prompt: 0,
-                rows: 40
-            },
             events: {
                 data: function dashboard_terminalData(event:websocket_event):void {
                     terminal.write(event.data);
@@ -1256,7 +1211,7 @@ const dashboard = function dashboard():void {
                     if (key === "Enter") {
                         const value:string = terminal.nodes.input.value;
                         terminal.socket.send(value);
-                        terminal.write(terminal.prompt(value));
+                        terminal.write(value);
                         if (terminal.info.entries[terminal.info.lenVert - 1] !== value) {
                             terminal.info.entries.push(value);
                             terminal.info.lenVert = terminal.info.entries.length;
@@ -1285,53 +1240,60 @@ const dashboard = function dashboard():void {
                     return true;
                 }
             },
+            info: {
+                entries: [],
+                lenVert: 0,
+                posVert: 0,
+                prompt: 0
+            },
+            init: function dashboard_terminalItem():void {
+                const encryption:type_encryption = (location.protocol === "https")
+                        ? "secure"
+                        : "open",
+                    server:services_dashboard_action = {
+                        action: "add",
+                        configuration: {
+                            activate: true,
+                            encryption: encryption,
+                            name: `dashboard-terminal-${Math.random() + Date.now()}`,
+                            ports: {
+                                [encryption]: 0
+                            }
+                        }
+                    },
+                    message:socket_data = {
+                        data: server,
+                        service: "dashboard-terminal"
+                    };
+                terminal.item = new Terminal({
+                    cols: payload.terminal.cols,
+                    convertEOL: true,
+                    cursorBlink: true,
+                    cursorStyle: "underline",
+                    disableStdin: false,
+                    rows: payload.terminal.rows,
+                    theme: {
+                        background: "#222",
+                        selectionBackground: "#444"
+                    }
+                });
+                terminal.item.open(terminal.nodes.output);
+                terminal.write("Terminal emulator running...");
+                // terminal.item.onData(terminal.events.data);
+                terminal.nodes.input.onkeydown = terminal.events.input;
+                socket.queue(JSON.stringify(message));
+            },
             item: null,
             nodes: {
                 input: document.getElementById("terminal").getElementsByClassName("terminal-input")[0] as HTMLTextAreaElement,
                 output: document.getElementById("terminal").getElementsByClassName("terminal-output")[0] as HTMLElement
-            },
-            prompt: function dashboard_terminalPrompt(entry?:string):string {
-                const now:number = Date.now();
-                if (now > terminal.info.prompt + 1000) {
-                    const date:Date = new Date(now),
-                        time:string[] = [
-                            date.getHours().toString(),
-                            date.getMinutes().toString(),
-                            date.getSeconds().toString(),
-                            date.getMilliseconds().toString()
-                        ],
-                        pad = function dashboard_terminalWrite_pad(index:number):void {
-                            if (index === 3) {
-                                if (time[3].length < 2) {
-                                    time[3] = `00${time[3]}`;
-                                } else if (time[3].length < 3) {
-                                    time[3] = `0${time[3]}`;
-                                }
-                                time[2] = `${time[2]}.${time[3]}`;
-                                time.pop();
-                            } else if (time[index].length < 2) {
-                                time[index] = `0${time[index]}`;
-                            }
-                        };
-                    pad(0);
-                    pad(1);
-                    pad(2);
-                    pad(3);
-                    terminal.info.prompt = now;
-                    entry = (typeof entry === "string" && entry !== "")
-                        ? ` ${entry.replace(/^\s+/, "")}`
-                        : "";
-                    return `\u001b[32m\u001b[1m[${time.join(":")}]\u001b[0m${entry}`;
-                }
-                return "";
             },
             socket: null,
             write: function dashboard_terminalWrite(input:string):void {
                 if (input === "") {
                     return;
                 }
-                const ending:string = "\r\n\r\n";
-                terminal.item.write(input + ending);
+                terminal.item.write(input);
             }
         },
         // @ts-expect-error - replace_me is not a variable, but a text segment that is externally replaced at page http request time
@@ -1379,7 +1341,7 @@ const dashboard = function dashboard():void {
         ports.external(payload.ports);
         ports.internal();
         ports.nodes.port_refresh.onclick = ports.refresh;
-        terminal.call();
+        terminal.init();
     }
 };
 

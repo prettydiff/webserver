@@ -1,10 +1,13 @@
 
 import log from "../utilities/log.js";
-import node from "../utilities/node.js";
 import send from "../transmit/send.js";
 import server from "../transmit/server.js";
 import server_halt from "../commands/server_halt.js";
 import vars from "../utilities/vars.js";
+
+import { spawn } from "@lydell/node-pty";
+
+// cspell: words lydell
 
 const terminal:terminal_library = {
     delay: null,
@@ -62,15 +65,16 @@ const terminal:terminal_library = {
         const command:string = (process.platform === "win32")
                 ? "powershell.exe"
                 : "/bin/sh",
-            spawn:node_childProcess_ChildProcess = node.child_process.spawn(command, {
+            pty:pty = spawn(command, [], {
+                cols: vars.terminal.cols,
                 cwd: vars.path.project,
-                shell: true
+                env: process.env,
+                rows: vars.terminal.rows
             }),
             close = function services_terminalShell_close():void {
                 if (terminal.delay !== null) {
                     clearTimeout(terminal.delay);
                 }
-                spawn.kill(0);
                 if (vars.servers[socket.server] !== undefined) {
                     server_halt({
                         action: "deactivate",
@@ -93,36 +97,19 @@ const terminal:terminal_library = {
                 close();
             },
             handler = function services_terminalShell_handler(data:Buffer):void {
-                input = `${data.toString()}\n`;
-                spawn.stdin.write(input);
+                input = `${data.toString()}\r`;
+                pty.write(input);
             },
-            out = function services_terminalShell_out(data:Buffer):void {console.log(data.toString());
-                const output:string = data.toString(),
-                    trimmed:string = output.replace(/\s+$/, "");
-                if (input !== null && trimmed !== input.replace(/\s+$/, "")) {
-                    if ((/^\s+$/).test(output) === true) {
-                        const final:string = result.join("\r\n").replace(/^(\r|\n)+/, "");
-                        if (final !== "") {
-                            send(final, socket, 3);
-                            result = [];
-                        }
-                    } else {
-                        result.push(trimmed);
-                    }
-                }
+            out = function services_terminalShell_out(output:string):void {
+                send(output.replace(input, ""), socket, 3);
             };
-        let input:string = null,
-            result:string[] = [];
+        let input:string = null;
         socket.handler = handler;
-        spawn.on("message", out);
-        spawn.stdout.on("data", out);
-        spawn.stderr.on("data", out);
-        spawn.on("close", close);
-        spawn.on("error", error);
+        pty.onData(out);
         socket.on("close", close);
         socket.on("end", close);
         socket.on("error", error);
     }
-}
+};
 
 export default terminal;
