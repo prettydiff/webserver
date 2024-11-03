@@ -58,6 +58,9 @@ declare global {
     interface module_port {
         external: (input:type_external_port[]) => void;
         internal: () => void;
+        nodes: {
+            port_refresh: HTMLElement;
+        };
         refresh: () => void;
     }
 
@@ -69,6 +72,10 @@ declare global {
         edit: (event:MouseEvent) => void;
         list: () => void;
         message: (event:MouseEvent) => void;
+        nodes: {
+            server_definitions: HTMLElement;
+            server_new: HTMLElement;
+        };
         title: (name_server:string) => HTMLElement;
         validate: (event:FocusEvent|KeyboardEvent) => void;
     }
@@ -80,6 +87,8 @@ declare global {
             entries: string[];
             lenVert: number;
             posVert: number;
+            prompt: number;
+            rows: number;
         };
         events: {
             data: (event:websocket_event) => void;
@@ -90,6 +99,7 @@ declare global {
             input: HTMLTextAreaElement;
             output: HTMLElement;
         };
+        prompt: (entry?:string) => string;
         socket: WebSocket;
         write: (input:string) => void;
     }

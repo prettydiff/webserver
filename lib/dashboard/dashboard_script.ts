@@ -476,6 +476,9 @@ const dashboard = function dashboard():void {
                     tbody_old.parentNode.removeChild(tbody_old);
                 }
             },
+            nodes: {
+                port_refresh: document.getElementById("ports").getElementsByTagName("button")[0]
+            },
             refresh: function dashboard_portsRefresh():void {
                 const payload:services_dashboard_action = {
                         action: "ports-refresh",
@@ -852,6 +855,10 @@ const dashboard = function dashboard():void {
                     server.cancel(event);
                 }
             },
+            nodes: {
+                server_definitions: document.getElementsByClassName("server-definitions")[0].getElementsByTagName("button")[0],
+                server_new: document.getElementsByClassName("server-new")[0] as HTMLElement
+            },
             title: function dashboard_serverTitle(name_server:string):HTMLElement {
                 const li:HTMLElement = document.createElement("li"),
                     h4:HTMLElement = document.createElement("h4"),
@@ -1215,11 +1222,12 @@ const dashboard = function dashboard():void {
                         service: "dashboard-terminal"
                     };
                 terminal.item = new Terminal({
-                    cols: terminal.info.cols + 1,
+                    cols: terminal.info.cols,
                     convertEOL: true,
                     cursorBlink: true,
                     cursorStyle: "underline",
                     disableStdin: false,
+                    rows: terminal.info.rows,
                     theme: {
                         background: "#222",
                         selectionBackground: "#444"
@@ -1235,16 +1243,43 @@ const dashboard = function dashboard():void {
                 cols: 130,
                 entries: [],
                 lenVert: 0,
-                posVert: 0
+                posVert: 0,
+                prompt: 0,
+                rows: 40
             },
             events: {
                 data: function dashboard_terminalData(event:websocket_event):void {
                     terminal.write(event.data);
                 },
                 input: function dashboard_terminalInput(event:KeyboardEvent):boolean {
-                    if (event.key.toLowerCase() === "enter") {
-                        terminal.socket.send(terminal.nodes.input.value);
+                    const key:string = event.key;
+                    if (key === "Enter") {
+                        const value:string = terminal.nodes.input.value;
+                        terminal.socket.send(value);
+                        terminal.write(terminal.prompt(value));
+                        if (terminal.info.entries[terminal.info.lenVert - 1] !== value) {
+                            terminal.info.entries.push(value);
+                            terminal.info.lenVert = terminal.info.entries.length;
+                            terminal.info.posVert = terminal.info.lenVert;
+                        }
                         terminal.nodes.input.value = "";
+                        return false;
+                    }
+                    if (key === "ArrowUp") {
+                        if (terminal.info.posVert > 0) {
+                            terminal.info.posVert = terminal.info.posVert - 1;
+                            terminal.nodes.input.value = terminal.info.entries[terminal.info.posVert];
+                        }
+                        return false;
+                    }
+                    if (key === "ArrowDown") {
+                        if (terminal.info.posVert < terminal.info.lenVert - 1) {
+                            terminal.info.posVert = terminal.info.posVert + 1;
+                            terminal.nodes.input.value = terminal.info.entries[terminal.info.posVert];
+                        } else {
+                            terminal.info.posVert = terminal.info.lenVert;
+                            terminal.nodes.input.value = "";
+                        }
                         return false;
                     }
                     return true;
@@ -1255,33 +1290,48 @@ const dashboard = function dashboard():void {
                 input: document.getElementById("terminal").getElementsByClassName("terminal-input")[0] as HTMLTextAreaElement,
                 output: document.getElementById("terminal").getElementsByClassName("terminal-output")[0] as HTMLElement
             },
+            prompt: function dashboard_terminalPrompt(entry?:string):string {
+                const now:number = Date.now();
+                if (now > terminal.info.prompt + 1000) {
+                    const date:Date = new Date(now),
+                        time:string[] = [
+                            date.getHours().toString(),
+                            date.getMinutes().toString(),
+                            date.getSeconds().toString(),
+                            date.getMilliseconds().toString()
+                        ],
+                        pad = function dashboard_terminalWrite_pad(index:number):void {
+                            if (index === 3) {
+                                if (time[3].length < 2) {
+                                    time[3] = `00${time[3]}`;
+                                } else if (time[3].length < 3) {
+                                    time[3] = `0${time[3]}`;
+                                }
+                                time[2] = `${time[2]}.${time[3]}`;
+                                time.pop();
+                            } else if (time[index].length < 2) {
+                                time[index] = `0${time[index]}`;
+                            }
+                        };
+                    pad(0);
+                    pad(1);
+                    pad(2);
+                    pad(3);
+                    terminal.info.prompt = now;
+                    entry = (typeof entry === "string" && entry !== "")
+                        ? ` ${entry.replace(/^\s+/, "")}`
+                        : "";
+                    return `\u001b[32m\u001b[1m[${time.join(":")}]\u001b[0m${entry}`;
+                }
+                return "";
+            },
             socket: null,
             write: function dashboard_terminalWrite(input:string):void {
-                const now:Date = new Date(),
-                    time:string[] = [
-                        now.getHours().toString(),
-                        now.getMinutes().toString(),
-                        now.getSeconds().toString(),
-                        now.getMilliseconds().toString()
-                    ],
-                    pad = function dashboard_terminalWrite_pad(index:number):void {
-                        if (index === 3) {
-                            if (time[3].length < 2) {
-                                time[3] = `00${time[3]}`;
-                            } else if (time[3].length < 3) {
-                                time[3] = `0${time[3]}`;
-                            }
-                            time[2] = `${time[2]}.${time[3]}`;
-                            time.pop();
-                        } else if (time[index].length < 2) {
-                            time[index] = `0${time[index]}`;
-                        }
-                    };
-                pad(0);
-                pad(1);
-                pad(2);
-                pad(3);
-                terminal.item.write(`\u001b[32m\u001b[1m[${time.join(":")}]\u001b[0m\r\n${input}\r\n\r\n`);
+                if (input === "") {
+                    return;
+                }
+                const ending:string = "\r\n\r\n";
+                terminal.item.write(input + ending);
             }
         },
         // @ts-expect-error - replace_me is not a variable, but a text segment that is externally replaced at page http request time
@@ -1290,9 +1340,7 @@ const dashboard = function dashboard():void {
 
     // start up logic for browser
     {
-        const server_new:HTMLButtonElement = document.getElementsByClassName("server-new")[0] as HTMLButtonElement,
-            // navigation event handler
-            navigation = function dashboard_navigation(event:MouseEvent):void {
+        const navigation = function dashboard_navigation(event:MouseEvent):void {
                 const target:HTMLElement = event.target,
                     buttons:HTMLCollectionOf<HTMLElement> = document.getElementsByTagName("nav")[0].getElementsByTagName("button");
                 let index:number = sections.length;
@@ -1319,11 +1367,10 @@ const dashboard = function dashboard():void {
                     buttons[index].onclick = navigation;
                 } while (index > 0);
                 return output;
-            }()),
-            portRefresh:HTMLElement = document.getElementById("ports").getElementsByTagName("button")[0];
+            }());
         socket.invoke();
-        server_new.onclick = server.create;
-        document.getElementsByClassName("server-definitions")[0].getElementsByTagName("button")[0].onclick = server.definitions;
+        server.nodes.server_new.onclick = server.create;
+        server.nodes.server_definitions.onclick = server.definitions;
         server.list();
         // populate log data
         payload.logs.forEach(function dashboard_logsEach(item:services_dashboard_status):void {
@@ -1331,7 +1378,7 @@ const dashboard = function dashboard():void {
         });
         ports.external(payload.ports);
         ports.internal();
-        portRefresh.onclick = ports.refresh;
+        ports.nodes.port_refresh.onclick = ports.refresh;
         terminal.call();
     }
 };

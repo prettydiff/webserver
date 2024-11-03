@@ -1,7 +1,6 @@
 
 import log from "../utilities/log.js";
 import node from "../utilities/node.js";
-import receiver from "../transmit/receiver.js";
 import send from "../transmit/send.js";
 import server from "../transmit/server.js";
 import server_halt from "../commands/server_halt.js";
@@ -97,24 +96,27 @@ const terminal:terminal_library = {
                 input = `${data.toString()}\n`;
                 spawn.stdin.write(input);
             },
-            out = function services_terminalShell_out(data:Buffer):void {
-                // const output:string = data.toString();
-                // if (input !== null && output !== input) {
-                //     if ((/^\s+$/).test(output) === true) {
-                //         send([input].concat(result).join("\r\n"), socket, 3);
-                //         result = [];
-                //     } else {
-                //         result.push(output.toString().replace(/\s+$/, ""));
-                //     }
-                // }
-                send(data, socket, 3);
+            out = function services_terminalShell_out(data:Buffer):void {console.log(data.toString());
+                const output:string = data.toString(),
+                    trimmed:string = output.replace(/\s+$/, "");
+                if (input !== null && trimmed !== input.replace(/\s+$/, "")) {
+                    if ((/^\s+$/).test(output) === true) {
+                        const final:string = result.join("\r\n").replace(/^(\r|\n)+/, "");
+                        if (final !== "") {
+                            send(final, socket, 3);
+                            result = [];
+                        }
+                    } else {
+                        result.push(trimmed);
+                    }
+                }
             };
         let input:string = null,
             result:string[] = [];
         socket.handler = handler;
         spawn.on("message", out);
-        // spawn.stdout.on("data", out);
-        // spawn.stderr.on("data", out);
+        spawn.stdout.on("data", out);
+        spawn.stderr.on("data", out);
         spawn.on("close", close);
         spawn.on("error", error);
         socket.on("close", close);
