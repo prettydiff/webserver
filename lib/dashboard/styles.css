@@ -7,7 +7,7 @@ body{
 
 html{font-size:10px}
 body{background:#333;color:#ccc;font-family:sans-serif;max-width:120em}
-div.section{border-style:solid;border-width:0.1em;margin:2em;padding:2em}
+div.section{border-color:var(--border-color);border-style:solid;border-width:0.1em;margin:2em;padding:2em}
 h1{font-size:4em}
 h2{font-size:3em}
 h3{font-size:2.4em}
@@ -163,6 +163,7 @@ td .icon{display:inline-block;width:1.5em}
 #dashboard .pass-warn{color:#ca3}
 #logs > ul{background:#222;border-color:var(--textArea-border);border-style:solid;border-width:0.1em;padding:0.5em}
 #compose,
+#help,
 #logs,
 #ports,
 #sockets,

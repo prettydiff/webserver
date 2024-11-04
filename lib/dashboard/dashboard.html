@@ -1,6 +1,7 @@
 
 <!doctype html>
 <html lang="en">
+    <!-- cspell: words buildx, containerd, dpkg, IRSSI, keyrings, lydell, nmap, winget -->
 <head>
 <meta charset="utf-8"/>
 <title>Server Management Dashboard</title>
@@ -29,12 +30,92 @@
         <li><button data-section="terminal">Terminal</button></li>
         <li><button data-section="ports">Port Summary</button></li>
         <li><button data-section="sockets">Socket Summary</button></li>
+        <li><button data-section="help">Help</button></li>
     </ul></nav>
     <main>
         <div id="compose">
             <h2>Docker Compose</h2>
             <p class="tab-description">A list of configured Docker containers and their status.</p>
             <p><button class="compose-new">New Container</button></p>
+        </div>
+        <div id="help">
+            <h2>Help</h2>
+            <p class="tab-description">Helpful information about this application.</p>
+            <div class="section">
+                <h3>Conventions</h3>
+                <div class="section">
+                    <h4>General</h4>
+                    <p>From the command line build the application code with <code>npm run build</code> and execute the application with <code>npm run server</code></p>
+                    <p>Access the application dashboard at http://localhost:3000 or https://localhost:3001 unless the ports are changed.</p>
+                    <p>If extending the application code checks can be performed using <code>npm run tsc</code> and <code>npm run lint</code></p>
+                </div>
+                <div class="section">
+                    <h4>Servers</h4>
+                    <h5>Proxies</h5>
+                    <p>The servers feature fully capable, though optional, support for proxies. The proxy support is divided between redirection to resources outside the given server and resources within the given server.  See the 'Definitions of Server Object Properties' on the Servers tab for more information.</p>
+                    <p>The servers also feature full support for WebSockets and partial support for HTTP.  HTTP is served over WebSockets which allows both protocols to coexist on the same port. All HTTP and WebSocket traffic receives full and equivalent proxy support.</p>
+                    <h5>HTTP Methods</h5>
+                    <p>HTTP methods <em>DELETE</em>, <em>POST</em>, and <em>PUT</em> are supported by this application but are not handled by this application. If these HTTP methods are to be used a given server must specify a file system path to corresponding libraries executed as child processes. Simply populate the respective properties on a new server's configuration object.</p>
+                    <h5>Custom WebSocket Message Handling</h5>
+                    <p>Custom WebSocket messaging handling is supported by supplying a custom function to library <em>/lib/transmit/messageHandler.ts</em>. Simply add a new property to the library object where the key name is the same as the name of the respective server and then rebuild the application.  For example:
+<code>const message_handler:transmit_socket_messageHandler = {
+    default: function transmit_messageHandler(bufferData:Buffer):void {
+        // default message handling
+    },
+    "my_server_name": function (data:Buffer) {
+        // custom message handling
+    }
+}</code></p>
+                </div>
+                <div class="section">
+                    <h4>Logs</h4>
+                    <p>Logging is fully customizable.  Simply call the <em>lib/utilities/log.ts</em> passing an object matching interface <em>config_log</em>. The front-end currently does not display configuration details and error objects, but that support is there awaiting display support from the front-end.</p>
+                </div>
+                <div class="section">
+                    <h4>Terminal</h4>
+                    <p>The terminal makes use of NPM modules <em>@xterm/xterm</em> and <em>@lydell/node-pty</em>. These packages expose a shell to the browser front-end with full support for SSH, VIM, IRSSI, and more. The default supported shells are PowerShell in Windows and /bin/sh elsewhere. To customize that to a different shell, such as Bash, simply modify the appropriate one line of code at <em>/lib/services/terminal.ts</em> and then rebuild the application.</p>
+                    <p>Please see this guide for <a href="https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797">ANSI Escape Codes</a> to extend and modify output to the terminal.</p>
+                </div>
+            </div>
+            <div class="section">
+                <h3>Dependencies</h3>
+                <h4>NMap</h4>
+                <p>NMap is the port scanner used to generate the list of ports consumed by the local machine but not related to this application instance.</p>
+                <ul>
+                    <li>Windows <a href="https://nmap.org/download.html">Download the binary</a></li>
+                    <li>Debian
+<code>sudo apt-get update
+apt-get upgrade
+apt-get install nmap</code></li>
+                </ul>
+                <h4>Docker Compose</h4>
+                <p>Docker Compose is a more convenient way to launch Docker containers by using a tiny YAML file to reference a prebuilt image and map resources from the container to the host machine.</p>
+                <ul>
+                    <li>Windows - (Administrative Terminal)
+<code>winget install --id=Docker.DockerCLI -e
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+mkdir 'C:\Program Files\Docker'
+Start-BitsTransfer `
+    -Source "https://github.com/docker/compose/releases/download/v2.30.1/docker-compose-windows-x86_64.exe" `
+    -Destination $Env:ProgramFiles\Docker\docker-compose.exe</code></li>
+                    <li>Debian
+<code># Add Docker's official GPG key:
+sudo apt-get update
+sudo apt-get install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+# Add the repository to Apt sources:
+echo "deb \
+    [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] \
+    https://download.docker.com/linux/debian \
+    $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+    sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin</code></li>
+                </ul>
+            </div>
         </div>
         <div id="logs">
             <h2>Logs</h2>

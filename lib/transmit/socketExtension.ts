@@ -1,6 +1,7 @@
 
 import get_address from "../utilities/getAddress.js";
 import log from "../utilities/log.js";
+import message_handler from "./messageHandler.js";
 import receiver from "./receiver.js";
 import send from "./send.js";
 import socket_end from "./socketEnd.js";
@@ -72,7 +73,11 @@ const socket_extension = function transmit_socketExtension(config:config_websock
         vars.server_meta[config.server].sockets[encryption].push(config.socket);
         vars.servers[config.server].sockets.push(socket_summary);
         if (config.proxy === null) {
-            config.socket.handler = config.handler;   // assigns an event handler to process incoming messages
+            config.socket.handler = (config.handler === message_handler.default)
+                ? (message_handler[config.server] === undefined)
+                    ? config.handler
+                    : message_handler[config.server]
+                : config.handler;   // assigns an event handler to process incoming messages
             config.socket.on("data", receiver);
             config.socket.fragment = Buffer.from([]); // storehouse of complete data frames, which will comprise a frame header and payload body that may be fragmented
             config.socket.frame = Buffer.from([]);    // stores pieces of frames, which can be divided due to TLS decoding or header separation from some browsers

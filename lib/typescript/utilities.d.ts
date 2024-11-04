@@ -90,7 +90,6 @@ interface server_configuration {
     redirect_internal?: {
         [key:string]: store_string;
     };
-    ws?: string;
 }
 
 interface server_content {

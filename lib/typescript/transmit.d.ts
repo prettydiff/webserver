@@ -41,6 +41,10 @@ interface transmit_receiver {
     [key:string]: receiver;
 }
 
+interface transmit_socket_messageHandler {
+    [key:string]: (data:Buffer) => void;
+}
+
 interface transmit_tlsOptions {
     fileFlag: {
         ca: boolean;

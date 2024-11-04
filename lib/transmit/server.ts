@@ -99,7 +99,7 @@ const server = function transmit_server(data:services_dashboard_action, callback
                                 };
                                 socket_extension({
                                     callback: http_action,
-                                    handler: message_handler,
+                                    handler: message_handler.default,
                                     identifier: `http-${process.hrtime.bigint().toString()}`,
                                     proxy: null,
                                     role: "server",
@@ -138,7 +138,7 @@ const server = function transmit_server(data:services_dashboard_action, callback
                                             : type;
                                     socket_extension({
                                         callback: client_respond,
-                                        handler: message_handler,
+                                        handler: message_handler.default,
                                         identifier: identifier,
                                         proxy: null,
                                         role: "server",

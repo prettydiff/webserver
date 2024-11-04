@@ -624,8 +624,7 @@ const dashboard = function dashboard():void {
                                             secure: 0
                                         },
                                         redirect_domain: {},
-                                        redirect_internal: {},
-                                        ws: ""
+                                        redirect_internal: {}
                                     }
                                     : payload.servers[name_server].config,
                                 output:string[] = [
@@ -1180,16 +1179,6 @@ const dashboard = function dashboard():void {
                     supported: [],
                     type: "store"
                 });
-                // ws
-                if (typeof serverData.ws === "string") {
-                    populate(true, "Optional property 'ws' is of type string.");
-                } else if (serverData.ws === null) {
-                    populate(true, "Optional property 'ws' is null.");
-                } else if (serverData.ws === undefined) {
-                    populate(true, "Optional property 'ws' is null.");
-                } else {
-                    populate(false, "Optional property 'ws' contains a value that is not type string.");
-                }
                 // parent properties
                 keys({
                     name: null,
