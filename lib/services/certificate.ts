@@ -20,7 +20,7 @@ const certificate = function services_certificate(config:config_certificate):voi
                             if (index < commands.length) {
                                 services_certificate_cert_crypto();
                             } else {
-                            config.callback();
+                                config.callback();
                             }
                         } else {
                             log({
@@ -68,7 +68,7 @@ const certificate = function services_certificate(config:config_certificate):voi
         # End Alt Names
         `
                         ],
-                        keys:string[] = (server === null)
+                        keys:string[] = (server === null || server.redirect_domain === null || server.redirect_domain === undefined)
                             ? []
                             : Object.keys(server.redirect_domain),
                         total_keys:number = keys.length,
