@@ -1,36 +1,23 @@
 
 import server from "./transmit/server.js";
-import server_create from "./commands/server_create.js";
+import server_create from "./services/server_create.js";
 import startup from "./utilities/startup.js";
 import vars from "./utilities/vars.js";
 
 startup(function index():void {
-    const default_server = function index_defaultServer(name:string):server_configuration {
+    const default_server = function index_defaultServer(name:string):configuration_server {
         return {
             activate: true,
-            block_list: {
-                host: [],
-                ip: [],
-                referrer: []
-            },
             domain_local: [
                 "localhost",
                 "127.0.0.1",
                 "::1"
             ],
             encryption: "both",
-            http: {
-                delete: "",
-                post: "",
-                put: ""
-            },
             name: name,
             ports: {
                 open: 0,
                 secure: 0
-            },
-            redirect_domain: {
-                "": ["", 0]
             },
             redirect_internal: {
                 "localhost": {

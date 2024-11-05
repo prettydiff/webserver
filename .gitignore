@@ -1,7 +1,8 @@
 **/node_modules
 /lib/assets/**
 !/lib/assets/index.txt
-/config.json
+/compose.json
+/servers.json
 /js
 /lib/certs
 /lib/conf

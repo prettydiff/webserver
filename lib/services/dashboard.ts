@@ -1,8 +1,8 @@
 
 import port_map from "../utilities/port_map.js";
 import server from "../transmit/server.js";
-import server_create from "../commands/server_create.js";
-import server_halt from "../commands/server_halt.js";
+import server_create from "./server_create.js";
+import server_halt from "./server_halt.js";
 
 const dashboard = function services_dashboard(socketData:socket_data):void {
     const data:services_dashboard_action = socketData.data as services_dashboard_action,

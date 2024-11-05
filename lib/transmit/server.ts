@@ -16,7 +16,7 @@ const server = function transmit_server(data:services_dashboard_action, callback
     const connection = function transmit_server_connection(TLS_socket:node_tls_TLSSocket):void {
             // eslint-disable-next-line no-restricted-syntax
             const server_name:string = this.name,
-                server:server_configuration = vars.servers[server_name].config,
+                server:configuration_server = vars.servers[server_name].config,
                 socket:websocket_client = TLS_socket as websocket_client,
                 handshake = function transmit_server_connection_handshake(data:Buffer):void {
                     let nonceHeader:string = null,
@@ -56,7 +56,9 @@ const server = function transmit_server(data:services_dashboard_action, callback
                         },
                         get_referer = function transmit_server_connection_handshake_getReferer(header:string):void {
                             const refererName:string = header.toLowerCase().replace(/referer:\s*/, "");
-                            let index:number = server.block_list.referrer.length;
+                            let index:number = (server.block_list === null || server.block_list === undefined)
+                                ? 0
+                                : server.block_list.referrer.length;
                             if (index > 0) {
                                 do {
                                     index = index - 1;
@@ -80,7 +82,7 @@ const server = function transmit_server(data:services_dashboard_action, callback
                             }
                         },
                         local_service = function transmit_server_connection_handshake_localService():void {
-                            if (server.redirect_internal[domain] !== undefined) {
+                            if (server.redirect_internal !== undefined && server.redirect_internal !== null && server.redirect_internal[domain] !== undefined) {
                                 data = redirection(domain, data, server_name) as Buffer;
                                 headerList[0] = data.toString().split("\r\n")[0];
                             }
@@ -162,9 +164,9 @@ const server = function transmit_server(data:services_dashboard_action, callback
                                     socket: socket,
                                     type: "ws"
                                 }),
-                                pair:[string, number] = ((socket.encrypted === true && server.redirect_domain[`${domain}.secure`] !== undefined))
+                                pair:[string, number] = ((socket.encrypted === true && server.redirect_domain !== undefined && server.redirect_domain !== null && server.redirect_domain[`${domain}.secure`] !== undefined))
                                     ? server.redirect_domain[`${domain}.secure`]
-                                    : (server.redirect_domain[domain] === undefined)
+                                    : (server.redirect_domain === undefined || server.redirect_domain === null || server.redirect_domain[domain] === undefined)
                                         ? (socket.encrypted === true)
                                             ? [address.local.address, server.ports.secure]
                                             : [address.local.address, server.ports.open]
@@ -192,7 +194,7 @@ const server = function transmit_server(data:services_dashboard_action, callback
                                     count = count + 1;
                                     if (count > 1) {
                                         proxy.pipe(socket);
-                                        if (server.redirect_internal[domain] === undefined) {
+                                        if (server.redirect_domain === undefined || server.redirect_domain === null || server.redirect_internal[domain] === undefined) {
                                             socket.pipe(proxy);
                                             proxy.write(data);
                                         } else {
@@ -230,9 +232,9 @@ const server = function transmit_server(data:services_dashboard_action, callback
                     headerList.forEach(headerEach);
                     if (
                         referer === true ||
-                        server.block_list.host.includes(domain) === true ||
-                        server.block_list.ip.includes(address.remote.address) === true ||
-                        (server.redirect_domain[domain] === undefined && server.domain_local.includes(domain) === false)
+                        (server.block_list !== null && server.block_list !== undefined && server.block_list.host.includes(domain) === true) ||
+                        (server.block_list !== null && server.block_list !== undefined && server.block_list.ip.includes(address.remote.address) === true) ||
+                        ((server.redirect_domain === undefined || server.redirect_domain === null || server.redirect_domain[domain] === undefined) && server.domain_local.includes(domain) === false)
                     ) {
                         socket.destroy();
                     } else {
@@ -338,26 +340,13 @@ const server = function transmit_server(data:services_dashboard_action, callback
                 port: vars.servers[data.configuration.name].config.ports[secureType]
             }, listenerCallback);
         };
-    if (data.configuration.block_list === null || data.configuration.block_list === undefined) {
-        data.configuration.block_list = {
-            host: [],
-            ip: [],
-            referrer: []
-        };
-    }
-    if (Array.isArray(data.configuration.domain_local) === false) {
+    if (Array.isArray(data.configuration.domain_local) === false || data.configuration.domain_local.length < 1) {
         data.configuration.domain_local = [
             "localhost",
             "127.0.0.1",
             "::1",
             "[::1]"
         ];
-    }
-    if (data.configuration.redirect_domain === null || data.configuration.redirect_domain === undefined) {
-        data.configuration.redirect_domain = {};
-    }
-    if (data.configuration.redirect_internal === null || data.configuration.redirect_internal === undefined) {
-        data.configuration.redirect_internal = {};
     }
     if (vars.server_meta[data.configuration.name] === undefined) {
         vars.server_meta[data.configuration.name] = {

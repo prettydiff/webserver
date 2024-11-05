@@ -5,7 +5,7 @@ import vars from "../utilities/vars.js";
 
 // cspell: words bestaudio, keyid, multistreams, pathlen
 
-const yt_config = function commands_ytConfig(name:string, callback:() => void):void {
+const yt_config = function services_ytConfig(name:string, callback:() => void):void {
     const server:server = vars.servers[name];
     if (server === undefined) {
         log({
@@ -17,13 +17,13 @@ const yt_config = function commands_ytConfig(name:string, callback:() => void):v
         });
     } else {
         const dest:string = `${vars.path.project}servers${vars.sep + name + vars.sep}`,
-            confWritten = function commands_startup_config_instructions_confWritten():void {
+            confWritten = function services_ytConfig_confWritten():void {
                 conf_count = conf_count + 1;
                 if (conf_count === conf_total) {
                     callback();
                 }
             },
-            conf:store_string = (function commands_startup_config_instructions_paths():store_string {
+            conf:store_string = (function services_ytConfig_confWritten_paths():store_string {
                 return {
                     "audio": `-f bestaudio -o ${dest}%(title)sx.%(ext)s --audio-format mp3 --audio-quality 0 --extract-audio --no-mtime --no-playlist --downloader aria2c`,
                     "audio-file": `--exec "ffmpeg -i ${dest}%(title)sx.%(ext)s -vn -ab 320k -ar 48000 -y ${dest}%(artist)s-%(title)s.%(ext)s && rm ${dest}%(title)sx.%(ext)s"`,

@@ -11,10 +11,10 @@ import vars from "../utilities/vars.js";
 // 4. delete server from vars.server
 // 5. remove server's directory
 // 6. modify the server
-// 7. remove server from the config.json file
+// 7. remove server from the servers.json file
 // 8. call the callback
 
-const server_halt = function commands_serverHalt(data:services_dashboard_action, callback:() => void):void {
+const server_halt = function services_serverHalt(data:services_dashboard_action, callback:() => void):void {
     const old:string = (data.configuration.modification_name === undefined)
         ? data.configuration.name
         : data.configuration.modification_name;
@@ -27,7 +27,7 @@ const server_halt = function commands_serverHalt(data:services_dashboard_action,
             type: "log"
         });
     } else {
-        const path_config:string = `${vars.path.project}config.json`,
+        const path_config:string = `${vars.path.project}servers.json`,
             path_name:string = `${vars.path.project}servers${vars.sep + old + vars.sep}`,
             flags:store_flag = {
                 config: false,
@@ -38,7 +38,7 @@ const server_halt = function commands_serverHalt(data:services_dashboard_action,
                     ? false
                     : true
             },
-            complete = function commands_serverHalt_complete(flag:"config"|"remove"|"restart"):void {
+            complete = function services_serverHalt_complete(flag:"config"|"remove"|"restart"):void {
                 flags[flag] = true;
                 if (flags.config === true && flags.remove === true && flags.restart === true) {
                     const actionText:string = (data.action.charAt(data.action.length - 1) === "e")
@@ -60,14 +60,14 @@ const server_halt = function commands_serverHalt(data:services_dashboard_action,
                 }
             },
             file_remove:file_remove = {
-                callback: function commands_serverHalt_remove():void {
+                callback: function services_serverHalt_remove():void {
                     complete("remove");
                 },
                 error_terminate: data.configuration,
                 exclusions: [],
                 location: path_name
             },
-            server_restart = function commands_serverHalt_serverRestart():void {
+            server_restart = function services_serverHalt_serverRestart():void {
                 node.fs.cp(path_name, `${vars.path.project}servers${vars.sep + data.configuration.name + vars.sep}`, {
                     recursive: true
                 }, function server_restart_cp(erc:node_error):void {
@@ -142,7 +142,7 @@ const server_halt = function commands_serverHalt(data:services_dashboard_action,
             complete("restart");
         }
         if (data.action === "destroy" || data.action === "modify") {
-            // 7. modify the config.json file
+            // 7. modify the servers.json file
             const servers:store_server_config = {},
                 keys:string[] = Object.keys(vars.servers),
                 total:number = keys.length - 1;
@@ -153,7 +153,7 @@ const server_halt = function commands_serverHalt(data:services_dashboard_action,
                 index = index + 1;
             } while (index < total);
             file.write({
-                callback: function commands_serverHalt_writeConfig():void {
+                callback: function services_serverHalt_writeConfig():void {
                     complete("config");
                 },
                 contents: JSON.stringify(servers),

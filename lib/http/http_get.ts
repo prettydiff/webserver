@@ -303,6 +303,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
     if (server_name === "dashboard") {
         if (decoded === "") {
             const browser:transmit_dashboard = {
+                    compose: vars.compose,
                     logs: vars.logs,
                     ports: vars.system_ports,
                     servers: vars.servers,

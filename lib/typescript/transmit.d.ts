@@ -31,6 +31,7 @@ interface terminal_library {
 }
 
 interface transmit_dashboard {
+    compose: configuration_compose;
     logs: services_dashboard_status[];
     ports: type_external_port[];
     servers: store_servers;

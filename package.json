@@ -36,14 +36,10 @@
         "url": "git+https://github.com/prettydiff/webserver.git"
     },
     "scripts": {
-        "build": "npx swc ./lib -d ./js --ignore \"./lib/assets/**/files\"",
-        "certificate": "node js/lib/index.js certificate",
-        "create_server": "node js/lib/index.js create_server",
-        "delete_server": "node js/lib/index.js delete_server",
+        "build": "npx swc ./lib -d ./js",
         "lint": "npx eslint ./",
         "server": "node js/lib/index.js",
-        "tsc": "npx tsc --pretty",
-        "yt_config": "node js/lib/index.js yt_config"
+        "tsc": "npx tsc --pretty"
     },
     "types": "/lib/typescript",
     "type": "module",

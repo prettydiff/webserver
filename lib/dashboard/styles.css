@@ -32,7 +32,7 @@ strong,
 em{color:#c96}
 #terminal .xterm,
 textarea{background:#222;border-style:solid;border-width:0.065em;color:#ccc}
-#terminal .xterm{border-color:#666;overflow:scroll}
+#terminal .xterm{border-color:#666;overflow:hidden}
 #terminal .xterm-viewport{overflow:hidden}
 textarea{border-color:var(--textArea-border);box-shadow:0 0 0.1em #000}
 .clear{background:transparent;border-style:none;display:block;clear:both;float:none}
@@ -99,8 +99,7 @@ td .icon{display:inline-block;width:1.5em}
 #connection-status.connection-offline,
 #servers .server-list > ul > .red{background:#422}
 #servers h5{font-size:1em;margin:0}
-#servers div.edit,
-#servers p{font-size:1.6em}
+#servers div.edit{font-size:1.6em}
 #servers .server-definitions dl{display:none}
 #servers .server-definitions h3{margin:0 0 0.5em}
 #servers .server-list h4 button{background:none;border-style:none;box-shadow:none;display:block;font-size:1em;padding:0;text-align:left;width:100%}
@@ -111,36 +110,39 @@ td .icon{display:inline-block;width:1.5em}
 #servers ul{font-size:1em;margin:1em 0 0;padding:0}
 #servers .server-definitions,
 #servers .server-list,
+#compose .compose-variable-list li,
 #servers li{border-color:var(--border-color);border-style:solid;border-width:0.1em;font-size:1em;padding:1em 1em 0}
 #servers .server-list{padding-bottom:1em}
+#compose .compose-variable-list li,
 #servers li{list-style:none}
+#compose .compose-variable-list li{background:#222;padding:1em}
+#compose .compose-variable-list span,
+#compose .compose-variable-list strong{font-size:1.6em}
+#compose .compose-variable-list strong{border-color:#ccc;border-style:none solid none none;border-width:0 0.065em 0 0;display:inline-block;margin:0 1.5em 0 0;width:10em}
 #servers label{display:flex;width:100%}
 #servers label span.details-redundant,
 #dashboard label span.text{background:transparent;border-style:none;display:inline-block;font-size:1em;font-weight:bold;line-height:2.5;width:12em}
 #servers label span.details-redundant{text-indent:-2000em}
 #dashboard textarea{font-size:1em;height:1em;line-height:1;padding:0.4em;width:100%}
-#terminal .terminal-input{border-radius:0;display:block}
-#servers .server-activate,
-#servers .server-add,
-#servers .server-deactivate,
-#servers .server-cancel,
-#servers .server-destroy,
-#servers .server-edit,
-#servers .server-modify{font-size:1em}
+#compose .server-cancel,
+#compose .server-modify,
 #servers .server-activate,
 #servers .server-add,
 #servers .server-deactivate,
 #servers .server-cancel,
 #servers .server-modify,
 #servers .server-destroy{margin:1em 3em}
+#compose .server-modify,
 #servers .server-activate,
 #servers .server-add,
 #servers .server-modify{float:right}
 #servers .server-deactivate,
 #servers .server-destroy{float:left}
+#compose .server-modify,
 #servers .server-add,
 #servers .server-modify{color:#090}
 #servers .server-edit{color:#ca3;display:block;margin:1em auto}
+#compose .server-cancel,
 #servers .server-activate,
 #servers .server-deactivate,
 #servers .server-cancel{color:#ca3}
@@ -157,7 +159,7 @@ td .icon{display:inline-block;width:1.5em}
 #servers .edit li{border-style:none;list-style-type:disc;margin:0.5em 0 0 1em;padding:0}
 #servers .edit dt,
 #servers .edit dd{font-size:1em}
-#dashboard #servers .note{font-size:1.2em}
+#dashboard #servers .note{clear:both;font-size:1.2em}
 #dashboard .pass-false{color:#f33}
 #dashboard .pass-true{color:#090}
 #dashboard .pass-warn{color:#ca3}
@@ -168,7 +170,7 @@ td .icon{display:inline-block;width:1.5em}
 #ports,
 #sockets,
 #terminal{display:none}
-#logs ul{height:85.695em;overflow:scroll}
+#logs ul{height:83.9em;overflow:scroll}
 #logs li{font-family:monospace;list-style:none;margin:0.5em 0 0;white-space:pre}
 #logs li.log-success{color:#090}
 #logs li.log-error{color:#911}
@@ -177,4 +179,5 @@ td .icon{display:inline-block;width:1.5em}
 #dashboard td,
 #dashboard th{border-color:#666;border-style:solid;border-width:0.1em;padding:0.2em;text-align:left}
 #dashboard th{background:#222}
-#terminal .terminal-input{height:5em;overflow:scroll}
+#dashboard #compose textarea.compose-variables-edit{height:10em}
+#dashboard p.buttons button{font-size:1.2em}

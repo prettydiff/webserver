@@ -55,9 +55,92 @@ const dashboard = function dashboard():void {
             }
             ul.appendChild(li);
         },
-        // docker:module_docker = {
-        //     // Download and install Docker to Windows with 'winget install --id=Docker.DockerCLI -e' and to Debian Linux with 'sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin'.
-        // },
+        compose:module_compose = {
+            // Download and install Docker to Windows with 'winget install --id=Docker.DockerCLI -e' and to Debian Linux with 'sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin'.
+            cancel: function dashboard_composeCancel(event:MouseEvent):void {
+                const target:HTMLElement = event.target.getAncestor("div", "tag"),
+                    edit:HTMLElement = target.getElementsByClassName("compose-edit")[0] as HTMLElement,
+                    buttons:HTMLElement = target.getElementsByClassName("buttons")[1] as HTMLElement,
+                    ul:HTMLElement = target.getElementsByTagName("ul")[0];
+                edit.parentNode.removeChild(edit);
+                buttons.parentNode.removeChild(buttons);
+                ul.style.display = "block";
+                compose.nodes.variables_new.disabled = false;
+            },
+            editVariables: function dashboard_composeEditVariables():void {
+                const p:HTMLElement = document.createElement("p"),
+                    buttons:HTMLElement = document.createElement("p"),
+                    label:HTMLElement = document.createElement("label"),
+                    textArea:HTMLTextAreaElement = document.createElement("textarea"),
+                    keys:string[] = Object.keys(payload.compose.variables).sort(),
+                    output:string[] = [],
+                    len:number = keys.length,
+                    cancel:HTMLElement = document.createElement("button"),
+                    save:HTMLElement = document.createElement("button");
+                let index:number = 0;
+                do {
+                    output.push(`"${keys[index]}": "${payload.compose.variables[keys[index]]}"`);
+                    index = index + 1;
+                } while (index < len);
+                cancel.appendText("⚠ Cancel");
+                cancel.setAttribute("class", "server-cancel");
+                cancel.onclick = compose.cancel;
+                buttons.appendChild(cancel);
+                save.appendText("🖪 Modify");
+                save.setAttribute("class", "server-modify");
+                save.onclick = compose.message;
+                buttons.appendChild(save);
+                textArea.value = `{\n    ${output.join(",\n    ")}\n}`;
+                textArea.setAttribute("class", "compose-variables-edit");
+                compose.nodes.variables_list.style.display = "none";
+                label.appendText("Docker Compose Variables");
+                label.appendChild(textArea);
+                p.setAttribute("class", "compose-edit");
+                p.appendChild(label);
+                buttons.setAttribute("class", "buttons");
+                compose.nodes.variables_list.parentNode.appendChild(p);
+                compose.nodes.variables_list.parentNode.appendChild(buttons);
+                compose.nodes.variables_new.disabled = true;
+            },
+            list: function dashboard_composeList():void {
+                const populate = function dashboard_composeList_populate(type:"containers"|"variables") {
+                    const list:string[] = Object.keys(payload.compose[type]).sort(),
+                        parent:HTMLElement = compose.nodes[`${type}_list`],
+                        len:number = list.length;
+                    let li:HTMLElement = null,
+                        strong:HTMLElement = null,
+                        span:HTMLElement = null,
+                        index:number = 0;
+                    if (len > 0) {
+                        do {
+                            li = document.createElement("li");
+                            if (type === "variables") {
+                                strong = document.createElement("strong");
+                                span = document.createElement("span");
+                                strong.appendText(list[index]);
+                                span.appendText(payload.compose[type][list[index]]);
+                                li.appendChild(strong);
+                                li.appendChild(span);
+                                parent.appendChild(li);
+                            }
+                            index = index + 1;
+                        } while (index < len);
+                    } else {
+                        parent.style.display = "none";
+                    }
+                };
+                populate("containers");
+                populate("variables");
+                compose.nodes.variables_new.onclick = compose.editVariables;
+            },
+            message: function dashboard_composeMessage(event:MouseEvent):void {},
+            nodes: {
+                containers_list: document.getElementById("compose").getElementsByClassName("compose-container-list")[0] as HTMLElement,
+                containers_new: document.getElementById("compose").getElementsByClassName("compose-container-new")[0] as HTMLButtonElement,
+                variables_list: document.getElementById("compose").getElementsByClassName("compose-variable-list")[0] as HTMLElement,
+                variables_new: document.getElementById("compose").getElementsByClassName("compose-variable-new")[0] as HTMLButtonElement
+            }
+        },
         message:module_message = {
             ports_active: function dashboard_messagePortsActive(name_server:string):HTMLElement {
                 const div:HTMLElement = document.createElement("div"),
@@ -109,7 +192,7 @@ const dashboard = function dashboard():void {
                     }
                     if (data.status !== "error") {
                         if (data.type === "server") {
-                            const config:server_configuration = data.configuration as server_configuration,
+                            const config:configuration_server = data.configuration as configuration_server,
                                 list:HTMLCollectionOf<HTMLElement> = document.getElementById("servers").getElementsByTagName("li");
                             let index:number = list.length;
                             if (data.action === "destroy") {
@@ -394,8 +477,12 @@ const dashboard = function dashboard():void {
                         // per port, per server
                         loop_ports(payload.servers[servers[indexServers]].status.open);
                         loop_ports(payload.servers[servers[indexServers]].status.secure);
-                        keys = Object.keys(payload.servers[servers[indexServers]].config.redirect_domain);
-                        indexKeys = keys.length;
+                        keys = (payload.servers[servers[indexServers]].config.redirect_domain === null || payload.servers[servers[indexServers]].config.redirect_domain === undefined)
+                            ? null
+                            : Object.keys(payload.servers[servers[indexServers]].config.redirect_domain);
+                        indexKeys = (keys === null)
+                            ? 0
+                            : keys.length;
                         if (indexKeys > 0) {
                             do {
                                 indexKeys = indexKeys - 1;
@@ -435,6 +522,8 @@ const dashboard = function dashboard():void {
                 let indexServers:number = servers.length,
                     tr:HTMLElement = null,
                     td:HTMLElement = null;
+                ports.external(payload.ports);
+                ports.nodes.port_refresh.onclick = ports.refresh;
                 do {
                     indexServers = indexServers - 1;
                     if (typeof payload.servers[servers[indexServers]].status.open === "number" && payload.servers[servers[indexServers]].status.open > 0) {
@@ -603,63 +692,43 @@ const dashboard = function dashboard():void {
                                 sanitize = function dashboard_serverDetails_value_sanitize(input:string):string {
                                     return input.replace(/\\/g, "\\\\").replace(/"/g, "\\\"");
                                 },
-                                serverData:server_configuration = (newFlag === true)
+                                serverData:configuration_server = (newFlag === true)
                                     ? {
                                         activate: true,
-                                        block_list: {
-                                            host: [],
-                                            ip: [],
-                                            referrer: []
-                                        },
                                         domain_local: [],
                                         encryption: "both",
-                                        http: {
-                                            delete: "",
-                                            post: "",
-                                            put: ""
-                                        },
                                         name: "new_server",
                                         ports: {
                                             open: 0,
                                             secure: 0
-                                        },
-                                        redirect_domain: {},
-                                        redirect_internal: {}
+                                        }
                                     }
                                     : payload.servers[name_server].config,
                                 output:string[] = [
                                         "{",
-                                        `"activate": ${serverData.activate},`,
-                                        "\"block_list\": {"
+                                        `"activate": ${serverData.activate},`
                                     ];
-                            if (serverData.block_list === null || serverData.block_list === undefined) {
-                                array(true, "host", null);
-                                array(true, "ip", null);
-                                array(true, "referrer", null);
-                            } else {
+                            if (serverData.block_list !== null && serverData.block_list !== undefined) {
+                                output.push("\"block_list\": {");
                                 array(true, "host", serverData.block_list.host);
                                 array(true, "ip", serverData.block_list.ip);
                                 array(true, "referrer", serverData.block_list.referrer);
+                                output[output.length - 1] = output[output.length - 1].replace(/,$/, "");
+                                output.push("},");
                             }
-                            output[output.length - 1] = output[output.length - 1].replace(/,$/, "");
-                            output.push("},");
                             array(false, "domain_local", serverData.domain_local);
                             if (serverData.encryption === "both" || serverData.encryption === "open" || serverData.encryption === "secure") {
                                 output.push(`"encryption": "${serverData.encryption}",`);
                             } else {
                                 output.push("\"encryption\": \"both\",");
                             }
-                            output.push("\"http\": {");
-                            if (serverData.http === null || serverData.http === undefined) {
-                                output.push("    \"delete\": \"\",");
-                                output.push("    \"post\": \"\",");
-                                output.push("    \"put\": \"\"");
-                            } else {
+                            if (serverData.http !== null && serverData.http !== undefined) {
+                                output.push("\"http\": {");
                                 output.push(`    "delete": "${sanitize(serverData.http.delete)}",`);
                                 output.push(`    "post": "${sanitize(serverData.http.post)}",`);
                                 output.push(`    "put": "${sanitize(serverData.http.put)}"`);
+                                output.push("},");
                             }
-                            output.push("},");
                             if (newFlag === true) {
                                 output.push("\"name\": \"new_server\",");
                             } else {
@@ -681,7 +750,6 @@ const dashboard = function dashboard():void {
                             if (serverData.redirect_internal !== undefined && serverData.redirect_internal !== null) {
                                 object("redirect_internal");
                             }
-                            output.push("\"ws\": \"\"");
                             output[output.length - 1] = output[output.length - 1].replace(/,$/, "");
                             return `${output.join("\n    ")}\n}`;
                         }()),
@@ -715,6 +783,7 @@ const dashboard = function dashboard():void {
                     }
                     clear.setAttribute("class", "clear");
                     p.appendChild(clear);
+                    p.setAttribute("class", "buttons");
                     details.appendChild(p);
                     serverItem.appendChild(details);
                     if (newFlag === true) {
@@ -742,6 +811,8 @@ const dashboard = function dashboard():void {
                     note:HTMLElement = document.createElement("p");
                 save.disabled = true;
                 if (createServer === false && dashboard === false) {
+                    const span:HTMLElement = document.createElement("span"),
+                        buttons:HTMLElement = document.createElement("p");
                     destroy.appendText("✘ Destroy");
                     destroy.setAttribute("class", "server-destroy");
                     destroy.onclick = server.message;
@@ -757,8 +828,11 @@ const dashboard = function dashboard():void {
                     if (listItem.getAttribute("class") === "red") {
                         deactivate.disabled = true;
                     }
-                    p.appendChild(deactivate);
-                    p.appendChild(activate);
+                    buttons.appendChild(deactivate);
+                    buttons.appendChild(activate);
+                    span.setAttribute("class", "clear");
+                    buttons.appendChild(span);
+                    p.parentNode.insertBefore(buttons, p);
                     p.appendChild(destroy);
                 }
                 if (createServer === true) {
@@ -777,6 +851,7 @@ const dashboard = function dashboard():void {
                 p.appendChild(save);
                 p.removeChild(clear);
                 p.appendChild(clear);
+                p.setAttribute("class", "buttons");
                 if (createServer === true) {
                     note.textContent = "Please be patient with new secure server activation as creating new TLS certificates requires several seconds.";
                     note.setAttribute("class", "note");
@@ -802,7 +877,8 @@ const dashboard = function dashboard():void {
                 let index:number = 0,
                     indexSocket:number = 0,
                     totalSocket:number = 0;
-    
+                server.nodes.server_new.onclick = server.create;
+                server.nodes.server_definitions.onclick = server.definitions;
                 if (list_old !== undefined) {
                     tag.removeChild(list_old);
                 }
@@ -836,8 +912,8 @@ const dashboard = function dashboard():void {
                     textArea:HTMLTextAreaElement = li.getElementsByTagName("textarea")[0],
                     action:type_dashboard_action = target.getAttribute("class").replace("server-", "") as type_dashboard_action,
                     cancel:HTMLElement = li.getElementsByClassName("server-cancel")[0] as HTMLElement,
-                    configuration:server_configuration = (function dashboard_serverMessage_configuration():server_configuration {
-                        const config:server_configuration = JSON.parse(textArea.value);
+                    configuration:configuration_server = (function dashboard_serverMessage_configuration():configuration_server {
+                        const config:configuration_server = JSON.parse(textArea.value);
                         config.modification_name = li.getAttribute("data-name");
                         return config;
                     }()),
@@ -915,8 +991,20 @@ const dashboard = function dashboard():void {
                     },
                     disable = function dashboard_serverValidate_disable():void {
                         const save:HTMLButtonElement = (name_attribute === null)
-                            ? listItem.getElementsByClassName("server-add")[0] as HTMLButtonElement
-                            : listItem.getElementsByClassName("server-modify")[0] as HTMLButtonElement;
+                                ? listItem.getElementsByClassName("server-add")[0] as HTMLButtonElement
+                                : listItem.getElementsByClassName("server-modify")[0] as HTMLButtonElement,
+                            order = function dashboard_serverValidate_disable_order(item:configuration_server):string {
+                                const keys:type_server_property[] = Object.keys(item).sort() as type_server_property[],
+                                    output:object = {},
+                                    len:number = keys.length;
+                                let index:number = 0;
+                                do {
+                                    // @ts-expect-error - warns on implied any, but we know that the key values are extract from the same object
+                                    output[keys[index]] = item[keys[index]];
+                                    index = index + 1;
+                                } while (index < len);
+                                return JSON.stringify(output);
+                            };
                         summary.removeChild(summary.getElementsByTagName("ul")[0]);
                         summary.appendChild(ul);
                         if (failures > 0) {
@@ -925,7 +1013,7 @@ const dashboard = function dashboard():void {
                                 : "s";
                             save.disabled = true;
                             populate(false, `The server configuration contains ${failures} violation${plural}.`);
-                        } else if (JSON.stringify(serverData) === JSON.stringify(payload.servers[name_server])) {
+                        } else if (name_attribute !== null && order(serverData) === order(payload.servers[name_server].config)) {
                             save.disabled = true;
                             populate(false, "The server configuration is valid, but not modified.");
                         } else {
@@ -1091,8 +1179,8 @@ const dashboard = function dashboard():void {
                             }
                         }
                     },
-                    rootProperties:string[] = ["activate", "block_list", "domain_local", "encryption", "http", "name", "ports", "redirect_domain", "redirect_internal", "ws"];
-                let serverData:server_configuration = null,
+                    rootProperties:string[] = ["activate", "block_list", "domain_local", "encryption", "http", "name", "ports", "redirect_domain", "redirect_internal"];
+                let serverData:configuration_server = null,
                     failures:number = 0;
                 summary.style.display = "block";
                 // eslint-disable-next-line no-restricted-syntax
@@ -1213,6 +1301,7 @@ const dashboard = function dashboard():void {
                         action: "add",
                         configuration: {
                             activate: true,
+                            domain_local: [],
                             encryption: encryption,
                             name: `dashboard-terminal-${Math.random() + Date.now()}`,
                             ports: {
@@ -1226,7 +1315,6 @@ const dashboard = function dashboard():void {
                     };
                 terminal.item = new Terminal({
                     cols: payload.terminal.cols,
-                    convertEOL: true,
                     cursorBlink: true,
                     cursorStyle: "underline",
                     disableStdin: false,
@@ -1289,16 +1377,17 @@ const dashboard = function dashboard():void {
                 return output;
             }());
         socket.invoke();
-        server.nodes.server_new.onclick = server.create;
-        server.nodes.server_definitions.onclick = server.definitions;
+        // populate docker containers
+        compose.list();
+        // populate server list
         server.list();
         // populate log data
         payload.logs.forEach(function dashboard_logsEach(item:services_dashboard_status):void {
             log(item);
         });
-        ports.external(payload.ports);
+        // port data
         ports.internal();
-        ports.nodes.port_refresh.onclick = ports.refresh;
+        // start the terminal
         terminal.init();
     }
 };

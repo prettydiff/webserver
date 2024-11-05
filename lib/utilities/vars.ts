@@ -4,6 +4,10 @@ import node from "./node.js";
 /* cspell: words appdata */
 
 const vars:vars = {
+    compose: {
+        containers: {},
+        variables: {}
+    },
     dashboard: "",
     logs: [],
     path: {

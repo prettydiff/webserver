@@ -45,7 +45,18 @@ declare global {
         target: HTMLElement;
     }
 
-    // interface module_docker {}
+    interface module_compose {
+        cancel: (event:MouseEvent) => void;
+        editVariables: () => void;
+        list: () => void;
+        message: (event:MouseEvent) => void;
+        nodes: {
+            containers_list: HTMLElement;
+            containers_new: HTMLButtonElement;
+            variables_list: HTMLElement;
+            variables_new: HTMLButtonElement;
+        };
+    }
 
     interface module_message {
         ports_active: (name_server:string) => HTMLElement;

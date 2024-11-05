@@ -6,16 +6,16 @@ import server from "../transmit/server.js";
 import vars from "../utilities/vars.js";
 
 // 1. add server to the vars.servers object
-// 2. add server to config.json file
+// 2. add server to servers.json file
 // 3. create server's directory structure
 // 4. create server's certificates
 // 5. launch servers
 // 6. call the callback
 
-const server_create = function commands_serverCreate(data:services_dashboard_action, callback:() => void):void {
+const server_create = function services_serverCreate(data:services_dashboard_action, callback:() => void):void {
     let count:number = 0;
-    const config:server_configuration = data.configuration,
-        path_config:string = `${vars.path.project}config.json`,
+    const config:configuration_server = data.configuration,
+        path_config:string = `${vars.path.project}servers.json`,
         path_servers:string = `${vars.path.project}servers${vars.sep}`,
         path_name:string = path_servers + config.name + vars.sep,
         path_assets:string = `${path_name}assets${vars.sep}`,
@@ -24,11 +24,11 @@ const server_create = function commands_serverCreate(data:services_dashboard_act
             config: false,
             dir: false
         },
-        complete = function commands_serverCreate_complete(input:"config"|"dir"):void {
+        complete = function services_serverCreate_complete(input:"config"|"dir"):void {
             flags[input] = true;
             if (flags.config === true && flags.dir === true) {
                 let server_count:number = 0;
-                const serverCallback = function commands_serverCreate_complete_serverCallback():void {
+                const serverCallback = function services_serverCreate_complete_serverCallback():void {
                         server_count = server_count + 1;
                         if ((server_count > 1 && config.encryption === "both") || config.encryption !== "both") {
                             // 6. call the callback
@@ -38,7 +38,7 @@ const server_create = function commands_serverCreate(data:services_dashboard_act
                         }
                     },
                     // 5. launch servers
-                    certCallback = function commands_serverCreate_complete_certificate():void {
+                    certCallback = function services_serverCreate_complete_certificate():void {
                         if (config.activate === true) {
                             server(data, serverCallback);
                         } else if (callback !== null) {
@@ -66,20 +66,20 @@ const server_create = function commands_serverCreate(data:services_dashboard_act
                 }
             }
         },
-        children = function commands_serverCreate_children():void {
+        children = function services_serverCreate_children():void {
             count = count + 1;
             if (count > 1) {
                 complete("dir");
             }
         },
-        mkdir = function commands_serverCreate_serverDir(location:string):void {
+        mkdir = function services_serverCreate_serverDir(location:string):void {
             file.mkdir({
                 callback: children,
                 error_terminate: config,
                 location: location
             });
         },
-        write = function commands_serverCreate_write():void {
+        write = function services_serverCreate_write():void {
             const servers:store_server_config = {},
                 keys:string[] = Object.keys(vars.servers),
                 total:number = keys.length - 1;
@@ -90,7 +90,7 @@ const server_create = function commands_serverCreate(data:services_dashboard_act
                 index = index + 1;
             } while (index < total);
             file.write({
-                callback: function commands_serverHalt_writeConfig():void {
+                callback: function services_serverCreate_writeConfig():void {
                     complete("config");
                 },
                 contents: JSON.stringify(servers),
@@ -139,7 +139,7 @@ const server_create = function commands_serverCreate(data:services_dashboard_act
                 secure: 0
             }
         };
-        // 2. add server to config.json file
+        // 2. add server to servers.json file
         write();
     } else {
         log({

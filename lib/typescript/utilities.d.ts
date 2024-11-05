@@ -1,4 +1,34 @@
 
+interface configuration_compose {
+    containers: store_string;
+    variables: store_string;
+}
+
+interface configuration_server {
+    activate: boolean;
+    block_list?: {
+        host: string[];
+        ip: string[];
+        referrer: string[];
+    };
+    domain_local: string[];
+    encryption: type_encryption;
+    http?: {
+        delete?: string;
+        post?: string;
+        put?: string;
+    };
+    modification_name?: string;
+    name: string;
+    ports: server_ports;
+    redirect_domain?: {
+        [key:string]: [string, number];
+    };
+    redirect_internal?: {
+        [key:string]: store_string;
+    };
+}
+
 interface directory_data {
     atimeMs: number;
     ctimeMs: number;
@@ -62,34 +92,9 @@ interface hash_output {
 }
 
 interface server {
-    config: server_configuration;
+    config: configuration_server;
     sockets: socket_summary[];
     status: server_ports;
-}
-
-interface server_configuration {
-    activate: boolean;
-    block_list?: {
-        host: string[];
-        ip: string[];
-        referrer: string[];
-    };
-    domain_local?: string[];
-    encryption: type_encryption;
-    http?: {
-        delete?: string;
-        post?: string;
-        put?: string;
-    };
-    modification_name?: string;
-    name: string;
-    ports: server_ports;
-    redirect_domain?: {
-        [key:string]: [string, number];
-    };
-    redirect_internal?: {
-        [key:string]: store_string;
-    };
 }
 
 interface server_content {
@@ -141,7 +146,7 @@ interface store_ports {
 }
 
 interface store_server_config {
-    [key:string]: server_configuration;
+    [key:string]: configuration_server;
 }
 
 interface store_servers {
@@ -162,6 +167,7 @@ interface terminal_size {
 }
 
 interface vars {
+    compose: configuration_compose;
     dashboard: string;
     logs: services_dashboard_status[];
     path: {

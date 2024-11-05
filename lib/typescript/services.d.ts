@@ -12,7 +12,7 @@ declare global {
 
     interface services_dashboard_action {
         action: type_dashboard_action;
-        configuration: server_configuration;
+        configuration: configuration_server;
     }
 
     interface services_dashboard_activate {

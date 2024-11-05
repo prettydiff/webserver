@@ -2,7 +2,7 @@
 import log from "../utilities/log.js";
 import send from "../transmit/send.js";
 import server from "../transmit/server.js";
-import server_halt from "../commands/server_halt.js";
+import server_halt from "./server_halt.js";
 import vars from "../utilities/vars.js";
 
 import { spawn } from "@lydell/node-pty";

@@ -6,19 +6,19 @@ import vars from "../utilities/vars.js";
 
 // cspell:word addstore, CAcreateserial, certutil, delstore, extfile, genpkey, keyid, pathlen
 
-const certificate = function commands_certificate(config:config_certificate):void {
+const certificate = function services_certificate(config:config_certificate):void {
     const cert_path:string = `${vars.path.project}servers${vars.sep + config.name + vars.sep}certs${vars.sep}`,
-        cert = function commands_certificate_cert():void {
+        cert = function services_certificate_cert():void {
             let index:number = 0;
             const commands:string[] = [],
-                crypto = function commands_certificate_cert_crypto():void {
+                crypto = function services_certificate_cert_crypto():void {
                     node.child_process.exec(commands[index], {
                         cwd: cert_path
-                    }, function commands_certificate_cert_crypto_child(erChild:node_childProcess_ExecException):void {
+                    }, function services_certificate_cert_crypto_child(erChild:node_childProcess_ExecException):void {
                         if (erChild === null) {
                             index = index + 1;
                             if (index < commands.length) {
-                                commands_certificate_cert_crypto();
+                                services_certificate_cert_crypto();
                             } else {
                             config.callback();
                             }
@@ -33,8 +33,8 @@ const certificate = function commands_certificate(config:config_certificate):voi
                         }
                     });
                 },
-                cert_extensions:string = (function commands_certificate_cert_extensions():string {
-                    const server:server_configuration = (vars.servers[config.name] === undefined)
+                cert_extensions:string = (function services_certificate_cert_extensions():string {
+                    const server:configuration_server = (vars.servers[config.name] === undefined)
                             ? null
                             : vars.servers[config.name].config,
                         output:string[] = [
@@ -132,25 +132,25 @@ const certificate = function commands_certificate(config:config_certificate):voi
                 //    - in            : specifies certificate request file path of certificate to sign
                 //    - out           : file location to output the signed certificate
                 //    - req           : use a certificate request as input opposed to an actual certificate
-                create = function commands_certificate_cert_create():void {
+                create = function services_certificate_cert_create():void {
                     const mode:[string, string] = (config.selfSign === true)
                             ? ["server", config.domain_default]
                             : ["root", config.domain_default],
                         org:string = "/O=home_server/OU=home_server",
                         // provides the path to the configuration file used for certificate signing
-                        pathConf = function commands_certificate_cert_create_confPath(configName:"ca"|"selfSign"):string {
+                        pathConf = function services_certificate_cert_create_confPath(configName:"ca"|"selfSign"):string {
                             return `"${cert_path}extensions.cnf" -extensions ${configName}`;
                         },
                         // create a certificate signed by another certificate
-                        actionCert = function commands_certificate_cert_create_cert(type:"int"|"server"):string {
+                        actionCert = function services_certificate_cert_create_cert(type:"int"|"server"):string {
                             return `openssl req -new -sha512 -key ${type}.key -out ${type}.csr -subj "/CN=${config.domain_default + org}"`;
                         },
                         // generates the key file associated with a given certificate
-                        actionKey = function commands_certificate_cert_create_key(type:"int"|"root"|"server"):string {
+                        actionKey = function services_certificate_cert_create_key(type:"int"|"root"|"server"):string {
                             return `openssl genrsa -out ${type}.key 4096`;
                         },
                         // signs the certificate
-                        actionSign = function commands_certificate_cert_create_sign(cert:string, parent:string, path:"ca"|"selfSign"):string {
+                        actionSign = function services_certificate_cert_create_sign(cert:string, parent:string, path:"ca"|"selfSign"):string {
                             return `openssl x509 -req -sha512 -in ${cert}.csr -days ${config.days} -out ${cert}.crt -CA ${parent}.crt -CAkey ${parent}.key -CAcreateserial -extfile ${pathConf(path)}`;
                         },
                         root:string = `openssl req -x509 -new -newkey rsa:4096 -nodes -key ${mode[0]}.key -days ${config.days} -out ${mode[0]}.crt -subj "/CN=${mode[1] + org}"`;
@@ -188,7 +188,7 @@ const certificate = function commands_certificate(config:config_certificate):voi
         callback: cert,
         error_terminate: vars.servers[config.name],
         location: cert_path,
-        no_file: function commands_certificate_mkdir():void {
+        no_file: function services_certificate_mkdir():void {
             file.mkdir({
                 callback: cert,
                 error_terminate: vars.servers[config.name],

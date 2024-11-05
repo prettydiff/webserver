@@ -25,7 +25,7 @@ Because the server provides HTTP and WebSocket support over raw TCP sockets both
 3. Execute `git clone https://github.com/prettydiff/webserver.git`
 4. Execute `cd webserver`
 5. Execute `node install.js`
-6. Customize the `config.json` file to fit your preferences.
+6. Customize the `servers.json` file to fit your preferences.
 7. Run the services according to your operating system's service management or as an application with command `npm run server`.
 
 ## TLS support
@@ -42,7 +42,7 @@ This means the server works perfectly well to send and receive TLS encrypted tra
 * Build yt-dlp configuration files for downloading media from YouTube: `npm run yt_config name_of_server`
 
 ## Configuration
-A `config.json` file is required at project root.
+A `servers.json` file is required at project root.
 This configuration file is essentially an object listing one or more server configurations.
 
 ### Schema and Syntax
@@ -100,7 +100,7 @@ interface project_config {
 * **redirect_internal** - Optional. Redirects a requested resource from one location on the current server to a different location. This redirection only occurs on the server out of sight from the user and alters the response content but it does not modify the address of the request.
 * **server_name** - Required. This stores a proper human readable name of the server.
 
-### config.json Example
+### servers.json Example
 ```json
 {
     "cheney": {
@@ -137,7 +137,7 @@ interface project_config {
 }
 ```
 
-#### Notes About the Example config.json
+#### Notes About the Example servers.json
 * Notice there is no *block_list* property.  Those are optional so they, and other optional properties, can be omitted.
 * The properties of the `http` object each take a shell command.  This application supports HTTP methods for *DELETE*, *POST*, and *PUT* but does not execution actions upon those methods.  Instead this application passes off that execution to external applications as a child process executed through a shell.
 * Notice that *path.web_root* is assigned an empty string, so it will resolve to the default location for this server: `/lib/assets/cheney/`.
@@ -154,7 +154,7 @@ OpenSSL is not included with this application.
 These certificates are required to run a TLS server.
 
 To generate the certificates simply run: `npm run certificate`.
-The required extensions.cnf file is dynamically created from the build command, `npm run build`, and includes all domains mentioned in the *port_map* object of the `config.json` file.
+The required extensions.cnf file is dynamically created from the build command, `npm run build`, and includes all domains mentioned in the *port_map* object of the `servers.json` file.
 
 ## Defaults
 * Both HTTP and WS are served from the same port while HTTPS and WSS protocols are also served from the same port.
@@ -164,7 +164,7 @@ The required extensions.cnf file is dynamically created from the build command, 
 
 ## More Servers
 To add more servers follow these steps:
-1. Just update the config.json file. With another server object.  In the example above there is one server named *cheney*, so just add more server objects.
+1. Just update the servers.json file. With another server object.  In the example above there is one server named *cheney*, so just add more server objects.
 2. Note that the **ports must be unique** or the application will generate an error.
 
 ## How the Proxy Works

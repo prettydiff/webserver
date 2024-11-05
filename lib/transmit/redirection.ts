@@ -6,7 +6,7 @@ const redirection = function transmit_redirection(domain:string, message:Buffer|
             ? message.toString()
             : message as string,
         headerStr:string = str.slice(0, str.indexOf("\r\n")),
-        server:server_configuration = vars.servers[server_name].config;
+        server:configuration_server = vars.servers[server_name].config;
     if (headerStr.indexOf("HTTP") > 0) {
         const header:string[] = headerStr.split(" "),
             keys:string[] = Object.keys(server.redirect_internal[domain]);
