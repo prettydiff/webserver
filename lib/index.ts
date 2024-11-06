@@ -21,7 +21,6 @@ startup(function index():void {
             },
             redirect_internal: {
                 "localhost": {
-                    "/": "/lib/dashboard.html",
                     "/lib/assets/*": "/lib/dashboard/*"
                 }
             }

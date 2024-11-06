@@ -4,10 +4,13 @@ const core = function core(message:(event:websocket_event) => void, type:string,
             const port:string = (location.protocol === "http:")
                     ? "80"
                     : "443",
+                protocol:string = (location.protocol === "http:")
+                    ? "ws:"
+                    : "wss:",
                 address:string = (location.host.includes(":") === true)
                     ? location.origin
                     : `${location.origin}:${port}`,
-                socketItem:WebSocket = new WebSocket(address, [type]),
+                socketItem:WebSocket = new WebSocket(address.replace(location.protocol, protocol), [type]),
                 close = function core_socketCall_close():void {
                     const status:HTMLElement = document.getElementById("connection-status");
                     if (status !== null && document.getElementsByTagName("body")[0].getAttribute("id") === "dashboard") {

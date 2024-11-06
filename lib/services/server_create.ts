@@ -86,7 +86,9 @@ const server_create = function services_serverCreate(data:services_dashboard_act
             let index:number = 0;
             do {
                 delete vars.servers[keys[index]].config.modification_name;
-                servers[keys[index]] = vars.servers[keys[index]].config;
+                if (vars.servers[keys[index]].config.name.indexOf("dashboard-terminal-") !== 0) {
+                    servers[keys[index]] = vars.servers[keys[index]].config;
+                }
                 index = index + 1;
             } while (index < total);
             file.write({

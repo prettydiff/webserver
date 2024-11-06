@@ -12,6 +12,7 @@ const dashboard = function dashboard():void {
                 timeElement:HTMLElement = document.createElement("time");
             const ul:HTMLElement = document.getElementById("logs").getElementsByTagName("ul")[0],
                 strong:HTMLElement = document.createElement("strong"),
+                code:HTMLElement = document.createElement("code"),
                 time:string = (function dashboard_log_time():string {
                     const output:string[] = [],
                         day:string = ul.getAttribute("data-day"),
@@ -49,7 +50,9 @@ const dashboard = function dashboard():void {
             li.setAttribute("class", `log-${item.status}`);
             if (item.status === "error") {
                 strong.appendText(item.message);
+                code.appendText(JSON.stringify(item.configuration));
                 li.appendChild(strong);
+                li.appendChild(code);
             } else {
                 li.appendText(item.message);
             }
