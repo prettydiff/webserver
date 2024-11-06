@@ -82,7 +82,7 @@ const server_create = function services_serverCreate(data:services_dashboard_act
         write = function services_serverCreate_write():void {
             const servers:store_server_config = {},
                 keys:string[] = Object.keys(vars.servers),
-                total:number = keys.length - 1;
+                total:number = keys.length;
             let index:number = 0;
             do {
                 delete vars.servers[keys[index]].config.modification_name;

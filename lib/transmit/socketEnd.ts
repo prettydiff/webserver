@@ -14,7 +14,7 @@ const socket_end = function transmit_socketEnd(socket_input:websocket_client):vo
         list:string = socket.server,
         log_config:config_log = {
             action: "destroy",
-            config: null,
+            config: vars.servers[socket.server],
             message: `Socket ${socket.hash} closed on ${encryption} server ${socket.server}.`,
             status: "success",
             type: "socket"

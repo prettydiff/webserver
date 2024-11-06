@@ -1,6 +1,6 @@
-td/* cspell: words ytdownload, ytstatus */
+/* cspell: words ytdownload, ytstatus */
 
-body{
+:root{
     --black:#000;
 
     --background:#333;
