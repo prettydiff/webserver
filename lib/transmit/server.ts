@@ -234,12 +234,12 @@ const server = function transmit_server(data:services_dashboard_action, callback
                         referer === true ||
                         (server.block_list !== null && server.block_list !== undefined && server.block_list.host.includes(domain) === true) ||
                         (server.block_list !== null && server.block_list !== undefined && server.block_list.ip.includes(address.remote.address) === true) ||
-                        ((server.redirect_domain === undefined || server.redirect_domain === null || server.redirect_domain[domain] === undefined) && server.domain_local.includes(domain) === false)
+                        ((server.redirect_domain === undefined || server.redirect_domain === null || server.redirect_domain[domain] === undefined) && server.domain_local.concat(vars.interfaces).includes(domain) === false)
                     ) {
                         socket.destroy();
                     } else {
-                        // do not proxy primary domain
-                        if (server.domain_local.includes(domain) === true) {
+                        // do not proxy primary domain -> endless loop
+                        if (server.domain_local.includes(domain) === true || vars.interfaces.includes(domain) === true) {
                             local_service();
                         } else {
                             create_proxy();
@@ -340,13 +340,8 @@ const server = function transmit_server(data:services_dashboard_action, callback
                 port: vars.servers[data.configuration.name].config.ports[secureType]
             }, listenerCallback);
         };
-    if (Array.isArray(data.configuration.domain_local) === false || data.configuration.domain_local.length < 1) {
-        data.configuration.domain_local = [
-            "localhost",
-            "127.0.0.1",
-            "::1",
-            "[::1]"
-        ];
+    if (Array.isArray(data.configuration.domain_local) === false) {
+        data.configuration.domain_local = [];
     }
     if (vars.server_meta[data.configuration.name] === undefined) {
         vars.server_meta[data.configuration.name] = {

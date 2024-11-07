@@ -47,7 +47,11 @@ startup(function index():void {
                                     : portNumber.toString(),
                                 str:string = `${vars.text.angry}*${vars.text.none} ${name} - ${portDisplay}, ${encryption}`;
                             if (conflict === true) {
-                                logs.push(`${str} (server offline due to port conflict or other server error)`);
+                                if (portNumber < 1025) {
+                                    logs.push(`${str} (Server offline, typically due to insufficient access for reserved port or port conflict.)`);
+                                } else {
+                                    logs.push(`${str} (Server offline, typically due to port conflict.)`);
+                                }
                             } else {
                                 logs.push(str);
                             }

@@ -169,6 +169,7 @@ interface terminal_size {
 interface vars {
     compose: configuration_compose;
     dashboard: string;
+    interfaces: string[];
     logs: services_dashboard_status[];
     path: {
         project: string;
@@ -179,6 +180,7 @@ interface vars {
     sep: string;
     server_meta: server_meta;
     servers: store_servers;
+    shell: string;
     start_time: bigint;
     system_ports: type_external_port[];
     terminal: terminal_size;

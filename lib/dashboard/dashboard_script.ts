@@ -106,7 +106,7 @@ const dashboard = function dashboard():void {
                 compose.nodes.variables_new.disabled = true;
             },
             list: function dashboard_composeList():void {
-                const populate = function dashboard_composeList_populate(type:"containers"|"variables") {
+                const populate = function dashboard_composeList_populate(type:"containers"|"variables"):void {
                     const list:string[] = Object.keys(payload.compose[type]).sort(),
                         parent:HTMLElement = compose.nodes[`${type}_list`],
                         len:number = list.length;
@@ -243,6 +243,12 @@ const dashboard = function dashboard():void {
                                     } while (index > 0);
                                 }
                             } else if (data.action === "activate") {
+
+
+
+// attempting to active a server not yet in server list
+
+
                                 payload.servers[config.name].status = config.ports;
                                 const color:type_activation_status = message.server_color(config.name);
                                 let oldPorts:HTMLElement = null,

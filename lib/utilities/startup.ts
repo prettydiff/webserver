@@ -2,7 +2,6 @@
 import core from "../browser/core.js";
 import dashboard_script from "../dashboard/dashboard_script.js";
 import file from "./file.js";
-import log from "./log.js";
 import port_map from "./port_map.js";
 import node from "./node.js";
 import vars from "./vars.js";
@@ -41,8 +40,8 @@ const startup = function utilities_startup(callback:() => void):void {
                         ? null
                         : JSON.parse(configStr) as store_server_config,
                     includes = function utilities_startup_read_instructions_includes(input:string):void {
-                        if (server.config.domain_local.includes(input) === false && input.toLowerCase().indexOf("fe80") !== 0) {
-                            server.config.domain_local.push(input);
+                        if (vars.interfaces.includes(input) === false && input.toLowerCase().indexOf("fe80") !== 0) {
+                            vars.interfaces.push(input);
                         }
                     },
                     interfaces:{ [index: string]: node_os_NetworkInterfaceInfo[]; } = node.os.networkInterfaces(),
@@ -91,19 +90,16 @@ const startup = function utilities_startup(callback:() => void):void {
                         if (Array.isArray(server.config.domain_local) === false) {
                             server.config.domain_local = [];
                         }
-                        includes("127.0.0.1");
-                        includes("::1");
-                        includes("[::1]");
-                        do {
-                            index_int = index_int - 1;
-                            sub = interfaces[keys_int[index_int]].length;
-                            do {
-                                sub = sub - 1;
-                                includes(interfaces[keys_int[index_int]][sub].address);
-                            } while (sub > 0);
-                        } while (index_int > 0);
                         vars.servers[server.config.name] = server;
                     } while (index_srv > 0);
+                    do {
+                        index_int = index_int - 1;
+                        sub = interfaces[keys_int[index_int]].length;
+                        do {
+                            sub = sub - 1;
+                            includes(interfaces[keys_int[index_int]][sub].address);
+                        } while (sub > 0);
+                    } while (index_int > 0);
                 }
             }
             readComplete("config");
@@ -158,6 +154,18 @@ const startup = function utilities_startup(callback:() => void):void {
             no_file: null
         });
     });
+    if (process.platform !== "win32") {
+        file.stat({
+            callback: function utilities_startup_bash(stat:node_fs_BigIntStats):void {
+                if (stat !== null) {
+                    vars.shell = "/bin/bash";
+                }
+            },
+            error_terminate: null,
+            location: "/bin/bash",
+            no_file: null
+        });
+    }
 };
 
 export default startup;

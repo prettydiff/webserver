@@ -14,11 +14,12 @@
     },
     "exclude": [
         "/js",
+        "/servers",
         "./lib/assets/**/files",
         "**/node_modules",
         "**/.*/"
     ],
     "include": [
-        "**/*.ts"
+        "/**/*.ts"
     ]
 }

@@ -9,6 +9,12 @@ const vars:vars = {
         variables: {}
     },
     dashboard: "",
+    interfaces: [
+        "localhost",
+        "127.0.0.1",
+        "::1",
+        "[::1]"
+    ],
     logs: [],
     path: {
         project: ""
@@ -17,6 +23,9 @@ const vars:vars = {
     sep: node.path.sep,
     servers: {},
     server_meta: {},
+    shell: (process.platform === "win32")
+        ? "powershell.exe"
+        : "/bin/sh",
     system_ports: [],
     start_time: process.hrtime.bigint(),
     terminal: {

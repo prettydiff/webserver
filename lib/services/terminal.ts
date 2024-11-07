@@ -62,10 +62,8 @@ const terminal:terminal_library = {
         }, socket, 1);
     },
     shell: function services_terminalShell(socket:websocket_client):void {
-        const command:string = (process.platform === "win32")
-                ? "powershell.exe"
-                : "/bin/sh",
-            pty:pty = spawn(command, [], {
+        
+        const pty:pty = spawn(vars.shell, [], {
                 cols: vars.terminal.cols,
                 cwd: vars.path.project,
                 env: process.env,
