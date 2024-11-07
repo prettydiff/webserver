@@ -7,6 +7,7 @@ import message_handler from "./messageHandler.js";
 import node from "../utilities/node.js";
 import read_certs from "../utilities/read_certs.js";
 import redirection from "./redirection.js";
+import server_halt from "../services/server_halt.js";
 import socket_extension from "./socketExtension.js";
 import terminal from "../services/terminal.js";
 import vars from "../utilities/vars.js";
@@ -31,6 +32,7 @@ const server = function transmit_server(data:services_dashboard_action, callback
                             : dataString,
                         headerList:string[] = headerString.split("\r\n"),
                         testNonce:RegExp = (/^Sec-WebSocket-Protocol:\s*/),
+                        temporary:boolean = (server.temporary === true),
                         address:transmit_addresses_socket = get_address({
                             socket: socket,
                             type: "ws"
@@ -87,15 +89,28 @@ const server = function transmit_server(data:services_dashboard_action, callback
                                 headerList[0] = data.toString().split("\r\n")[0];
                             }
                             if (key === "") {
-                                const http_action = function transmit_server_connection_handshake_httpAction():void {
+                                const http_action = function transmit_server_connection_handshake_localService_httpAction():void {
                                     const method:type_http_method = headerList[0].slice(0, headerList[0].indexOf(" ")).toLowerCase() as type_http_method;
                                     if (http[method] !== undefined) {
                                         http[method](headerList, socket, headerIndex < 1
                                             ? null
-                                            : data.slice(Buffer.byteLength(headerString))
+                                            : data.subarray(Buffer.byteLength(headerString))
                                         );
+                                        if (server.temporary === true) {
+                                            const terminate = function transmit_server_connection_handshake_localService_httpAction_terminate():void {
+                                                // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
+                                                const this_socket:websocket_client = this;
+                                                server_halt({
+                                                    action: "destroy",
+                                                    configuration: vars.servers[this_socket.server].config
+                                                }, null);
+                                            };
+                                            socket.on("close", terminate);
+                                            socket.on("end", terminate);
+                                            socket.on("error", terminate);
+                                        }
                                     } else {
-                                        // at this time the local domain only supports HTTP GET method as everything else should use WebSockets
+                                        // unsupported HTTP methods result in socket destruction
                                         socket.destroy();
                                     }
                                 };
@@ -107,6 +122,7 @@ const server = function transmit_server(data:services_dashboard_action, callback
                                     role: "server",
                                     server: server_name,
                                     socket: socket,
+                                    temporary: temporary,
                                     type: "http"
                                 });
                             } else {
@@ -127,6 +143,12 @@ const server = function transmit_server(data:services_dashboard_action, callback
                                             headers.push("");
                                             headers.push("");
                                             socket.write(headers.join("\r\n"));
+                                            if (server.temporary === true) {
+                                                const security:"open"|"secure" = (socket.secure === true)
+                                                    ? "secure"
+                                                    : "open";
+                                                vars.server_meta[server_name].server[security].removeAllListeners();
+                                            }
                                             if (terminalFlag === true) {
                                                 terminal.shell(socket);
                                             }
@@ -146,6 +168,7 @@ const server = function transmit_server(data:services_dashboard_action, callback
                                         role: "server",
                                         server: server_name,
                                         socket: socket,
+                                        temporary: temporary,
                                         type: typeValue
                                     });
                                 };
@@ -215,6 +238,7 @@ const server = function transmit_server(data:services_dashboard_action, callback
                                 role: "server",
                                 server: server_name,
                                 socket: socket,
+                                temporary: false,
                                 type: type
                             });
                             // proxy socket
@@ -226,6 +250,7 @@ const server = function transmit_server(data:services_dashboard_action, callback
                                 role: "client",
                                 server: server_name,
                                 socket: proxy,
+                                temporary: false,
                                 type: type
                             });
                         };

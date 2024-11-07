@@ -14,13 +14,11 @@ const terminal:terminal_library = {
     server: function services_terminalServer(socketData:socket_data, transmit:transmit_socket):void {
         const data:services_dashboard_action = socketData.data as services_dashboard_action,
             encryption:"open"|"secure" = data.configuration.encryption as "open"|"secure",
-            socket:websocket_client = transmit.socket as websocket_client,
-            log:services_dashboard_status = {
+            log_message:config_log = {
                 action: "add",
-                configuration: data.configuration,
+                config: data.configuration,
                 message: `Server named ${data.configuration.name} created.`,
                 status: "success",
-                time: Date.now(),
                 type: "server"
             };
         vars.servers[data.configuration.name] = {
@@ -55,14 +53,9 @@ const terminal:terminal_library = {
                 terminal.delay = null;
             }, 20000);
         }});
-        // using send instead of log because this is not for broadcast
-        send({
-            data: log,
-            service: "dashboard-status"
-        }, socket, 1);
+        log(log_message);
     },
     shell: function services_terminalShell(socket:websocket_client):void {
-        
         const pty:pty = spawn(vars.shell, [], {
                 cols: vars.terminal.cols,
                 cwd: vars.path.project,

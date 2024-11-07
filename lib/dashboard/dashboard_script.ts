@@ -243,12 +243,6 @@ const dashboard = function dashboard():void {
                                     } while (index > 0);
                                 }
                             } else if (data.action === "activate") {
-
-
-
-// attempting to active a server not yet in server list
-
-
                                 payload.servers[config.name].status = config.ports;
                                 const color:type_activation_status = message.server_color(config.name);
                                 let oldPorts:HTMLElement = null,
@@ -1188,7 +1182,7 @@ const dashboard = function dashboard():void {
                             }
                         }
                     },
-                    rootProperties:string[] = ["activate", "block_list", "domain_local", "encryption", "http", "name", "ports", "redirect_domain", "redirect_internal"];
+                    rootProperties:string[] = ["activate", "block_list", "domain_local", "encryption", "http", "name", "ports", "redirect_domain", "redirect_internal", "temporary"];
                 let serverData:configuration_server = null,
                     failures:number = 0;
                 summary.style.display = "block";
@@ -1209,7 +1203,7 @@ const dashboard = function dashboard():void {
                 if (typeof serverData.activate === "boolean") {
                     populate(true, "Required property 'activate' has boolean type value.");
                 } else {
-                    populate(true, "Required property 'activate' expects a boolean type value.");
+                    populate(false, "Required property 'activate' expects a boolean type value.");
                 }
                 // block_list
                 keys({
@@ -1276,6 +1270,14 @@ const dashboard = function dashboard():void {
                     supported: [],
                     type: "store"
                 });
+                // activate
+                if (typeof serverData.temporary === "boolean") {
+                    populate(true, "Optional property 'temporary' has boolean type value.");
+                } else if (serverData.temporary === null || serverData.temporary === undefined) {
+                    populate(true, "Optional property 'temporary' is either null or undefined.");
+                } else {
+                    populate(false, "Optional property 'temporary' expects a boolean type value.");
+                }
                 // parent properties
                 keys({
                     name: null,

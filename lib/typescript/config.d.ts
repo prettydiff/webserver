@@ -74,6 +74,7 @@ interface config_websocket_extensions {
     role: "client"|"server";
     server: string;
     socket: websocket_client;
+    temporary: boolean;
     type: string;
 }
 

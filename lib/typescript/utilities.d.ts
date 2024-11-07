@@ -27,6 +27,7 @@ interface configuration_server {
     redirect_internal?: {
         [key:string]: store_string;
     };
+    temporary?: boolean;
 }
 
 interface directory_data {

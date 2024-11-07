@@ -4,6 +4,7 @@ import log from "../utilities/log.js";
 import message_handler from "./messageHandler.js";
 import receiver from "./receiver.js";
 import send from "./send.js";
+import server_halt from "../services/server_halt.js";
 import socket_end from "./socketEnd.js";
 import vars from "../utilities/vars.js";
 
@@ -39,10 +40,12 @@ const socket_extension = function transmit_socketExtension(config:config_websock
                 }
             },
             socketError = function transmit_socketExtension_socketError(errorMessage:node_error):void {
+                // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
+                const socket:websocket_client = this;
                 log({
                     action: null,
                     config: errorMessage,
-                    message: `Error on socket ${config.socket.hash} at location ${config.socket.role} with server ${config.socket.server}.`,
+                    message: `Error on socket ${this.hash} at location ${this.role} with server ${this.server}.`,
                     status: "error",
                     type: "socket"
                 });
@@ -86,6 +89,25 @@ const socket_extension = function transmit_socketExtension(config:config_websock
             config.socket.pong = {};                  // stores termination times and callbacks for pong handling
             config.socket.queue = [];                 // stores messages for transmit, because websocket protocol cannot intermix messages
             config.socket.status = "open";            // sets the status flag for the socket
+            if (config.server.indexOf("dashboard-terminal-") !== 0) {
+                if (config.temporary === true) {
+                    const temporary = function transmit_socketExtension_temporary():void {
+                        // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
+                        const socket:websocket_client = this;
+                        server_halt({
+                            action: "destroy",
+                            configuration: vars.servers[socket.server].config
+                        }, null);
+                    };
+                    config.socket.on("close", temporary);
+                    config.socket.on("end", temporary);
+                    config.socket.on("error", temporary);
+                } else if (config.proxy){
+                    config.socket.on("close", socket_end);
+                    config.socket.on("end", socket_end);
+                    config.socket.on("error", socketError);
+                }
+            }
         }
         config.socket.setKeepAlive(true, 0);      // standard method to retain socket against timeouts from inactivity until a close frame comes in
         config.socket.server = config.server;     // identifies which local server the given socket is connected to
@@ -93,11 +115,6 @@ const socket_extension = function transmit_socketExtension(config:config_websock
         config.socket.proxy = config.proxy;       // stores the relationship between two sockets when they are piped as a proxy
         config.socket.role = config.role;         // assigns socket creation location
         config.socket.type = config.type;         // a classification identifier to functionally identify a common utility of sockets on a given server
-        if (config.server.indexOf("dashboard-terminal-") !== 0) {
-            config.socket.on("close", socket_end);
-            config.socket.on("end", socket_end);
-            config.socket.on("error", socketError);
-        }
         if (config.callback !== null && config.callback !== undefined) {
             config.callback(config.socket);
         }
