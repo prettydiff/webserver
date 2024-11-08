@@ -1,6 +1,6 @@
 
 const core = function core(message:(event:websocket_event) => void, type:string, log?:(item:services_dashboard_status) => void):socket_object {
-    const socketCall = function core_socketCall():WebSocket {
+    const socketCall = function core_socketCall():WebSocket {console.log("socket call");
             const port:string = (location.protocol === "http:")
                     ? "80"
                     : "443",
@@ -11,7 +11,7 @@ const core = function core(message:(event:websocket_event) => void, type:string,
                     ? location.origin
                     : `${location.origin}:${port}`,
                 socketItem:WebSocket = new WebSocket(address.replace(location.protocol, protocol), [type]),
-                close = function core_socketCall_close():void {
+                close = function core_socketCall_close(event:Event):void {
                     const status:HTMLElement = document.getElementById("connection-status");
                     if (status !== null && document.getElementsByTagName("body")[0].getAttribute("id") === "dashboard") {
                         status.getElementsByTagName("strong")[0].textContent = "Offline";

@@ -29,7 +29,7 @@ const vars:vars = {
     system_ports: [],
     start_time: process.hrtime.bigint(),
     terminal: {
-        cols: 130,
+        cols: 199,
         rows: 50
     },
     text: {

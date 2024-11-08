@@ -62,6 +62,7 @@ const create_socket = function transmit_createSocket(config:config_websocket_cre
                             role: "client",
                             server: config.server,
                             socket: client,
+                            temporary: false,
                             type: config.type
                         });
                     });

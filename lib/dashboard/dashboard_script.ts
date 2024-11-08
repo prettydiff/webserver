@@ -6,7 +6,7 @@ import Terminal from "@xterm/xterm";
 // cspell: words buildx, containerd, nmap, winget
 
 const dashboard = function dashboard():void {
-
+    let payload:transmit_dashboard = null;
     const log = function dashboard_log(item:services_dashboard_status):void {
             let li:HTMLElement = document.createElement("li"),
                 timeElement:HTMLElement = document.createElement("time");
@@ -69,6 +69,37 @@ const dashboard = function dashboard():void {
                 buttons.parentNode.removeChild(buttons);
                 ul.style.display = "block";
                 compose.nodes.variables_new.disabled = false;
+            },
+            create: function dashboard_composeCreate(event:MouseEvent):void {
+                const target:HTMLButtonElement = event.target as HTMLButtonElement,
+                    div:HTMLElement = document.createElement("div"),
+                    input:HTMLInputElement = document.createElement("input"),
+                    textArea:HTMLTextAreaElement = document.createElement("textarea");
+                let p:HTMLElement = document.createElement("p"),
+                    label:HTMLElement = document.createElement("label"),
+                    span:HTMLElement = document.createElement("span"),
+                    button:HTMLElement = document.createElement("button");
+                span.appendText("Container Name");
+                span.setAttribute("class", "text");
+                input.type = "text";
+                label.appendChild(span);
+                label.appendChild(input);
+                p.appendChild(label);
+                div.appendChild(p);
+                p = document.createElement("p");
+                label = document.createElement("label");
+                span = document.createElement("span");
+                span.appendText("Docker Compose File Contents");
+                span.setAttribute("class", "text");
+                label.appendChild(span);
+                label.appendChild(textArea);
+                p.appendChild(label);
+                div.appendChild(p);
+                p = document.createElement("p");
+                p.setAttribute("class", "buttons");
+                div.setAttribute("class", "section");
+                compose.nodes.containers_list.parentNode.insertBefore(div, compose.nodes.containers_list);
+                target.disabled = true;
             },
             editVariables: function dashboard_composeEditVariables():void {
                 const p:HTMLElement = document.createElement("p"),
@@ -135,6 +166,7 @@ const dashboard = function dashboard():void {
                 populate("containers");
                 populate("variables");
                 compose.nodes.variables_new.onclick = compose.editVariables;
+                compose.nodes.containers_new.onclick = compose.create;
             },
             message: function dashboard_composeMessage(event:MouseEvent):void {},
             nodes: {
@@ -189,145 +221,167 @@ const dashboard = function dashboard():void {
             },
             receiver: function dashboard_messageReceiver(event:websocket_event):void {
                 if (typeof event.data === "string") {
-                    const data:services_dashboard_status = JSON.parse(event.data).data;
-                    if (data.type !== "socket") {
-                        log(data);
-                    }
-                    if (data.status !== "error") {
-                        if (data.type === "server") {
-                            const config:configuration_server = data.configuration as configuration_server,
-                                list:HTMLCollectionOf<HTMLElement> = document.getElementById("servers").getElementsByTagName("li");
-                            let index:number = list.length;
-                            if (data.action === "destroy") {
-                                delete payload.servers[config.name];
-                                do {
-                                    index = index - 1;
-                                    if (list[index].getAttribute("data-name") === config.name) {
-                                        list[index].parentNode.removeChild(list[index]);
-                                        return;
-                                    }
-                                } while (index > 0);
-                            } else if (data.action === "add") {
-                                payload.servers[config.name] = {
-                                    config: config,
-                                    sockets: [],
-                                    status: {
-                                        open: 0,
-                                        secure: 0
-                                    }
-                                };
-                                const names:string[] = Object.keys(payload.servers),
-                                    ul:HTMLElement = document.getElementById("servers").getElementsByClassName("server-list")[0].getElementsByTagName("ul")[0];
-                                payload.servers[config.name].status = {
-                                    open: 0,
-                                    secure: 0
-                                };
-                                names.sort(function dashboard_serverList_sort(a:string, b:string):-1|1 {
-                                    if (a < b) {
-                                        return -1;
-                                    }
-                                    return 1;
-                                });
-                                index = names.length;
-                                if (names[names.length - 1] === config.name) {
-                                    ul.appendChild(server.title(config.name));
-                                } else if (names[0] === config.name) {
-                                    ul.insertBefore(server.title(config.name), ul.firstChild);
-                                } else {
+                    const message_item:socket_data = JSON.parse(event.data);
+                    if (message_item.service === "dashboard-payload") {
+                        payload = message_item.data as transmit_dashboard;
+                        // populate docker containers
+                        compose.list();
+                        // populate server list
+                        server.list();
+                        // populate log data
+                        payload.logs.forEach(function dashboard_logsEach(item:services_dashboard_status):void {
+                            log(item);
+                        });
+                        // port data
+                        ports.internal();
+                        // start the terminal
+                        terminal.init();
+                    } else {
+                        const data:services_dashboard_status = message_item.data as services_dashboard_status;
+                        if (data.type !== "socket") {
+                            log(data);
+                        }
+                        if (data.status === "error") {
+                            if (data.type === "socket") {
+                                const config:socket_summary = data.configuration as socket_summary;
+                                message.socket_destroy(config.hash);
+                            }
+                        } else {
+                            if (data.type === "server") {
+                                const config:configuration_server = data.configuration as configuration_server,
+                                    list:HTMLCollectionOf<HTMLElement> = document.getElementById("servers").getElementsByTagName("li");
+                                let index:number = list.length;
+                                if (data.action === "destroy") {
+                                    delete payload.servers[config.name];
                                     do {
                                         index = index - 1;
-                                        if (names[index] === config.name) {
-                                            ul.insertBefore(server.title(config.name), ul.childNodes[index - 1]);
+                                        if (list[index].getAttribute("data-name") === config.name) {
+                                            list[index].parentNode.removeChild(list[index]);
+                                            return;
+                                        }
+                                    } while (index > 0);
+                                } else if (data.action === "add") {
+                                    payload.servers[config.name] = {
+                                        config: config,
+                                        sockets: [],
+                                        status: {
+                                            open: 0,
+                                            secure: 0
+                                        }
+                                    };
+                                    const names:string[] = Object.keys(payload.servers),
+                                        ul:HTMLElement = document.getElementById("servers").getElementsByClassName("server-list")[0].getElementsByTagName("ul")[0];
+                                    payload.servers[config.name].status = {
+                                        open: 0,
+                                        secure: 0
+                                    };
+                                    names.sort(function dashboard_serverList_sort(a:string, b:string):-1|1 {
+                                        if (a < b) {
+                                            return -1;
+                                        }
+                                        return 1;
+                                    });
+                                    index = names.length;
+                                    if (names[names.length - 1] === config.name) {
+                                        ul.appendChild(server.title(config.name));
+                                    } else if (names[0] === config.name) {
+                                        ul.insertBefore(server.title(config.name), ul.firstChild);
+                                    } else {
+                                        do {
+                                            index = index - 1;
+                                            if (names[index] === config.name) {
+                                                ul.insertBefore(server.title(config.name), ul.childNodes[index - 1]);
+                                                break;
+                                            }
+                                        } while (index > 0);
+                                    }
+                                } else if (data.action === "activate") {
+                                    payload.servers[config.name].status = config.ports;
+                                    const color:type_activation_status = message.server_color(config.name);
+                                    let oldPorts:HTMLElement = null,
+                                        activate:HTMLButtonElement = null,
+                                        deactivate:HTMLButtonElement = null;
+                                    do {
+                                        index = index - 1;
+                                        if (list[index].getAttribute("data-name") === config.name) {
+                                            if (color[0] !== null) {
+                                                list[index].setAttribute("class", color[0]);
+                                            }
+                                            list[index].getElementsByTagName("h4")[0].getElementsByTagName("button")[0].lastChild.textContent = `${config.name} - ${color[1]}`;
+                                            oldPorts = list[index].getElementsByClassName("active-ports")[0] as HTMLElement;
+                                            activate = list[index].getElementsByClassName("server-activate")[0] as HTMLButtonElement;
+                                            deactivate = list[index].getElementsByClassName("server-deactivate")[0] as HTMLButtonElement;
+                                            if (oldPorts !== undefined) {
+                                                oldPorts.parentNode.insertBefore(message.ports_active(config.name), oldPorts);
+                                                oldPorts.parentNode.removeChild(oldPorts);
+                                            }
+                                            if (activate !== undefined) {
+                                                if (color[0] === "green") {
+                                                    activate.disabled = true;
+                                                } else {
+                                                    activate.disabled = false;
+                                                }
+                                            }
+                                            if (deactivate !== undefined) {
+                                                if (color[0] === "red") {
+                                                    deactivate.disabled = true;
+                                                } else {
+                                                    deactivate.disabled = false;
+                                                }
+                                            }
+                                            break;
+                                        }
+                                    } while (index > 0);
+                                    if (config.name.indexOf("dashboard-terminal-") === 0) {
+                                        const encryption:"open"|"secure" = payload.servers[config.name].config.encryption as "open"|"secure",
+                                            scheme:"ws"|"wss" = (encryption === "open")
+                                                ? "ws"
+                                                : "wss";
+                                        terminal.socket = new WebSocket(`${scheme}://${location.host.split(":")[0]}:${config.ports[encryption]}`, ["terminal"]);
+                                        terminal.socket.onmessage = terminal.events.data;
+                                    }
+                                } else if (data.action === "deactivate") {
+                                    payload.servers[config.name].status = {
+                                        open: 0,
+                                        secure: 0
+                                    };
+                                    let oldPorts:HTMLElement = null,
+                                        activate:HTMLButtonElement = null,
+                                        deactivate:HTMLButtonElement = null;
+                                    do {
+                                        index = index - 1;
+                                        if (list[index].getAttribute("data-name") === config.name) {
+                                            list[index].setAttribute("class", "red");
+                                            list[index].getElementsByTagName("h4")[0].getElementsByTagName("button")[0].lastChild.textContent = `${config.name} - offline`;
+                                            oldPorts = list[index].getElementsByClassName("active-ports")[0] as HTMLElement;
+                                            activate = list[index].getElementsByClassName("server-activate")[0] as HTMLButtonElement;
+                                            deactivate = list[index].getElementsByClassName("server-deactivate")[0] as HTMLButtonElement;
+                                            if (oldPorts !== undefined) {
+                                                oldPorts.parentNode.insertBefore(message.ports_active(config.name), oldPorts);
+                                                oldPorts.parentNode.removeChild(oldPorts);
+                                            }
+                                            if (activate !== undefined) {
+                                                activate.disabled = false;
+                                            }
+                                            if (deactivate !== undefined) {
+                                                deactivate.disabled = true;
+                                            }
                                             break;
                                         }
                                     } while (index > 0);
                                 }
-                            } else if (data.action === "activate") {
-                                payload.servers[config.name].status = config.ports;
-                                const color:type_activation_status = message.server_color(config.name);
-                                let oldPorts:HTMLElement = null,
-                                    activate:HTMLButtonElement = null,
-                                    deactivate:HTMLButtonElement = null;
-                                do {
-                                    index = index - 1;
-                                    if (list[index].getAttribute("data-name") === config.name) {
-                                        if (color[0] !== null) {
-                                            list[index].setAttribute("class", color[0]);
-                                        }
-                                        list[index].getElementsByTagName("h4")[0].getElementsByTagName("button")[0].lastChild.textContent = `${config.name} - ${color[1]}`;
-                                        oldPorts = list[index].getElementsByClassName("active-ports")[0] as HTMLElement;
-                                        activate = list[index].getElementsByClassName("server-activate")[0] as HTMLButtonElement;
-                                        deactivate = list[index].getElementsByClassName("server-deactivate")[0] as HTMLButtonElement;
-                                        if (oldPorts !== undefined) {
-                                            oldPorts.parentNode.insertBefore(message.ports_active(config.name), oldPorts);
-                                            oldPorts.parentNode.removeChild(oldPorts);
-                                        }
-                                        if (activate !== undefined) {
-                                            if (color[0] === "green") {
-                                                activate.disabled = true;
-                                            } else {
-                                                activate.disabled = false;
-                                            }
-                                        }
-                                        if (deactivate !== undefined) {
-                                            if (color[0] === "red") {
-                                                deactivate.disabled = true;
-                                            } else {
-                                                deactivate.disabled = false;
-                                            }
-                                        }
-                                        break;
-                                    }
-                                } while (index > 0);
-                                if (config.name.indexOf("dashboard-terminal-") === 0) {
-                                    const encryption:"open"|"secure" = payload.servers[config.name].config.encryption as "open"|"secure",
-                                        scheme:"ws"|"wss" = (encryption === "open")
-                                            ? "ws"
-                                            : "wss";
-                                    terminal.socket = new WebSocket(`${scheme}://${location.host.split(":")[0]}:${config.ports[encryption]}`, ["terminal"]);
-                                    terminal.socket.onmessage = terminal.events.data;
+                            } else if (data.type === "socket") {
+                                const config:socket_summary = data.configuration as socket_summary;
+                                if (data.action === "add") {
+                                    message.socket_destroy("dashboard");
+                                    message.socket_add(config);
+                                } else if (data.action === "destroy") {
+                                    message.socket_destroy(config.hash);
                                 }
-                            } else if (data.action === "deactivate") {
-                                payload.servers[config.name].status = {
-                                    open: 0,
-                                    secure: 0
-                                };
-                                let oldPorts:HTMLElement = null,
-                                    activate:HTMLButtonElement = null,
-                                    deactivate:HTMLButtonElement = null;
-                                do {
-                                    index = index - 1;
-                                    if (list[index].getAttribute("data-name") === config.name) {
-                                        list[index].setAttribute("class", "red");
-                                        list[index].getElementsByTagName("h4")[0].getElementsByTagName("button")[0].lastChild.textContent = `${config.name} - offline`;
-                                        oldPorts = list[index].getElementsByClassName("active-ports")[0] as HTMLElement;
-                                        activate = list[index].getElementsByClassName("server-activate")[0] as HTMLButtonElement;
-                                        deactivate = list[index].getElementsByClassName("server-deactivate")[0] as HTMLButtonElement;
-                                        if (oldPorts !== undefined) {
-                                            oldPorts.parentNode.insertBefore(message.ports_active(config.name), oldPorts);
-                                            oldPorts.parentNode.removeChild(oldPorts);
-                                        }
-                                        if (activate !== undefined) {
-                                            activate.disabled = false;
-                                        }
-                                        if (deactivate !== undefined) {
-                                            deactivate.disabled = true;
-                                        }
-                                        break;
-                                    }
-                                } while (index > 0);
+                                ports.internal();
+                            } else if (data.type === "port") {
+                                ports.external(data.configuration as type_external_port[]);
                             }
-                        } else if (data.type === "socket") {
-                            const config:socket_summary = data.configuration as socket_summary;
-                            if (data.action === "add") {
-                                message.socket_destroy("dashboard");
-                                message.socket_add(config);
-                            } else if (data.action === "destroy") {
-                                message.socket_destroy(config.hash);
-                            }
-                            ports.internal();
-                        } else if (data.type === "port") {
-                            ports.external(data.configuration as type_external_port[]);
                         }
                     }
                 }
@@ -1146,7 +1200,7 @@ const dashboard = function dashboard():void {
                                             config.supported.splice(indexSupported, 1);
                                         } else if (config.name === "ports" && ((serverData.encryption === "open" && config.supported[indexSupported] === "secure") || (serverData.encryption === "secure" && config.supported[indexSupported] === "open"))) {
                                             config.supported.splice(indexSupported, 1);
-                                        } else if (config.name === null && keys.includes(config.supported[indexSupported]) === false && (config.supported[indexSupported] === "block_list" || config.supported[indexSupported] === "domain_local" || config.supported[indexSupported] === "http" || config.supported[indexSupported] === "redirect_domain" || config.supported[indexSupported] === "redirect_internal")) {
+                                        } else if (config.name === null && keys.includes(config.supported[indexSupported]) === false && (config.supported[indexSupported] === "block_list" || config.supported[indexSupported] === "domain_local" || config.supported[indexSupported] === "http" || config.supported[indexSupported] === "redirect_domain" || config.supported[indexSupported] === "redirect_internal") || config.supported[indexSupported] === "temporary") {
                                             config.supported.splice(indexSupported, 1);
                                         }
                                     } while (indexSupported > 0);
@@ -1270,7 +1324,7 @@ const dashboard = function dashboard():void {
                     supported: [],
                     type: "store"
                 });
-                // activate
+                // temporary
                 if (typeof serverData.temporary === "boolean") {
                     populate(true, "Optional property 'temporary' has boolean type value.");
                 } else if (serverData.temporary === null || serverData.temporary === undefined) {
@@ -1337,7 +1391,7 @@ const dashboard = function dashboard():void {
                 });
                 terminal.item.open(terminal.nodes.output);
                 terminal.item.onKey(terminal.events.input);
-                terminal.write("Terminal emulator running...");
+                terminal.write("Terminal emulator running...\r\n");
                 // client-side terminal is ready, so alert the backend to initiate a pseudo-terminal
                 socket.queue(JSON.stringify(terminal_message));
             },
@@ -1353,8 +1407,6 @@ const dashboard = function dashboard():void {
                 terminal.item.write(input);
             }
         },
-        // @ts-expect-error - replace_me is not a variable, but a text segment that is externally replaced at page http request time
-        payload:transmit_dashboard = replace_me,
         socket:socket_object = core(message.receiver, "dashboard", log);
 
     // start up logic for browser
@@ -1388,18 +1440,6 @@ const dashboard = function dashboard():void {
                 return output;
             }());
         socket.invoke();
-        // populate docker containers
-        compose.list();
-        // populate server list
-        server.list();
-        // populate log data
-        payload.logs.forEach(function dashboard_logsEach(item:services_dashboard_status):void {
-            log(item);
-        });
-        // port data
-        ports.internal();
-        // start the terminal
-        terminal.init();
     }
 };
 

@@ -2,7 +2,7 @@
 import log from "../utilities/log.js";
 import vars from "../utilities/vars.js";
 
-const socket_end = function transmit_socketEnd(socket_input:websocket_client):void {
+const socket_end = function transmit_socketEnd(socket_input:websocket_client, errorMessage?:node_error):void {
     let index:number = 0;
     const socket:websocket_client = (typeof socket_input === "object")
             ? socket_input
@@ -12,13 +12,23 @@ const socket_end = function transmit_socketEnd(socket_input:websocket_client):vo
             ? "secure"
             : "open",
         list:string = socket.server,
-        log_config:config_log = {
-            action: "destroy",
-            config: vars.servers[socket.server],
-            message: `Socket ${socket.hash} closed on ${encryption} server ${socket.server}.`,
-            status: "success",
-            type: "socket"
-        },
+        log_config:config_log = (errorMessage === null || errorMessage === undefined)
+            ? {
+                action: "destroy",
+                config: vars.servers[socket.server],
+                message: `Socket ${socket.hash} closed on ${encryption} server ${socket.server}.`,
+                status: "success",
+                type: "socket"
+            }
+            : {
+                action: (socket.closed === true)
+                    ? "destroy"
+                    : null,
+                config: errorMessage,
+                message: `Error on socket ${socket.hash} at location ${socket.role} with server ${socket.server}.`,
+                status: "error",
+                type: "socket"
+            },
         sockets:socket_summary[] = vars.servers[socket.server].sockets;
     index = sockets.length;
     if (index > 0) {

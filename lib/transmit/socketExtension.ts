@@ -42,13 +42,7 @@ const socket_extension = function transmit_socketExtension(config:config_websock
             socketError = function transmit_socketExtension_socketError(errorMessage:node_error):void {
                 // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
                 const socket:websocket_client = this;
-                log({
-                    action: null,
-                    config: errorMessage,
-                    message: `Error on socket ${this.hash} at location ${this.role} with server ${this.server}.`,
-                    status: "error",
-                    type: "socket"
-                });
+                socket_end(socket, errorMessage);
             },
             encryption:"open"|"secure" = (config.socket.secure === true)
                 ? "secure"
@@ -102,12 +96,16 @@ const socket_extension = function transmit_socketExtension(config:config_websock
                     config.socket.on("close", temporary);
                     config.socket.on("end", temporary);
                     config.socket.on("error", temporary);
-                } else if (config.proxy){
+                } else {
                     config.socket.on("close", socket_end);
                     config.socket.on("end", socket_end);
                     config.socket.on("error", socketError);
                 }
             }
+        } else {
+            config.socket.on("close", socket_end);
+            config.socket.on("end", socket_end);
+            config.socket.on("error", socketError);
         }
         config.socket.setKeepAlive(true, 0);      // standard method to retain socket against timeouts from inactivity until a close frame comes in
         config.socket.server = config.server;     // identifies which local server the given socket is connected to

@@ -16,8 +16,9 @@ import vars from "../utilities/vars.js";
 
 const server_halt = function services_serverHalt(data:services_dashboard_action, callback:() => void):void {
     const old:string = (data.configuration.modification_name === undefined)
-        ? data.configuration.name
-        : data.configuration.modification_name;
+            ? data.configuration.name
+            : data.configuration.modification_name,
+        temporary:boolean = vars.servers[old].config.temporary;
     if (vars.servers[old] === undefined) {
         log({
             action: data.action,
@@ -49,9 +50,7 @@ const server_halt = function services_serverHalt(data:services_dashboard_action,
                         callback();
                     }
                     log({
-                        action: (old.indexOf("dashboard-terminal-") === 0)
-                            ? "destroy"
-                            : data.action,
+                        action: data.action,
                         config: data.configuration,
                         message: `Server named ${data.configuration.name} ${actionText}.`,
                         status: "success",
@@ -90,6 +89,9 @@ const server_halt = function services_serverHalt(data:services_dashboard_action,
         let index:number = (sockets_open === undefined)
             ? 0
             : sockets_open.length;
+        if (temporary === true || old.indexOf("dashboard-terminal-") === 0) {
+            data.action = "destroy";
+        }
         // 1. turn off active servers and delete their corresponding objects
         if (vars.server_meta[old].server.open !== undefined) {
             vars.server_meta[old].server.open.close();

@@ -36,10 +36,10 @@
         "url": "git+https://github.com/prettydiff/webserver.git"
     },
     "scripts": {
-        "build": "npx swc ./lib -d ./js --ignore \"/servers\"",
+        "build": "npx swc ./lib -d ./js --ignore servers, compose",
         "lint": "npx eslint ./",
         "server": "node js/lib/index.js",
-        "tsc": "npx tsc --pretty --ignore \"/servers\""
+        "tsc": "npx tsc --pretty"
     },
     "types": "/lib/typescript",
     "type": "module",

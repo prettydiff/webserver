@@ -13,13 +13,13 @@
         "typeRoots": ["./node_modules/@types"]
     },
     "exclude": [
-        "/js",
-        "/servers",
-        "./lib/assets/**/files",
+        "./js",
+        "./compose",
+        "./servers",
         "**/node_modules",
         "**/.*/"
     ],
     "include": [
-        "/**/*.ts"
+        "./lib/**/*.ts"
     ]
 }

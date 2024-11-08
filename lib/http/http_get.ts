@@ -302,23 +302,15 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
         decoded:string = decodeURI(fileFragment);
     if (server_name === "dashboard") {
         if (decoded === "") {
-            const browser:transmit_dashboard = {
-                    compose: vars.compose,
-                    logs: vars.logs,
-                    ports: vars.system_ports,
-                    servers: vars.servers,
-                    terminal: vars.terminal
-                },
-                html:string = vars.dashboard.replace(" = replace_me,", ` = ${JSON.stringify(browser)},`),
-                headers:string[] = [
-                    "HTTP/1.1 200",
-                    "content-type: text/html",
-                    `content-length: ${Buffer.from(html).length}`,
-                    "server: prettydiff/webserver",
-                    "",
-                    ""
-                ];
-            write(headers.join("\r\n") + html);
+            const headers:string[] = [
+                "HTTP/1.1 200",
+                "content-type: text/html",
+                `content-length: ${Buffer.from(vars.dashboard).length}`,
+                "server: prettydiff/webserver",
+                "",
+                ""
+            ];
+            write(headers.join("\r\n") + vars.dashboard);
         } else if (decoded.includes("node_modules") === true) {
             input = vars.path.project + decoded;
         } else {

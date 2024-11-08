@@ -7,6 +7,7 @@ import message_handler from "./messageHandler.js";
 import node from "../utilities/node.js";
 import read_certs from "../utilities/read_certs.js";
 import redirection from "./redirection.js";
+import send from "./send.js";
 import server_halt from "../services/server_halt.js";
 import socket_extension from "./socketExtension.js";
 import terminal from "../services/terminal.js";
@@ -152,6 +153,19 @@ const server = function transmit_server(data:services_dashboard_action, callback
                                             if (terminalFlag === true) {
                                                 terminal.shell(socket);
                                             }
+                                            if (typeValue === "dashboard" && socket.server === "dashboard") {
+                                                const browser:transmit_dashboard = {
+                                                    compose: vars.compose,
+                                                    logs: vars.logs,
+                                                    ports: vars.system_ports,
+                                                    servers: vars.servers,
+                                                    terminal: vars.terminal
+                                                };
+                                                send({
+                                                    data: browser,
+                                                    service: "dashboard-payload"
+                                                }, socket, 1);
+                                            }
                                         },
                                         terminalFlag:boolean = (server_name.indexOf("dashboard-terminal-") === 0),
                                         identifier:string = (terminalFlag === true)
@@ -271,17 +285,6 @@ const server = function transmit_server(data:services_dashboard_action, callback
                         }
                     }
                 };
-            socket.on("error", function transmit_server_connection_handshake_socketError(ers:node_error):void {
-                // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
-                const socket:websocket_client = this;
-                log({
-                    action: null,
-                    config: ers,
-                    message: `Error on socket ${socket.hash} of server ${socket.server}`,
-                    status: "error",
-                    type: "log"
-                });
-            });
             socket.once("data", handshake);
         },
         start = function transmit_server_start(options:transmit_tlsOptions):void {

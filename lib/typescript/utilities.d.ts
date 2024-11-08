@@ -108,15 +108,17 @@ interface server_instance extends node_net_Server {
 }
 
 interface server_meta {
-    [key:string]: {
-        server: {
-            open: server_instance;
-            secure: server_instance;
-        };
-        sockets: {
-            open: websocket_client[];
-            secure: websocket_client[];
-        };
+    [key:string]: server_meta_item;
+}
+
+interface server_meta_item {
+    server: {
+        open: server_instance;
+        secure: server_instance;
+    };
+    sockets: {
+        open: websocket_client[];
+        secure: websocket_client[];
     };
 }
 

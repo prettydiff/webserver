@@ -162,25 +162,25 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
             <div class="server-definitions">
                 <h3>Definitions of Server Object Properties <button class="expand">Expand</button></h3>
                 <dl>
-                    <dt>activate (string)</dt>
+                    <dt><em>activate</em> (string)</dt>
                     <dd>Instructs the application to bring the server online automatically at application start and server creation.</dd>
-                    <dt>block_list (string array)</dt>
+                    <dt><em>block_list</em> (string array)</dt>
                     <dd>The block list contains three optional string arrays of criteria to determine if matching sockets should be instantly destroyed. At this time wildcards, CIDR notation, and ranges are not supported.</dd>
-                    <dt>domain_local (string array)</dt>
+                    <dt><em>domain_local</em> (string array)</dt>
                     <dd>Sockets featuring HTTP request host names in this list will be served from this server.  Sockets featuring HTTP request host names not in this list or in the redirect_domain list will be destroyed.</dd>
-                    <dt>encryption (string)</dt>
+                    <dt><em>encryption</em> (string)</dt>
                     <dd>Whether to create an encrypted server for HTTPS and WSS protocols, an unencrypted server for HTTP and WS protocols, or both. Accepted values are <em>both</em>, <em>open</em>, or <em>secure</em>.</dd>
-                    <dt>http (object)</dt>
+                    <dt><em>http</em> (object)</dt>
                     <dd>File system paths to external utilities for handling the supported HTTP methods: <em>delete</em>, <em>post</em>, and <em>put</em>.  HTTP request bodies are passed into an environmental variable on the respective child process named 'payload'.</dd>
-                    <dt>name (string)</dt>
+                    <dt><em>name</em> (string)</dt>
                     <dd>The name of this server.</dd>
-                    <dt>ports (object)</dt>
+                    <dt><em>ports</em> (object)</dt>
                     <dd>The ports on which the server operates.</dd>
-                    <dt>redirect_domain (object)</dt>
+                    <dt><em>redirect_domain</em> (object)</dt>
                     <dd>Redirects traffic to a different location, such as vanity domain that may or may not be served from the same server. Each instance uses the structure of <code>"domain": ["new domain", port_number]</code> because each server can represent 0 or more domain names. If the 'new domain' is an empty string the requested domain will be used. If the port number is not a number or 0 the current server's port number will be used.</dd>
-                    <dt>redirect_internal (object)</dt>
+                    <dt><em>redirect_internal</em> (object)</dt>
                     <dd>Redirects resource paths within the given server based upon the hostname in the HTTP request header. This is useful for dynamic or vanity endpoints on a given server. Each instance uses the structure of <code>"domain": {"resource location": "new location"}</code> because each server can represent 0 or more domain names.</dd>
-                    <dt>temporary (boolean)</dt>
+                    <dt><em>temporary</em> (boolean)</dt>
                     <dd>Providing property <em>temporary</em> with value <em>true</em> will create a server that only accepts a first successful HTTP or WebSocket connection.  All other connections will be ignored and the server will automatically remove itself once that connection completes.</dd>
                 </dl>
             </div>

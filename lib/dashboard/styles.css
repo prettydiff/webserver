@@ -27,7 +27,7 @@
 }
 
 html{font-size:10px}
-body{background:var(--background);color:var(--text);font-family:sans-serif;max-width:120em}
+body{background:var(--background);color:var(--text);font-family:sans-serif;max-width:180em}
 div.section{border-color:var(--border_color);border-style:solid;border-width:0.1em;margin:2em;padding:2em}
 h1{font-size:4em}
 h2{font-size:3em}
@@ -38,7 +38,8 @@ h1,h2,h3,h4,h5,h6{margin:0 0 1em}
 p,li,dd,dt,td,th,textarea{font-size:1.6em}
 li li{font-size:1em}
 label input{display:block}
-dt{font-weight:bold;text-decoration:underline}
+dt em{color:var(--text_input);font-size:1.4em;font-style:normal;font-weight:bold;text-decoration:underline}
+dt{font-size:1.4em}
 dd{margin:0 0 1em 2.5em}
 dd p,li p{font-size:1em}
 li{margin:1em 0 0}
@@ -64,19 +65,20 @@ textarea{border-color:var(--textarea_border);box-shadow:0 0 0.1em var(--black)}
 .fail{color:var(--fail_bright);font-weight:bold}
 .success{color:var(--text_green);font-weight:bold}
 .yt strong{color:var(--text_yellow);font-weight:bold}
-.ytStatus{background:var(--background_textarea);border-color:var(--border_input);border-style:solid;border-radius:1.6em;border-width:0.2em;box-shadow:0.1em 0.1em 0.5em var(--black);font-family:monospace;height:50em;overflow:scroll;padding:0 0.5em;white-space:nowrap;width:100%}
+.ytStatus{background:var(--background_textarea);border-color:var(--border_input);border-style:solid;border-radius:1.6em;border-width:0.065em;box-shadow:0.1em 0.1em 0.5em var(--black);font-family:monospace;height:50em;overflow:scroll;padding:0 0.5em;white-space:nowrap;width:100%}
 .ytStatus h2{margin:0 0 1em}
 .buttons span,
 label.radio{display:inline-block;width:45%}
+.buttons span.clear{display:block}
 .buttons button,
 label.radio{cursor:pointer}
 label.radio input{display:inline}
-input{background:var(--background_textarea);border-color:var(--border_input);border-radius:1em;border-style:solid;border-width:0.2em;color:var(--text_input);font-family:monospace;margin:0.5em 0 0;padding:0.5em}
+input{background:var(--background_textarea);border-color:var(--border_input);border-style:solid;border-width:0.065em;color:var(--text_input);font-family:monospace;margin:0.5em 0 0;padding:0.5em}
 input[type="radio"]{visibility:hidden}
 th button{float:right;margin:0 1em}
 .controls p{margin:2em 0}
 .controls button{font-size:2em}
-label span{border-radius:50%;background:var(--border_color);border-color:var(--border_color);border-style:solid;border-width:0.2em;display:inline-block;height:0.8em;margin:0 0.5em 0 0;width:0.8em}
+label span{border-radius:50%;background:var(--border_color);border-color:var(--border_color);border-style:solid;border-width:0.065em;display:inline-block;height:0.8em;margin:0 0.5em 0 0;width:0.8em}
 label span.checked{background:var(--background_dark)}
 .linux-link{display:none;font-size:4em;font-weight:bold}
 .linux-options{margin:0;overflow:hidden}
@@ -141,9 +143,8 @@ td .icon{display:inline-block;width:1.5em}
 #compose .compose-variable-list strong{border-color:var(--text);border-style:none solid none none;border-width:0 0.065em 0 0;display:inline-block;margin:0 1.5em 0 0;width:10em}
 #servers label{display:flex;width:100%}
 #servers label span.details-redundant,
-#dashboard label span.text{background:transparent;border-style:none;display:inline-block;font-size:1em;font-weight:bold;line-height:2.5;width:12em}
+#dashboard label span.text{background:transparent;border-style:none;display:inline-block;font-size:1em;font-weight:bold;line-height:2.5;width:auto}
 #servers label span.details-redundant{text-indent:-2000em}
-#dashboard textarea{font-size:1em;height:1em;line-height:1;padding:0.4em;width:100%}
 #compose .server-cancel,
 #compose .server-modify,
 #servers .server-activate,
@@ -172,7 +173,9 @@ td .icon{display:inline-block;width:1.5em}
 #servers .server-cancel{color:var(--text_yellow)}
 #servers .server-destroy{color:var(--fail_dark)}
 #servers .server-new{margin:2em 0}
-#dashboard .edit textarea{box-sizing:border-box;display:block;height:35em;margin:0 0 1em;overflow:scroll;width:100%}
+#dashboard input,
+#dashboard textarea{box-sizing:border-box;display:block;font-size:1em;margin:0 0 1em;width:100%}
+#dashboard textarea{height:35em;overflow:scroll}
 #servers .active-ports,
 #servers .summary{background:var(--background);border-color:var(--border_color);border-style:solid;border-width:0.1em;margin:0 0 1em;padding:1em 0.5em}
 #servers .summary{display:none}

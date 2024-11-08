@@ -11,7 +11,7 @@ import { spawn } from "@lydell/node-pty";
 
 const terminal:terminal_library = {
     delay: null,
-    server: function services_terminalServer(socketData:socket_data, transmit:transmit_socket):void {
+    server: function services_terminalServer(socketData:socket_data):void {
         const data:services_dashboard_action = socketData.data as services_dashboard_action,
             encryption:"open"|"secure" = data.configuration.encryption as "open"|"secure",
             log_message:config_log = {
