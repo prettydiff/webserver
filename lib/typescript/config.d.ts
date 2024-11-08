@@ -7,6 +7,13 @@ interface config_certificate {
     selfSign: boolean;
 }
 
+interface config_core {
+    close?: (event:Event) => void;
+    message: (event:websocket_event) => void;
+    open?: (event:Event) => void;
+    type: string;
+}
+
 interface config_directory {
     callback: (dir:directory_list | string[]) => void;
     depth: number;

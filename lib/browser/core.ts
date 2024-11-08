@@ -1,75 +1,45 @@
 
-const core = function core(message:(event:websocket_event) => void, type:string, log?:(item:services_dashboard_status) => void):socket_object {
-    const socketCall = function core_socketCall():WebSocket {console.log("socket call");
+const core = function core(config:config_core):socket_object {
+    const socketCall = function core_socketCall():WebSocket {
             const port:string = (location.protocol === "http:")
                     ? "80"
                     : "443",
-                protocol:string = (location.protocol === "http:")
-                    ? "ws:"
-                    : "wss:",
+                scheme:string = (location.protocol === "http:")
+                    ? "ws"
+                    : "wss",
                 address:string = (location.host.includes(":") === true)
-                    ? location.origin
-                    : `${location.origin}:${port}`,
-                socketItem:WebSocket = new WebSocket(address.replace(location.protocol, protocol), [type]),
-                close = function core_socketCall_close(event:Event):void {
-                    const status:HTMLElement = document.getElementById("connection-status");
-                    if (status !== null && document.getElementsByTagName("body")[0].getAttribute("id") === "dashboard") {
-                        status.getElementsByTagName("strong")[0].textContent = "Offline";
-                        if (log !== undefined && status.getAttribute("class") === "connection-online") {
-                            log({
-                                action: "activate",
-                                configuration: null,
-                                message: "Dashboard browser connection offline.",
-                                status: "error",
-                                time: Date.now(),
-                                type: "log"
-                            });
-                        }
-                        status.setAttribute("class", "connection-offline");
+                    ? location.host
+                    : `${location.host}:${port}`,
+                socketItem:WebSocket = new WebSocket(`${scheme}://${address}`, [config.type]),
+                open = function core_socketCall_open(event:Event):void {
+                    const target:WebSocket = event.target as WebSocket;
+                    socket.socket = target;
+                    if (socket.queueStore.length > 0) {
+                        do {
+                            socket.socket.send(socket.queueStore[0]);
+                            socket.queueStore.splice(0, 1);
+                        } while (socket.queueStore.length > 0);
                     }
-                    setTimeout(function core_close_delay():void {
-                        core_socketCall();
-                    }, 10000);
                 };
-            socketItem.onmessage = message;
-            socketItem.onopen = function core_socketCall_open(event:Event):void {
-                const target:WebSocket = event.target as WebSocket,
-                    status:HTMLElement = document.getElementById("connection-status");
-                if (status !== null && document.getElementsByTagName("body")[0].getAttribute("id") === "dashboard") {
-                    status.getElementsByTagName("strong")[0].textContent = "Online";
-                    if (log !== undefined && status.getAttribute("class") === "connection-offline") {
-                        log({
-                            action: "activate",
-                            configuration: null,
-                            message: "Dashboard browser connection online.",
-                            status: "informational",
-                            time: Date.now(),
-                            type: "log"
-                        });
-                    }
-                    status.setAttribute("class", "connection-online");
-                }
-                socket.socket = target;
-                if (socket.queueStore.length > 0) {
-                    do {
-                        socket.socket.send(socket.queueStore[0]);
-                        socket.queueStore.splice(0, 1);
-                    } while (socket.queueStore.length > 0);
-                }
-            };
-            socketItem.onerror = close;
+            socketItem.onmessage = config.message;
+            socketItem.onopen = (config.open === null || config.open === undefined)
+                ? open
+                : config.open;
+            if (config.close !== null && config.close !== undefined) {
+                socketItem.onclose = config.close;
+            }
             return socketItem;
         },
         socket:socket_object = {
             invoke: socketCall,
             queueStore: [],
-            queue: function core_queue(message:string):void {
+            queue: function core_queue(message_item:string):void {
                 // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
                 const instance:socket_object = this;
                 if (instance.socket === null || instance.socket.readyState !== 1) {
-                    instance.queueStore.push(message);
+                    instance.queueStore.push(message_item);
                 } else {
-                    instance.socket.send(message);
+                    instance.socket.send(message_item);
                 }
             },
             socket: null

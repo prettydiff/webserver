@@ -6,7 +6,8 @@ import Terminal from "@xterm/xterm";
 // cspell: words buildx, containerd, nmap, winget
 
 const dashboard = function dashboard():void {
-    let payload:transmit_dashboard = null;
+    let payload:transmit_dashboard = null,
+        loaded:boolean = false;
     const log = function dashboard_log(item:services_dashboard_status):void {
             let li:HTMLElement = document.createElement("li"),
                 timeElement:HTMLElement = document.createElement("time");
@@ -48,7 +49,7 @@ const dashboard = function dashboard():void {
             timeElement.appendText(time);
             li.appendChild(timeElement);
             li.setAttribute("class", `log-${item.status}`);
-            if (item.status === "error") {
+            if (item.status === "error" && item.configuration !== null) {
                 strong.appendText(item.message);
                 code.appendText(JSON.stringify(item.configuration));
                 li.appendChild(strong);
@@ -57,6 +58,45 @@ const dashboard = function dashboard():void {
                 li.appendText(item.message);
             }
             ul.appendChild(li);
+        },
+        baseline = function dashboard_baseline():void {
+            const serverList:HTMLElement = document.getElementById("servers").getElementsByClassName("server-list")[0] as HTMLElement,
+                logs_old:HTMLElement = document.getElementById("logs").getElementsByTagName("ul")[0],
+                ports_old:HTMLCollectionOf<HTMLElement> = document.getElementById("ports").getElementsByTagName("tbody"),
+                sockets_old:HTMLElement = document.getElementById("sockets").getElementsByTagName("tbody")[0],
+                status:HTMLElement = document.getElementById("connection-status"),
+                terminal_output:HTMLElement = document.getElementById("terminal").getElementsByClassName("terminal-output")[0] as HTMLElement,
+                replace = function dashboard_baseline_replace(node:HTMLElement, className:boolean):HTMLElement {
+                    if (node !== null && node !== undefined && node.parentNode !== null) {
+                        const node_new:HTMLElement = document.createElement(node.nodeName.toLowerCase());
+                        if (className === true) {
+                            node_new.setAttribute("class", node.getAttribute("class"));
+                        }
+                        node.parentNode.appendChild(node_new);
+                        node.parentNode.removeChild(node);
+                        return node_new;
+                    }
+                    return null;
+                };
+            if (loaded === true) {
+                loaded = false;
+                status.setAttribute("class", "connection-offline");
+                status.getElementsByTagName("strong")[0].textContent = "Offline";
+                if (serverList !== undefined) {
+                    serverList.parentNode.removeChild(serverList);
+                }
+                compose.nodes.containers_list = replace(compose.nodes.containers_list, true);
+                compose.nodes.variables_list = replace(compose.nodes.variables_list, true);
+                terminal.nodes.output = replace(terminal_output, true);
+                replace(logs_old, false);
+                replace(ports_old[0], false);
+                replace(ports_old[1], false);
+                replace(sockets_old, false);
+                socket.socket = null;
+                if (terminal.socket !== null) {
+                    terminal.socket.close();
+                }
+            }
         },
         compose:module_compose = {
             // Download and install Docker to Windows with 'winget install --id=Docker.DockerCLI -e' and to Debian Linux with 'sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin'.
@@ -97,6 +137,14 @@ const dashboard = function dashboard():void {
                 div.appendChild(p);
                 p = document.createElement("p");
                 p.setAttribute("class", "buttons");
+                button.appendText("⚠ Cancel");
+                button.setAttribute("class", "server-cancel");
+                p.appendChild(button);
+                button = document.createElement("button");
+                button.appendText("🖪 Modify");
+                button.setAttribute("class", "server-modify");
+                p.appendChild(button);
+                div.appendChild(p);
                 div.setAttribute("class", "section");
                 compose.nodes.containers_list.parentNode.insertBefore(div, compose.nodes.containers_list);
                 target.disabled = true;
@@ -222,7 +270,8 @@ const dashboard = function dashboard():void {
             receiver: function dashboard_messageReceiver(event:websocket_event):void {
                 if (typeof event.data === "string") {
                     const message_item:socket_data = JSON.parse(event.data);
-                    if (message_item.service === "dashboard-payload") {
+                    if (message_item.service === "dashboard-payload" && loaded === false) {
+                        loaded = true;
                         payload = message_item.data as transmit_dashboard;
                         // populate docker containers
                         compose.list();
@@ -236,7 +285,7 @@ const dashboard = function dashboard():void {
                         ports.internal();
                         // start the terminal
                         terminal.init();
-                    } else {
+                    } else if (message_item.service === "dashboard-status") {
                         const data:services_dashboard_status = message_item.data as services_dashboard_status;
                         if (data.type !== "socket") {
                             log(data);
@@ -260,7 +309,7 @@ const dashboard = function dashboard():void {
                                             return;
                                         }
                                     } while (index > 0);
-                                } else if (data.action === "add") {
+                                } else if (data.action === "add" && payload.servers[config.name] === undefined) {
                                     payload.servers[config.name] = {
                                         config: config,
                                         sockets: [],
@@ -270,7 +319,10 @@ const dashboard = function dashboard():void {
                                         }
                                     };
                                     const names:string[] = Object.keys(payload.servers),
-                                        ul:HTMLElement = document.getElementById("servers").getElementsByClassName("server-list")[0].getElementsByTagName("ul")[0];
+                                        ul_current:HTMLElement = document.getElementById("servers").getElementsByClassName("server-list")[0].getElementsByTagName("ul")[0],
+                                        ul:HTMLElement = (ul_current === undefined)
+                                            ? document.createElement("ul")
+                                            : ul_current;
                                     payload.servers[config.name].status = {
                                         open: 0,
                                         secure: 0
@@ -373,7 +425,7 @@ const dashboard = function dashboard():void {
                             } else if (data.type === "socket") {
                                 const config:socket_summary = data.configuration as socket_summary;
                                 if (data.action === "add") {
-                                    message.socket_destroy("dashboard");
+                                    message.socket_destroy(config.hash);
                                     message.socket_add(config);
                                 } else if (data.action === "destroy") {
                                     message.socket_destroy(config.hash);
@@ -937,7 +989,7 @@ const dashboard = function dashboard():void {
                 server.nodes.server_new.onclick = server.create;
                 server.nodes.server_definitions.onclick = server.definitions;
                 if (list_old !== undefined) {
-                    tag.removeChild(list_old);
+                    list_old.parentNode.removeChild(list_old);
                 }
                 list.sort(function dashboard_serverList_sort(a:string, b:string):-1|1 {
                     if (a < b) {
@@ -1407,7 +1459,57 @@ const dashboard = function dashboard():void {
                 terminal.item.write(input);
             }
         },
-        socket:socket_object = core(message.receiver, "dashboard", log);
+        socket:socket_object = core({
+            close: function dashboard_socketClose():void {
+                const status:HTMLElement = document.getElementById("connection-status");
+                if (log !== undefined && status !== null && status.getAttribute("class") === "connection-online") {
+                    log({
+                        action: "activate",
+                        configuration: null,
+                        message: "Dashboard browser connection offline.",
+                        status: "error",
+                        time: Date.now(),
+                        type: "log"
+                    });
+                }
+                baseline();
+                setTimeout(function core_close_delay():void {
+                    socket.invoke();
+                }, 10000);
+            },
+            message: message.receiver,
+            open: function dashboard_socketOpen(event:Event):void {
+                const target:WebSocket = event.target as WebSocket,
+                    status:HTMLElement = document.getElementById("connection-status"),
+                    payload:socket_data = {
+                        data: null,
+                        service: "dashboard-payload"
+                    };
+                if (status !== null ) {
+                    status.getElementsByTagName("strong")[0].textContent = "Online";
+                    if (log !== undefined && status.getAttribute("class") === "connection-offline") {
+                        log({
+                            action: "activate",
+                            configuration: null,
+                            message: "Dashboard browser connection online.",
+                            status: "informational",
+                            time: Date.now(),
+                            type: "log"
+                        });
+                    }
+                    status.setAttribute("class", "connection-online");
+                }
+                target.send(JSON.stringify(payload));
+                socket.socket = target;
+                if (socket.queueStore.length > 0) {
+                    do {
+                        socket.socket.send(socket.queueStore[0]);
+                        socket.queueStore.splice(0, 1);
+                    } while (socket.queueStore.length > 0);
+                }
+            },
+            type: "dashboard"
+        });
 
     // start up logic for browser
     {
