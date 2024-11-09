@@ -1,6 +1,7 @@
 
 import core from "../browser/core.js";
 import dashboard_script from "../dashboard/dashboard_script.js";
+import dateTime from "./dateTime.js";
 import file from "./file.js";
 import port_map from "./port_map.js";
 import node from "./node.js";
@@ -131,6 +132,7 @@ const startup = function utilities_startup(callback:() => void):void {
         };
 
     String.prototype.capitalize = capitalize;
+    Number.prototype.dateTime = dateTime;
 
     options("no_color", "text");
     vars.path.project = process.argv[1].slice(0, process.argv[1].indexOf(`${vars.sep}js${vars.sep}`)) + vars.sep;

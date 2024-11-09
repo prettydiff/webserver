@@ -38,7 +38,10 @@ const port_map = function utilities_portMap(data:services_dashboard_action, call
                 }
                 index = index + 1;
             } while (index < total);
-            vars.system_ports = output;
+            vars.system_ports = {
+                list: output,
+                time: Date.now()
+            };
             payload.configuration = vars.system_ports;
             broadcast("dashboard", "dashboard", {
                 data: payload,
@@ -46,7 +49,10 @@ const port_map = function utilities_portMap(data:services_dashboard_action, call
             });
         } else {
             const message:string = `When gathering port data command '${command}' failed with an error.  Perhaps application NMap is not available.`;
-            vars.system_ports = [null, [0, message, ""]];
+            vars.system_ports = {
+                list: [null, [0, message, ""]],
+                time: Date.now()
+            };
             log({
                 action: "activate",
                 config: error,

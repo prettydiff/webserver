@@ -27,20 +27,6 @@
         <li><button class="nav-focus" data-section="servers">Servers</button></li><li><button data-section="compose">Docker Compose</button></li><li><button data-section="logs">Logs</button></li><li><button data-section="terminal">Terminal</button></li><li><button data-section="ports">Port Summary</button></li><li><button data-section="sockets">Socket Summary</button></li><li><button data-section="help">Help</button></li>
     </ul></nav>
     <main>
-        <div id="compose">
-            <h2>Docker Compose</h2>
-            <p class="tab-description">A list of configured Docker containers and their status.</p>
-            <div class="section">
-                <h3>Environmental Variables</h3>
-                <p class="buttons"><button class="compose-variable-new">Edit Variables</button></p>
-                <ul class="compose-variable-list"></ul>
-            </div>
-            <div class="section">
-                <h3>Containers</h3>
-                <p class="buttons"><button class="compose-container-new">New Container</button></p>
-                <ul class="compose-container-list"></ul>
-            </div>
-        </div>
         <div id="help">
             <h2>Help</h2>
             <p class="tab-description">Helpful information about this application.</p>
@@ -87,7 +73,7 @@
                 <h4>NMap</h4>
                 <p>NMap is the port scanner used to generate the list of ports consumed by the local machine but not related to this application instance.</p>
                 <ul>
-                    <li>Windows <a href="https://nmap.org/download.html">Download the binary</a></li>
+                    <li>Windows: <a href="https://nmap.org/download.html">download the binary</a> or install command line <code>winget install -e --id Insecure.Nmap</code> Be sure to install for all users, not for administrators only, otherwise it will prompt for Administrative privilege each time it runs.</li>
                     <li>Debian
 <code>sudo apt-get update
 apt-get upgrade
@@ -122,6 +108,20 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
                 </ul>
             </div>
         </div>
+        <div id="compose">
+            <h2>Docker Compose</h2>
+            <p class="tab-description">A list of configured Docker containers and their status.</p>
+            <div class="section">
+                <h3>Environmental Variables</h3>
+                <p class="buttons"><button class="compose-variable-new">Edit Variables</button></p>
+                <ul class="compose-variable-list"></ul>
+            </div>
+            <div class="section">
+                <h3>Containers</h3>
+                <p class="buttons"><button class="compose-container-new">New Container</button></p>
+                <ul class="compose-container-list"></ul>
+            </div>
+        </div>
         <div id="logs">
             <h2>Logs</h2>
             <p class="tab-description">At this time logs are not saved outside the application, but do persist for the life of the application runtime.</p>
@@ -131,7 +131,7 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
             <h2>Port Summary</h2>
             <p class="tab-description">A list of ports in active use both from this application and outside this application.</p>
             <div class="section">
-            <h3>System Ports Outside This Application</h3>
+                <h3>System Ports Outside This Application</h3>
                 <p class="buttons"><button>⟳ Refresh</button></p>
                 <table class="ports-external">
                     <thead><tr>
@@ -141,6 +141,7 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
                     </tr></thead>
                     <tbody></tbody>
                 </table>
+                <p class="updated">Last Updated: <em></em></p>
             </div>
             <div class="section">
                 <h3>Internal Application Ports</h3>

@@ -3,10 +3,13 @@ import send from "./send.js";
 import vars from "../utilities/vars.js";
 
 const broadcast = function transmit_broadcast(server:string, type:string, message:socket_data):void {
-    const perServer = function transmit_broadcast_perServer(encryption:"open"|"secure"):void {
+    const encryptionType:type_encryption = (vars.servers[server] === undefined || vars.servers[server] === null)
+            ? null
+            : vars.servers[server].config.encryption,
+        perServer = function transmit_broadcast_perServer(encryption:"open"|"secure"):void {
             const list:websocket_client[] = (vars.server_meta[server] === undefined)
-	        ? []
-		: vars.server_meta[server].sockets[encryption];
+                ? []
+                : vars.server_meta[server].sockets[encryption];
             let index:number = list.length;
             if (index > 0) {
                 do {
@@ -16,10 +19,7 @@ const broadcast = function transmit_broadcast(server:string, type:string, messag
                     }
                 } while (index > 0);
             }
-        },
-        encryptionType:type_encryption = (vars.servers[server] === undefined || vars.servers[server] === null)
-            ? null
-            : vars.servers[server].config.encryption;
+        };
     if (encryptionType === null) {
         return;
     }

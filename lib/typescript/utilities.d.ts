@@ -45,6 +45,11 @@ interface directory_list extends Array<type_directory_item> {
     failures?: string[];
 }
 
+interface external_ports {
+    list: type_external_port[];
+    time: number;
+}
+
 interface file {
     mkdir: (config:file_mkdir) => void;
     read: (config:file_read) => void;
@@ -185,7 +190,7 @@ interface vars {
     servers: store_servers;
     shell: string;
     start_time: bigint;
-    system_ports: type_external_port[];
+    system_ports: external_ports;
     terminal: terminal_size;
     text: store_string;
 }

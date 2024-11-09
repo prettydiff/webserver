@@ -3,7 +3,7 @@
 
 import commas from "../utilities/commas.js";
 import core from "../browser/core.js";
-import dateString from "../utilities/dateString.js";
+import dateTime from "../utilities/dateTime.js";
 import directory from "../utilities/directory.js";
 import file from "../utilities/file.js";
 import file_list from "../browser/file_list.js";
@@ -183,7 +183,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                                 do {
                                     if (list[index_item][3] === 0 && list[index_item][0].indexOf(input) !== list[index_item][0].length - input.length) {
                                         address = `${scheme}://${host + index0[1].replace(/\/$/, "") + vars.sep + list[index_item][0]}`;
-                                        dtg = dateString(list[index_item][5].mtimeMs).split(", ");
+                                        dtg = list[index_item][5].mtimeMs.dateTime(true).split(", ");
                                         content.push(`<tr class="${(index_item % 2 === 0) ? "even" : "odd"}"><td><span class="icon">${icon[list[index_item][1]]}</span> <a href="${address}">${list[index_item][0]}</a></td><td>${list[index_item][1]}</td><td data-raw="${list[index_item][5].size}">${commas(list[index_item][5].size)}</td><td data-raw="${list[index_item][5].mtimeMs}">${dtg[0]}</td><td>${dtg[1]}</td><td data-raw="${list[index_item][4]}">${commas(list[index_item][4])}</td></tr>`);
                                     }
                                     index_item = index_item + 1;

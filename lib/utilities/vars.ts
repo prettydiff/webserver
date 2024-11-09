@@ -26,7 +26,10 @@ const vars:vars = {
     shell: (process.platform === "win32")
         ? "powershell.exe"
         : "/bin/sh",
-    system_ports: [],
+    system_ports: {
+        list: [],
+        time: 0
+    },
     start_time: process.hrtime.bigint(),
     terminal: {
         cols: 199,

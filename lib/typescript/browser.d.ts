@@ -32,6 +32,10 @@ declare global {
         capitalize: () => string;
     }
 
+    interface Number {
+        dateTime: (date:boolean) => string;
+    }
+
     interface FocusEvent {
         target: HTMLElement;
     }
@@ -46,8 +50,9 @@ declare global {
     }
 
     interface module_compose {
-        cancel: (event:MouseEvent) => void;
+        cancelVariables: (event:MouseEvent) => void;
         create: (event:MouseEvent) => void;
+        cancelCreate: (event:MouseEvent) => void;
         editVariables: () => void;
         list: () => void;
         message: (event:MouseEvent) => void;
@@ -57,6 +62,8 @@ declare global {
             variables_list: HTMLElement;
             variables_new: HTMLButtonElement;
         };
+        validateContainer: (event:FocusEvent|KeyboardEvent) => void;
+        validateVariables: (event:FocusEvent|KeyboardEvent) => void;
     }
 
     interface module_message {
@@ -68,7 +75,7 @@ declare global {
     }
 
     interface module_port {
-        external: (input:type_external_port[]) => void;
+        external: (input:external_ports) => void;
         internal: () => void;
         nodes: {
             port_refresh: HTMLElement;

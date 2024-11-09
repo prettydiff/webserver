@@ -14,38 +14,7 @@ const dashboard = function dashboard():void {
             const ul:HTMLElement = document.getElementById("logs").getElementsByTagName("ul")[0],
                 strong:HTMLElement = document.createElement("strong"),
                 code:HTMLElement = document.createElement("code"),
-                time:string = (function dashboard_log_time():string {
-                    const output:string[] = [],
-                        day:string = ul.getAttribute("data-day"),
-                        date:Date = new Date(item.time),
-                        hours:string = date.getHours().toString(),
-                        minutes:string = date.getMinutes().toString(),
-                        seconds:string = date.getSeconds().toString(),
-                        milliseconds:string = date.getMilliseconds().toString(),
-                        mil:string = (milliseconds.length === 1)
-                            ? `00${milliseconds}`
-                            : (milliseconds.length === 2)
-                                ? `0${milliseconds}`
-                                : milliseconds;
-                    output.push((hours.length < 2)
-                        ? `0${hours}`
-                        : hours);
-                    output.push((minutes.length < 2)
-                        ? `0${minutes}`
-                        : minutes);
-                    output.push((seconds.length < 2)
-                        ? `0${seconds}`
-                        : seconds);
-                    if (day === null || date.getDate().toString() !== day) {
-                        timeElement.appendText(`[${date.toDateString()}]`);
-                        li.appendChild(timeElement);
-                        ul.appendChild(li);
-                        li = document.createElement("li");
-                        timeElement = document.createElement("time");
-                        ul.setAttribute("data-day", date.getDate().toString());
-                    }
-                    return `[${output.join(":")}.${mil}]`;
-                }());
+                time:string = item.time.dateTime(false);
             timeElement.appendText(time);
             li.appendChild(timeElement);
             li.setAttribute("class", `log-${item.status}`);
@@ -79,7 +48,9 @@ const dashboard = function dashboard():void {
                     return null;
                 };
             if (loaded === true) {
+                const server_new:HTMLButtonElement = document.getElementById("servers").getElementsByClassName("server-new")[0] as HTMLButtonElement;
                 loaded = false;
+                server_new.disabled = false;
                 status.setAttribute("class", "connection-offline");
                 status.getElementsByTagName("strong")[0].textContent = "Offline";
                 if (serverList !== undefined) {
@@ -96,18 +67,29 @@ const dashboard = function dashboard():void {
                 if (terminal.socket !== null) {
                     terminal.socket.close();
                 }
+                if (compose.nodes.variables_new.disabled === true) {
+                    const compose_variable_cancel:HTMLButtonElement = document.getElementById("compose").getElementsByClassName("section")[0].getElementsByClassName("server-cancel")[0] as HTMLButtonElement;
+                    compose_variable_cancel.click();
+                }
             }
         },
         compose:module_compose = {
             // Download and install Docker to Windows with 'winget install --id=Docker.DockerCLI -e' and to Debian Linux with 'sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin'.
-            cancel: function dashboard_composeCancel(event:MouseEvent):void {
+            cancelCreate: function dashboard_composeCancelCreate(event:MouseEvent):void {
+                const target:HTMLElement = event.target,
+                    div:HTMLElement = target.getAncestor("section", "class");
+                div.parentNode.removeChild(div);
+                compose.nodes.containers_new.disabled = false;
+            },
+            cancelVariables: function dashboard_composeCancelVariables(event:MouseEvent):void {
                 const target:HTMLElement = event.target.getAncestor("div", "tag"),
                     edit:HTMLElement = target.getElementsByClassName("compose-edit")[0] as HTMLElement,
                     buttons:HTMLElement = target.getElementsByClassName("buttons")[1] as HTMLElement,
-                    ul:HTMLElement = target.getElementsByTagName("ul")[0];
+                    ul:HTMLElement = target.getElementsByClassName("validation")[0] as HTMLElement;
                 edit.parentNode.removeChild(edit);
                 buttons.parentNode.removeChild(buttons);
-                ul.style.display = "block";
+                ul.parentNode.removeChild(ul);
+                compose.nodes.variables_list.style.display = "block";
                 compose.nodes.variables_new.disabled = false;
             },
             create: function dashboard_composeCreate(event:MouseEvent):void {
@@ -119,6 +101,7 @@ const dashboard = function dashboard():void {
                     label:HTMLElement = document.createElement("label"),
                     span:HTMLElement = document.createElement("span"),
                     button:HTMLElement = document.createElement("button");
+                // name input
                 span.appendText("Container Name");
                 span.setAttribute("class", "text");
                 input.type = "text";
@@ -126,6 +109,8 @@ const dashboard = function dashboard():void {
                 label.appendChild(input);
                 p.appendChild(label);
                 div.appendChild(p);
+
+                // compose textarea
                 p = document.createElement("p");
                 label = document.createElement("label");
                 span = document.createElement("span");
@@ -135,11 +120,18 @@ const dashboard = function dashboard():void {
                 label.appendChild(textArea);
                 p.appendChild(label);
                 div.appendChild(p);
+
+                // buttons
                 p = document.createElement("p");
+
+                // button cancel
                 p.setAttribute("class", "buttons");
                 button.appendText("⚠ Cancel");
                 button.setAttribute("class", "server-cancel");
+                button.onclick = compose.cancelCreate;
                 p.appendChild(button);
+
+                // button save
                 button = document.createElement("button");
                 button.appendText("🖪 Modify");
                 button.setAttribute("class", "server-modify");
@@ -166,7 +158,7 @@ const dashboard = function dashboard():void {
                 } while (index < len);
                 cancel.appendText("⚠ Cancel");
                 cancel.setAttribute("class", "server-cancel");
-                cancel.onclick = compose.cancel;
+                cancel.onclick = compose.cancelVariables;
                 buttons.appendChild(cancel);
                 save.appendText("🖪 Modify");
                 save.setAttribute("class", "server-modify");
@@ -183,6 +175,9 @@ const dashboard = function dashboard():void {
                 compose.nodes.variables_list.parentNode.appendChild(p);
                 compose.nodes.variables_list.parentNode.appendChild(buttons);
                 compose.nodes.variables_new.disabled = true;
+                textArea.onkeyup = compose.validateVariables;
+                textArea.onfocus = compose.validateVariables;
+                textArea.focus();
             },
             list: function dashboard_composeList():void {
                 const populate = function dashboard_composeList_populate(type:"containers"|"variables"):void {
@@ -193,6 +188,13 @@ const dashboard = function dashboard():void {
                         strong:HTMLElement = null,
                         span:HTMLElement = null,
                         index:number = 0;
+                    index = parent.childNodes.length;
+                    if (index > 0) {
+                        do {
+                            index = index - 1;
+                            parent.removeChild(parent.firstChild);
+                        } while (index > 0);
+                    }
                     if (len > 0) {
                         do {
                             li = document.createElement("li");
@@ -222,6 +224,44 @@ const dashboard = function dashboard():void {
                 containers_new: document.getElementById("compose").getElementsByClassName("compose-container-new")[0] as HTMLButtonElement,
                 variables_list: document.getElementById("compose").getElementsByClassName("compose-variable-list")[0] as HTMLElement,
                 variables_new: document.getElementById("compose").getElementsByClassName("compose-variable-new")[0] as HTMLButtonElement
+            },
+            validateContainer: function dashboard_composeValidateContainer(event:FocusEvent|KeyboardEvent):void {
+                const target:HTMLElement = event.target;
+            },
+            validateVariables: function dashboard_composeValidateVariables(event:FocusEvent|KeyboardEvent):void {
+                const target:HTMLTextAreaElement = event.target as HTMLTextAreaElement,
+                    value:string = target.value,
+                    section:HTMLElement = target.getAncestor("section", "class"),
+                    modify:HTMLButtonElement = section.getElementsByClassName("server-modify")[0] as HTMLButtonElement,
+                    text = function dashboard_composeValidateVariables_fail(message:string, pass:boolean):void {
+                        const ul:HTMLElement = document.createElement("ul"),
+                            old:HTMLElement = section.getElementsByClassName("validation")[0] as HTMLElement,
+                            buttons:HTMLElement = section.getElementsByClassName("buttons")[1] as HTMLElement,
+                            li:HTMLElement = document.createElement("li");
+                        if (pass === true) {
+                            modify.disabled = false;
+                        } else {
+                            modify.disabled = true;
+                        }
+                        li.setAttribute("class", `pass-${pass}`);
+                        li.appendText(message);
+                        ul.appendChild(li);
+                        ul.setAttribute("class", "validation");
+                        if (old !== undefined) {
+                            section.removeChild(old);
+                        }
+                        section.insertBefore(ul, buttons);
+                    };
+                let variables:store_string = null;
+                // eslint-disable-next-line no-restricted-syntax
+                try {
+                    variables = JSON.parse(value);
+                } catch (e:unknown) {
+                    const error:Error = e as Error;
+                    text(error.message, false);
+                    return;
+                }
+                text("Input is valid JSON format.", true);
             }
         },
         message:module_message = {
@@ -432,7 +472,7 @@ const dashboard = function dashboard():void {
                                 }
                                 ports.internal();
                             } else if (data.type === "port") {
-                                ports.external(data.configuration as type_external_port[]);
+                                ports.external(data.configuration as external_ports);
                             }
                         }
                     }
@@ -527,27 +567,28 @@ const dashboard = function dashboard():void {
             }
         },
         ports:module_port = {
-            external: function dashboard_portsExternal(input:type_external_port[]):void {
+            external: function dashboard_portsExternal(input:external_ports):void {
                 // must test
                 // 1. bad command, display language not table
                 // 2. on update then update table if not there
                 const servers:string[] = Object.keys(payload.servers),
                     loop_ports = function dashboard_portsExternal(number:number):void {
-                        let indexPorts:number = input.length;
+                        let indexPorts:number = input.list.length;
                         if (indexPorts > 0) {
                             do {
                                 indexPorts = indexPorts - 1;
-                                if (number === input[indexPorts][0]) {
-                                    input.splice(indexPorts, 1);
+                                if (number === input.list[indexPorts][0]) {
+                                    input.list.splice(indexPorts, 1);
                                 }
                             } while (indexPorts > 0);
                         }
                     },
                     portElement:HTMLElement = document.getElementById("ports"),
+                    updated:HTMLElement = portElement.getElementsByClassName("updated")[0] as HTMLElement,
                     tbody_old:HTMLElement = portElement.getElementsByTagName("tbody")[0],
                     tbody_new:HTMLElement = document.createElement("tbody");
                 let indexServers:number = servers.length,
-                    indexPorts:number = input.length,
+                    indexPorts:number = input.list.length,
                     indexKeys:number = 0,
                     keys:string[] = null,
                     tr:HTMLElement = null,
@@ -555,12 +596,12 @@ const dashboard = function dashboard():void {
                 if (indexPorts < 1) {
                     return;
                 }
-                if (input[0] === null) {
+                if (input.list[0] === null) {
                     const ul:HTMLElement = document.createElement("ul"),
                         p:HTMLElement = portElement.getElementsByTagName("p")[0];
                     let li:HTMLElement = document.createElement("li"),
                         code:HTMLElement = document.createElement("code");
-                    p.textContent = `${input[1][1]} Download and install NMap with these commands:`;
+                    p.textContent = `${input.list[1][1]} Download and install NMap with these commands:`;
                     li.appendText("Windows ");
                     code.appendText("winget install -e --id Insecure.Nmap");
                     li.appendChild(code);
@@ -573,12 +614,13 @@ const dashboard = function dashboard():void {
                     ul.appendChild(li);
                     p.parentNode.insertBefore(ul, p.nextSibling);
                     tbody_old.parentNode.style.display = "none";
+                    updated.style.display = "none";
                     return;
                 }
                 if (indexServers > 0) {
                     // per server
                     do {
-                        indexPorts = input.length;
+                        indexPorts = input.list.length;
                         if (indexPorts < 1) {
                             break;
                         }
@@ -603,18 +645,18 @@ const dashboard = function dashboard():void {
                     } while (indexServers > 0);
                 }
                 indexPorts = 0;
-                indexKeys = input.length;
+                indexKeys = input.list.length;
                 if (indexKeys > 0) {
                     do {
                         tr = document.createElement("tr");
                         td = document.createElement("td");
-                        td.appendText(input[indexPorts][0].toString());
+                        td.appendText(input.list[indexPorts][0].toString());
                         tr.appendChild(td);
                         td = document.createElement("td");
-                        td.appendText(input[indexPorts][1]);
+                        td.appendText(input.list[indexPorts][1]);
                         tr.appendChild(td);
                         td = document.createElement("td");
-                        td.appendText(input[indexPorts][2]);
+                        td.appendText(input.list[indexPorts][2]);
                         tr.appendChild(td);
                         tbody_new.appendChild(tr);
                         indexPorts = indexPorts + 1;
@@ -622,6 +664,7 @@ const dashboard = function dashboard():void {
                     tbody_old.parentNode.appendChild(tbody_new);
                     tbody_old.parentNode.removeChild(tbody_old);
                 }
+                updated.getElementsByTagName("em")[0].textContent = input.time.dateTime(true);
             },
             internal: function dashboard_portsInternal():void {
                 const output:[number, string, string, string, string][] = [],
