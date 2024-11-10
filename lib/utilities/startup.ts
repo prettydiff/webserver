@@ -126,9 +126,29 @@ const startup = function utilities_startup(callback:() => void):void {
                 }
             }
         },
-        capitalize = function core_capitalize():string {
+        capitalize = function utilities_startup_capitalize():string {
             // eslint-disable-next-line no-restricted-syntax
             return this.charAt(0).toUpperCase() + this.slice(1);
+        },
+        portCallback = function utilities_startup_portCallback():void {
+            file.read({
+                callback: readCompose,
+                error_terminate: null,
+                location: `${vars.path.project}compose.json`,
+                no_file: null
+            });
+            file.read({
+                callback: readConfig,
+                error_terminate: null,
+                location: `${vars.path.project}servers.json`,
+                no_file: null
+            });
+            file.read({
+                callback: readHTML,
+                error_terminate: null,
+                location: `${vars.path.project}lib${vars.sep}dashboard${vars.sep}dashboard.html`,
+                no_file: null
+            });
         };
 
     String.prototype.capitalize = capitalize;
@@ -136,26 +156,7 @@ const startup = function utilities_startup(callback:() => void):void {
 
     options("no_color", "text");
     vars.path.project = process.argv[1].slice(0, process.argv[1].indexOf(`${vars.sep}js${vars.sep}`)) + vars.sep;
-    port_map(null, function utilities_startup_portMap():void {
-        file.read({
-            callback: readCompose,
-            error_terminate: null,
-            location: `${vars.path.project}compose.json`,
-            no_file: null
-        });
-        file.read({
-            callback: readConfig,
-            error_terminate: null,
-            location: `${vars.path.project}servers.json`,
-            no_file: null
-        });
-        file.read({
-            callback: readHTML,
-            error_terminate: null,
-            location: `${vars.path.project}lib${vars.sep}dashboard${vars.sep}dashboard.html`,
-            no_file: null
-        });
-    });
+    port_map(null, portCallback);
     if (process.platform !== "win32") {
         file.stat({
             callback: function utilities_startup_bash(stat:node_fs_BigIntStats):void {

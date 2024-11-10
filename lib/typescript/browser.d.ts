@@ -50,9 +50,9 @@ declare global {
     }
 
     interface module_compose {
+        cancelCreate: (event:MouseEvent) => void;
         cancelVariables: (event:MouseEvent) => void;
         create: (event:MouseEvent) => void;
-        cancelCreate: (event:MouseEvent) => void;
         editVariables: () => void;
         list: () => void;
         message: (event:MouseEvent) => void;

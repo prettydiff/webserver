@@ -9,9 +9,9 @@ const dashboard = function dashboard():void {
     let payload:transmit_dashboard = null,
         loaded:boolean = false;
     const log = function dashboard_log(item:services_dashboard_status):void {
-            let li:HTMLElement = document.createElement("li"),
-                timeElement:HTMLElement = document.createElement("time");
-            const ul:HTMLElement = document.getElementById("logs").getElementsByTagName("ul")[0],
+            const li:HTMLElement = document.createElement("li"),
+                timeElement:HTMLElement = document.createElement("time"),
+                ul:HTMLElement = document.getElementById("logs").getElementsByTagName("ul")[0],
                 strong:HTMLElement = document.createElement("strong"),
                 code:HTMLElement = document.createElement("code"),
                 time:string = item.time.dateTime(false);
@@ -140,6 +140,11 @@ const dashboard = function dashboard():void {
                 div.setAttribute("class", "section");
                 compose.nodes.containers_list.parentNode.insertBefore(div, compose.nodes.containers_list);
                 target.disabled = true;
+                input.onkeyup = compose.validateContainer;
+                input.onfocus = compose.validateContainer;
+                textArea.onkeyup = compose.validateContainer;
+                textArea.onfocus = compose.validateContainer;
+                input.focus();
             },
             editVariables: function dashboard_composeEditVariables():void {
                 const p:HTMLElement = document.createElement("p"),
@@ -152,10 +157,13 @@ const dashboard = function dashboard():void {
                     cancel:HTMLElement = document.createElement("button"),
                     save:HTMLElement = document.createElement("button");
                 let index:number = 0;
-                do {
-                    output.push(`"${keys[index]}": "${payload.compose.variables[keys[index]]}"`);
-                    index = index + 1;
-                } while (index < len);
+                if (len > 0) {
+                    do {
+                        output.push(`"${keys[index]}": "${payload.compose.variables[keys[index]]}"`);
+                        index = index + 1;
+                    } while (index < len);
+                    textArea.value = `{\n    ${output.join(",\n    ")}\n}`;
+                }
                 cancel.appendText("⚠ Cancel");
                 cancel.setAttribute("class", "server-cancel");
                 cancel.onclick = compose.cancelVariables;
@@ -164,7 +172,6 @@ const dashboard = function dashboard():void {
                 save.setAttribute("class", "server-modify");
                 save.onclick = compose.message;
                 buttons.appendChild(save);
-                textArea.value = `{\n    ${output.join(",\n    ")}\n}`;
                 textArea.setAttribute("class", "compose-variables-edit");
                 compose.nodes.variables_list.style.display = "none";
                 label.appendText("Docker Compose Variables");
@@ -226,7 +233,46 @@ const dashboard = function dashboard():void {
                 variables_new: document.getElementById("compose").getElementsByClassName("compose-variable-new")[0] as HTMLButtonElement
             },
             validateContainer: function dashboard_composeValidateContainer(event:FocusEvent|KeyboardEvent):void {
-                const target:HTMLElement = event.target;
+                const target:HTMLElement = event.target,
+                    section:HTMLElement = target.getAncestor("section", "class"),
+                    input:HTMLInputElement = section.getElementsByTagName("input")[0],
+                    textArea:HTMLTextAreaElement = section.getElementsByTagName("textarea")[0],
+                    buttons:HTMLElement = section.getElementsByClassName("buttons")[0] as HTMLElement,
+                    old:HTMLElement = section.getElementsByClassName("validation")[0] as HTMLElement,
+                    modify:HTMLButtonElement = buttons.getElementsByClassName("server-modify")[0] as HTMLButtonElement,
+                    ul:HTMLElement = document.createElement("ul"),
+                    reg:RegExp = (/^\s*$/);
+                let valid:boolean = true,
+                    li:HTMLElement = document.createElement("li");
+                ul.setAttribute("class", "validation");
+                if (reg.test(input.value) === true) {
+                    valid = false;
+                    li.appendText("Title field must have a value.");
+                    li.setAttribute("class", "pass-false");
+                } else {
+                    li.appendText("Title field contains a value.");
+                    li.setAttribute("class", "pass-true");
+                }
+                ul.appendChild(li);
+                li = document.createElement("li");
+                if (reg.test(textArea.value) === true) {
+                    valid = false;
+                    li.appendText("Compose file contents must have a value.");
+                    li.setAttribute("class", "pass-false");
+                } else {
+                    li.appendText("Compose file contents field contains a value.");
+                    li.setAttribute("class", "pass-true");
+                }
+                ul.appendChild(li);
+                if (valid === true) {
+                    modify.disabled = false;
+                } else {
+                    modify.disabled = true;
+                }
+                if (old !== undefined) {
+                    old.parentNode.removeChild(old);
+                }
+                section.insertBefore(ul, buttons);
             },
             validateVariables: function dashboard_composeValidateVariables(event:FocusEvent|KeyboardEvent):void {
                 const target:HTMLTextAreaElement = event.target as HTMLTextAreaElement,
@@ -252,16 +298,19 @@ const dashboard = function dashboard():void {
                         }
                         section.insertBefore(ul, buttons);
                     };
-                let variables:store_string = null;
                 // eslint-disable-next-line no-restricted-syntax
-                try {
-                    variables = JSON.parse(value);
-                } catch (e:unknown) {
-                    const error:Error = e as Error;
-                    text(error.message, false);
-                    return;
+                if (value === "" || (/^\s*\{\s*\}\s*$/).test(value) === true) {
+                    text("Supply key/value pairs in JSON format.", false);
+                } else {
+                    try {
+                        JSON.parse(value);
+                    } catch (e:unknown) {
+                        const error:Error = e as Error;
+                        text(error.message, false);
+                        return;
+                    }
+                    text("Input is valid JSON format.", true);
                 }
-                text("Input is valid JSON format.", true);
             }
         },
         message:module_message = {
@@ -327,7 +376,7 @@ const dashboard = function dashboard():void {
                         terminal.init();
                     } else if (message_item.service === "dashboard-status") {
                         const data:services_dashboard_status = message_item.data as services_dashboard_status;
-                        if (data.type !== "socket") {
+                        if (data.type !== "port" && data.type !== "socket") {
                             log(data);
                         }
                         if (data.status === "error") {

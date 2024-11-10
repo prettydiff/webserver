@@ -7,11 +7,31 @@ import vars from "./vars.js";
 // cspell: words nmap;
 
 const port_map = function utilities_portMap(data:services_dashboard_action, callback:() => void):void {
-    const command:string = "nmap --open 127.0.0.1";
-    node.child_process.exec(command, function utilities_portMap_child(error:node_childProcess_ExecException, stdout:string):void {
-        if (error === null) {
-            const output:type_external_port[] = [],
-                lines:string[] = stdout.replace(/\r\n/g, "\n").split("\n"),
+    const command:string = "nmap",
+        handler_error = function utilities_portMap_error(error:node_childProcess_ExecException):void {
+            const message:string = `When gathering port data command '${command}' failed with an error.  Perhaps application NMap is not available.`;
+            vars.system_ports = {
+                list: [null, [0, message, ""]],
+                time: Date.now()
+            };
+            log({
+                action: "activate",
+                config: error,
+                message: message,
+                status: "error",
+                type: "port"
+            });
+            if (callback !== null) {
+                callback();
+            }
+        },
+        handler_stdout = function utilities_portMap_stdout(data:Buffer):void {
+            stdout.push(data);
+        },
+        handler_stdoutEnd = function utilities_portMap_endStdout():void {
+            const data:string = Buffer.concat(stdout).toString(),
+                output:type_external_port[] = [],
+                lines:string[] = data.replace(/\r\n/g, "\n").split("\n"),
                 total:number = lines.length,
                 payload:services_dashboard_status = {
                     action: "ports-refresh",
@@ -47,24 +67,15 @@ const port_map = function utilities_portMap(data:services_dashboard_action, call
                 data: payload,
                 service: "dashboard-status"
             });
-        } else {
-            const message:string = `When gathering port data command '${command}' failed with an error.  Perhaps application NMap is not available.`;
-            vars.system_ports = {
-                list: [null, [0, message, ""]],
-                time: Date.now()
-            };
-            log({
-                action: "activate",
-                config: error,
-                message: message,
-                status: "error",
-                type: "port"
-            });
-        }
-        if (callback !== null) {
-            callback();
-        }
-    });
+            if (callback !== null) {
+                callback();
+            }
+        },
+        stdout:Buffer[] = [],
+        spawn:node_childProcess_ChildProcess = node.child_process.spawn(command, ["--open", "127.0.0.1"]);
+    spawn.stdout.on("data", handler_stdout);
+    spawn.stdout.on("end", handler_stdoutEnd);
+    spawn.on("error", handler_error);
 };
 
 export default port_map;
