@@ -5,7 +5,7 @@ import node from "./node.js";
 
 const vars:vars = {
     compose: {
-        containers: {},
+        containers: [],
         variables: {}
     },
     dashboard: "",

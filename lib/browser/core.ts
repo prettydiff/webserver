@@ -7,10 +7,7 @@ const core = function core(config:config_core):socket_object {
                 scheme:string = (location.protocol === "http:")
                     ? "ws"
                     : "wss",
-                address:string = (location.host.includes(":") === true)
-                    ? location.host
-                    : `${location.host}:${port}`,
-                socketItem:WebSocket = new WebSocket(`${scheme}://${address}`, [config.type]),
+                socketItem:WebSocket = new WebSocket(`${scheme}://${location.host}`, [config.type]),
                 open = function core_socketCall_open(event:Event):void {
                     const target:WebSocket = event.target as WebSocket;
                     socket.socket = target;
@@ -38,6 +35,11 @@ const core = function core(config:config_core):socket_object {
                 const instance:socket_object = this;
                 if (instance.socket === null || instance.socket.readyState !== 1) {
                     instance.queueStore.push(message_item);
+                } else if (instance.queueStore.length > 0) {
+                    instance.queueStore.push(message_item);
+                    do {
+                        instance.socket.send(instance.queueStore.splice(0, 1)[0]);
+                    } while (instance.queueStore.length > 0);
                 } else {
                     instance.socket.send(message_item);
                 }
@@ -172,7 +174,7 @@ const core = function core(config:config_core):socket_object {
                     if (start === null || start === undefined) {
                         return null;
                     }
-                    if (start === document.documentElement || test() === true) {
+                    if (start === document.documentElement) {
                         return start;
                     }
                     do {

@@ -72,11 +72,11 @@ startup(function index():void {
                     } while (items < servers.length);
                     // eslint-disable-next-line no-console
                     console.log(logs.join("\n"));
-                    setTimeout(function index_start_serverCallback_portMap():void {
-                        port_map(null, null, function index_start_serverCallback_portMap_recurse():void {
-                            setTimeout(index_start_serverCallback_portMap, 10000);
-                        });
-                    }, 10000);
+                    // setTimeout(function index_start_serverCallback_portMap():void {
+                    //     port_map(null, null, function index_start_serverCallback_portMap_recurse():void {
+                    //         setTimeout(index_start_serverCallback_portMap, 10000);
+                    //     });
+                    // }, 10000);
                 }
             };
         let count:number = 0,

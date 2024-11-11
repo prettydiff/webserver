@@ -2,9 +2,9 @@
 type type_activation_status = ["amber" | "green" | "red", "deactivated" | "new" | "offline" | "online" | "partially online"];
 type type_certKey = "ca" | "crt" | "key";
 type type_dashboard_action = type_halt_action | "activate" | "add";
-type type_dashboard_config = config_websocket_create | config_websocket_server | external_ports | node_childProcess_ExecException | node_error | server | services_dashboard_activate | socket_summary;
+type type_dashboard_config = config_websocket_create | config_websocket_server | external_ports | node_childProcess_ExecException | node_error | server | services_compose_container[] | services_dashboard_activate | socket_summary | store_string;
 type type_dashboard_status = "error" | "informational" | "success";
-type type_dashboard_type = "log" | "port" | "server" | "socket" | "terminal";
+type type_dashboard_type = "compose-containers" | "compose-variables" | "log" | "port" | "server" | "socket" | "terminal";
 type type_directory_item = [string, type_file, string, number, number, directory_data, string];
 type type_directory_mode = "array" | "hash" | "list" | "read" | "search" | "type";
 type type_encryption = "both" | "open" | "secure";

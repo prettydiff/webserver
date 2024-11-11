@@ -3,6 +3,7 @@ import { IModes } from "@xterm/xterm";
 declare global {
     interface services_compose_container {
         compose: string;
+        status: type_activation_status;
         title: string;
     }
 

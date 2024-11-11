@@ -24,7 +24,7 @@ const startup = function utilities_startup(callback:() => void):void {
         readCompose = function utilities_startup_readCompose(fileContents:Buffer):void {
             if (fileContents === null) {
                 vars.compose = {
-                    containers: {},
+                    containers: [],
                     variables: {}
                 };
             } else {

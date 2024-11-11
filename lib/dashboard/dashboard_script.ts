@@ -96,11 +96,15 @@ const dashboard = function dashboard():void {
                 const target:HTMLButtonElement = event.target as HTMLButtonElement,
                     div:HTMLElement = document.createElement("div"),
                     input:HTMLInputElement = document.createElement("input"),
-                    textArea:HTMLTextAreaElement = document.createElement("textarea");
+                    textArea:HTMLTextAreaElement = document.createElement("textarea"),
+                    h4:HTMLElement = document.createElement("h4");
                 let p:HTMLElement = document.createElement("p"),
                     label:HTMLElement = document.createElement("label"),
                     span:HTMLElement = document.createElement("span"),
                     button:HTMLElement = document.createElement("button");
+                h4.textContent = "New Container";
+                div.appendChild(h4);
+
                 // name input
                 span.appendText("Container Name");
                 span.setAttribute("class", "text");
@@ -135,6 +139,7 @@ const dashboard = function dashboard():void {
                 button = document.createElement("button");
                 button.appendText("🖪 Modify");
                 button.setAttribute("class", "server-modify");
+                button.onclick = compose.message;
                 p.appendChild(button);
                 div.appendChild(p);
                 div.setAttribute("class", "section");
@@ -186,60 +191,69 @@ const dashboard = function dashboard():void {
                 textArea.onfocus = compose.validateVariables;
                 textArea.focus();
             },
-            list: function dashboard_composeList():void {
-                const populate = function dashboard_composeList_populate(type:"containers"|"variables"):void {
-                    const list:string[] = Object.keys(payload.compose[type]).sort(),
-                        parent:HTMLElement = compose.nodes[`${type}_list`],
-                        len:number = list.length;
-                    let li:HTMLElement = null,
-                        strong:HTMLElement = null,
-                        span:HTMLElement = null,
-                        index:number = 0;
-                    index = parent.childNodes.length;
-                    if (index > 0) {
-                        do {
-                            index = index - 1;
-                            parent.removeChild(parent.firstChild);
-                        } while (index > 0);
-                    }
-                    if (len > 0) {
-                        do {
-                            li = document.createElement("li");
-                            if (type === "variables") {
-                                strong = document.createElement("strong");
-                                span = document.createElement("span");
-                                strong.appendText(list[index]);
-                                span.appendText(payload.compose[type][list[index]]);
-                                li.appendChild(strong);
-                                li.appendChild(span);
-                                parent.appendChild(li);
-                            }
-                            index = index + 1;
-                        } while (index < len);
-                    } else {
-                        parent.style.display = "none";
-                    }
-                };
-                populate("containers");
-                populate("variables");
+            init: function dashboard_composeInit():void {
+                compose.list("containers");
+                compose.list("variables");
                 compose.nodes.variables_new.onclick = compose.editVariables;
                 compose.nodes.containers_new.onclick = compose.create;
             },
+            list: function dashboard_composeList(type:"containers"|"variables"):void {
+                const list:string[] = Object.keys(payload.compose[type]).sort(),
+                    parent:HTMLElement = compose.nodes[`${type}_list`],
+                    len:number = list.length;
+                let li:HTMLElement = null,
+                    strong:HTMLElement = null,
+                    span:HTMLElement = null,
+                    index:number = 0;
+                index = parent.childNodes.length;
+                if (index > 0) {
+                    do {
+                        index = index - 1;
+                        parent.removeChild(parent.firstChild);
+                    } while (index > 0);
+                }
+                if (len > 0) {
+                    do {
+                        if (type === "containers") {
+                            li = server.title(payload.compose.containers[index].title);
+                            parent.appendChild(li);
+                        } else if (type === "variables") {
+                            li = document.createElement("li");
+                            strong = document.createElement("strong");
+                            span = document.createElement("span");
+                            strong.appendText(list[index]);
+                            span.appendText(payload.compose[type][list[index]]);
+                            li.appendChild(strong);
+                            li.appendChild(span);
+                            parent.appendChild(li);
+                        }
+                        index = index + 1;
+                    } while (index < len);
+                } else {
+                    parent.style.display = "none";
+                }
+            },
             message: function dashboard_composeMessage(event:MouseEvent):void {
                 const target:HTMLElement = event.target,
-                    section:HTMLElement = target.getAncestor("section", "class"),
-                    title:string = section.getElementsByTagName("h3")[0].textContent,
-                    value:string = section.getElementsByTagName("textarea")[0].value;
+                    container:boolean = (target.getAncestor("section", "class").getElementsByTagName("h3")[0] === undefined);
+                const section:HTMLElement = (container === true)
+                        ? target.getAncestor("section", "class").getAncestor("section", "class")
+                        : target.getAncestor("section", "class");
+                const cancel:HTMLButtonElement = section.getElementsByClassName("server-cancel")[0] as HTMLButtonElement;
+                const title:string = section.getElementsByTagName("h3")[0].textContent;
+                const value:string = section.getElementsByTagName("textarea")[0].value;
                 if (title === "Environmental Variables") {
                     const variables:store_string = JSON.parse(value);
                     message.send("modify", variables, "dashboard-compose-variables");
                 } else {
                     const item:services_compose_container = {
-                        compose: value,
-                        title: section.getElementsByTagName("input")[0].value
+                        compose: value.replace(/^\s+/, "").replace(/\s+$/, ""),
+                        status: ["red", "offline"],
+                        title: section.getElementsByTagName("input")[0].value.replace(/^\s+/, "").replace(/\s+$/, "")
                     };
                     message.send("add", item, "dashboard-compose-container");
                 }
+                cancel.click();
             },
             nodes: {
                 containers_list: document.getElementById("compose").getElementsByClassName("compose-container-list")[0] as HTMLElement,
@@ -280,7 +294,33 @@ const dashboard = function dashboard():void {
                 }
                 ul.appendChild(li);
                 if (valid === true) {
-                    modify.disabled = false;
+                    let index:number = payload.compose.containers.length;
+                    if (index > 0) {
+                        do {
+                            index = index - 1;
+                            if (payload.compose.containers[index].title === input.value) {
+                                if (payload.compose.containers[index].compose === textArea.value) {
+                                    valid = false;
+                                    modify.disabled = true;
+                                    li = document.createElement("li");
+                                    li.appendText("Values are populated, but aren't modified.");
+                                    li.setAttribute("class", "pass-false");
+                                    ul.appendChild(li);
+                                    break;
+                                }
+                                valid = false;
+                                modify.disabled = true;
+                                li = document.createElement("li");
+                                li.appendText("There is already a container with this name.");
+                                li.setAttribute("class", "pass-false");
+                                ul.appendChild(li);
+                                break;
+                            }
+                        } while (index > 0);
+                    }
+                    if (valid === true) {
+                        modify.disabled = false;
+                    }
                 } else {
                     modify.disabled = true;
                 }
@@ -312,19 +352,36 @@ const dashboard = function dashboard():void {
                             section.removeChild(old);
                         }
                         section.insertBefore(ul, buttons);
+                    },
+                    sort = function dashboard_composeValidateVariables_sort(object:store_string):string {
+                        const store:store_string = {},
+                            keys:string[] = Object.keys(object),
+                            len:number = keys.length;
+                        let index:number = 0;
+                        keys.sort();
+                        do {
+                            store[keys[index]] = object[keys[index]];
+                            index = index + 1;
+                        } while (index < len);
+                        return JSON.stringify(store);
                     };
+                let variables:store_string = null;
                 if (value === "" || (/^\s*\{\s*\}\s*$/).test(value) === true) {
                     text("Supply key/value pairs in JSON format.", false);
                 } else {
                     // eslint-disable-next-line no-restricted-syntax
                     try {
-                        JSON.parse(value);
+                        variables = JSON.parse(value);
                     } catch (e:unknown) {
                         const error:Error = e as Error;
                         text(error.message, false);
                         return;
                     }
-                    text("Input is valid JSON format.", true);
+                    if (sort(variables) === sort(payload.compose.variables)) {
+                        text("Value is valid JSON, but is not modified.", false);
+                    } else {
+                        text("Input is valid JSON format.", true);
+                    }
                 }
             }
         },
@@ -336,7 +393,7 @@ const dashboard = function dashboard():void {
                         loaded = true;
                         payload = message_item.data as transmit_dashboard;
                         // populate docker containers
-                        compose.list();
+                        compose.init();
                         // populate server list
                         server.list();
                         // populate log data
@@ -509,6 +566,14 @@ const dashboard = function dashboard():void {
                                 ports.internal();
                             } else if (data.type === "port") {
                                 ports.external(data.configuration as external_ports);
+                            } else if (data.type === "compose-containers") {
+                                const store:services_compose_container[] = data.configuration as services_compose_container[];
+                                payload.compose.containers = store;
+                                compose.list("containers");
+                            } else if (data.type === "compose-variables") {
+                                const store:store_string = data.configuration as store_string;
+                                payload.compose.variables = store;
+                                compose.list("variables");
                             }
                         }
                     }
@@ -1575,7 +1640,7 @@ const dashboard = function dashboard():void {
                 }, 10000);
             },
             message: message.receiver,
-            open: function dashboard_socketOpen(event:Event):void {
+            open: function dashboard_socketOpen(event:Event):void {console.log("open");
                 const target:WebSocket = event.target as WebSocket,
                     status:HTMLElement = document.getElementById("connection-status"),
                     payload:socket_data = {

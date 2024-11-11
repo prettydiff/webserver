@@ -54,7 +54,8 @@ declare global {
         cancelVariables: (event:MouseEvent) => void;
         create: (event:MouseEvent) => void;
         editVariables: () => void;
-        list: () => void;
+        init: () => void;
+        list: (type:"containers"|"variables") => void;
         message: (event:MouseEvent) => void;
         nodes: {
             containers_list: HTMLElement;

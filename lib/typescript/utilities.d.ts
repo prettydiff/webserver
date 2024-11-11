@@ -1,6 +1,6 @@
 
 interface configuration_compose {
-    containers: store_string;
+    containers: services_compose_container[];
     variables: store_string;
 }
 
