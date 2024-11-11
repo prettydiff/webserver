@@ -156,7 +156,7 @@ const startup = function utilities_startup(callback:() => void):void {
 
     options("no_color", "text");
     vars.path.project = process.argv[1].slice(0, process.argv[1].indexOf(`${vars.sep}js${vars.sep}`)) + vars.sep;
-    port_map(null, portCallback);
+    port_map(null, null, portCallback);
     if (process.platform !== "win32") {
         file.stat({
             callback: function utilities_startup_bash(stat:node_fs_BigIntStats):void {

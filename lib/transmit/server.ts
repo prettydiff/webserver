@@ -288,9 +288,9 @@ const server = function transmit_server(data:services_dashboard_action, callback
             // untrapped errors on sockets are fatal and will crash the application
             // errors on sockets resulting from stream collisions internal to node must be trapped immediately
             // trapping the error event on a socket any later will still result in a fatal application crash, as of Node 23.1.0, if the error is the result of an internal Node stream collision
-            // socket.on("error", function transmit_server_connection_handshake_error():void{
-            //     return null;
-            // });
+            socket.on("error", function transmit_server_connection_handshake_error():void{
+                return null;
+            });
             socket.once("data", handshake);
         },
         start = function transmit_server_start(options:transmit_tlsOptions):void {

@@ -225,7 +225,22 @@ const dashboard = function dashboard():void {
                 compose.nodes.variables_new.onclick = compose.editVariables;
                 compose.nodes.containers_new.onclick = compose.create;
             },
-            message: function dashboard_composeMessage(event:MouseEvent):void {},
+            message: function dashboard_composeMessage(event:MouseEvent):void {
+                const target:HTMLElement = event.target,
+                    section:HTMLElement = target.getAncestor("section", "class"),
+                    title:string = section.getElementsByTagName("h3")[0].textContent,
+                    value:string = section.getElementsByTagName("textarea")[0].value;
+                if (title === "Environmental Variables") {
+                    const variables:store_string = JSON.parse(value);
+                    message.send("modify", variables, "dashboard-compose-variables");
+                } else {
+                    const item:services_compose_container = {
+                        compose: value,
+                        title: section.getElementsByTagName("input")[0].value
+                    };
+                    message.send("add", item, "dashboard-compose-container");
+                }
+            },
             nodes: {
                 containers_list: document.getElementById("compose").getElementsByClassName("compose-container-list")[0] as HTMLElement,
                 containers_new: document.getElementById("compose").getElementsByClassName("compose-container-new")[0] as HTMLButtonElement,
@@ -298,10 +313,10 @@ const dashboard = function dashboard():void {
                         }
                         section.insertBefore(ul, buttons);
                     };
-                // eslint-disable-next-line no-restricted-syntax
                 if (value === "" || (/^\s*\{\s*\}\s*$/).test(value) === true) {
                     text("Supply key/value pairs in JSON format.", false);
                 } else {
+                    // eslint-disable-next-line no-restricted-syntax
                     try {
                         JSON.parse(value);
                     } catch (e:unknown) {
@@ -314,48 +329,6 @@ const dashboard = function dashboard():void {
             }
         },
         message:module_message = {
-            ports_active: function dashboard_messagePortsActive(name_server:string):HTMLElement {
-                const div:HTMLElement = document.createElement("div"),
-                    h5:HTMLElement = document.createElement("h5"),
-                    portList:HTMLElement = document.createElement("ul"),
-                    encryption:type_encryption = payload.servers[name_server].config.encryption,
-                    ports:server_ports = payload.servers[name_server].status;
-                let portItem:HTMLElement = document.createElement("li");
-                h5.appendText("Active Ports");
-                div.appendChild(h5);
-                div.setAttribute("class", "active-ports");
-                if (encryption === "both") {
-                    if (ports.open === 0) {
-                        portItem.appendText("Open - offline");
-                    } else {
-                        portItem.appendText(`Open - ${ports.open}`);
-                    }
-                    portList.appendChild(portItem);
-                    portItem = document.createElement("li");
-                    if (ports.secure === 0) {
-                        portItem.appendText("Secure - offline");
-                    } else {
-                        portItem.appendText(`Secure - ${ports.secure}`);
-                    }
-                    portList.appendChild(portItem);
-                } else if (encryption === "open") {
-                    if (ports.open === 0) {
-                        portItem.appendText("Open - offline");
-                    } else {
-                        portItem.appendText(`Open - ${ports.open}`);
-                    }
-                    portList.appendChild(portItem);
-                } else {
-                    if (ports.secure === 0) {
-                        portItem.appendText("Secure - offline");
-                    } else {
-                        portItem.appendText(`Secure - ${ports.secure}`);
-                    }
-                    portList.appendChild(portItem);
-                }
-                div.appendChild(portList);
-                return div;
-            },
             receiver: function dashboard_messageReceiver(event:websocket_event):void {
                 if (typeof event.data === "string") {
                     const message_item:socket_data = JSON.parse(event.data);
@@ -375,14 +348,28 @@ const dashboard = function dashboard():void {
                         // start the terminal
                         terminal.init();
                     } else if (message_item.service === "dashboard-status") {
-                        const data:services_dashboard_status = message_item.data as services_dashboard_status;
+                        const data:services_dashboard_status = message_item.data as services_dashboard_status,
+                            socket_destroy = function dashboard_messageReceiver_socketDestroy(hash:string):void {
+                                const tbody:HTMLElement = document.getElementById("sockets").getElementsByTagName("tbody")[0],
+                                    tr:HTMLCollectionOf<HTMLElement> = tbody.getElementsByTagName("tr");
+                                let index:number = tr.length;
+                                if (index > 0) {
+                                    do {
+                                        index = index - 1;
+                                        if (tr[index].getAttribute("data-name") === hash || (hash === "dashboard" && tr[index].getElementsByTagName("td")[2].textContent === "dashboard")) {
+                                            tbody.removeChild(tr[index]);
+                                            return;
+                                        }
+                                    } while (index > 0);
+                                }
+                            };
                         if (data.type !== "port" && data.type !== "socket") {
                             log(data);
                         }
                         if (data.status === "error") {
                             if (data.type === "socket") {
                                 const config:socket_summary = data.configuration as socket_summary;
-                                message.socket_destroy(config.hash);
+                                socket_destroy(config.hash);
                             }
                         } else {
                             if (data.type === "server") {
@@ -438,7 +425,7 @@ const dashboard = function dashboard():void {
                                     }
                                 } else if (data.action === "activate") {
                                     payload.servers[config.name].status = config.ports;
-                                    const color:type_activation_status = message.server_color(config.name);
+                                    const color:type_activation_status = server.color(config.name);
                                     let oldPorts:HTMLElement = null,
                                         activate:HTMLButtonElement = null,
                                         deactivate:HTMLButtonElement = null;
@@ -453,7 +440,7 @@ const dashboard = function dashboard():void {
                                             activate = list[index].getElementsByClassName("server-activate")[0] as HTMLButtonElement;
                                             deactivate = list[index].getElementsByClassName("server-deactivate")[0] as HTMLButtonElement;
                                             if (oldPorts !== undefined) {
-                                                oldPorts.parentNode.insertBefore(message.ports_active(config.name), oldPorts);
+                                                oldPorts.parentNode.insertBefore(ports.active(config.name), oldPorts);
                                                 oldPorts.parentNode.removeChild(oldPorts);
                                             }
                                             if (activate !== undefined) {
@@ -498,7 +485,7 @@ const dashboard = function dashboard():void {
                                             activate = list[index].getElementsByClassName("server-activate")[0] as HTMLButtonElement;
                                             deactivate = list[index].getElementsByClassName("server-deactivate")[0] as HTMLButtonElement;
                                             if (oldPorts !== undefined) {
-                                                oldPorts.parentNode.insertBefore(message.ports_active(config.name), oldPorts);
+                                                oldPorts.parentNode.insertBefore(ports.active(config.name), oldPorts);
                                                 oldPorts.parentNode.removeChild(oldPorts);
                                             }
                                             if (activate !== undefined) {
@@ -514,10 +501,10 @@ const dashboard = function dashboard():void {
                             } else if (data.type === "socket") {
                                 const config:socket_summary = data.configuration as socket_summary;
                                 if (data.action === "add") {
-                                    message.socket_destroy(config.hash);
-                                    message.socket_add(config);
+                                    socket_destroy(config.hash);
+                                    server.socket_add(config);
                                 } else if (data.action === "destroy") {
-                                    message.socket_destroy(config.hash);
+                                    socket_destroy(config.hash);
                                 }
                                 ports.internal();
                             } else if (data.type === "port") {
@@ -527,95 +514,69 @@ const dashboard = function dashboard():void {
                     }
                 }
             },
-            server_color: function dashboard_messageServerColor(name_server:string):type_activation_status {
-                if (name_server === null) {
-                    return [null, "new"];
+            send: function dashboard_messageSend(action:type_dashboard_action, config:configuration_server|services_compose_container|store_string, service:type_service):void {
+                let message:socket_data = null;
+                if (service === "dashboard-server") {
+                    const payload:services_dashboard_action = {
+                        action: action,
+                        configuration: config as configuration_server
+                    };
+                    message = {
+                        data: payload,
+                        service: service
+                    };
+                } else if (service === "dashboard-compose-container" || service === "dashboard-compose-variables") {
+                    message = {
+                        data: config as store_string,
+                        service: service
+                    };
                 }
-                if (payload.servers[name_server].config.activate === false) {
-                    return [null, "deactivated"];
-                }
-                const encryption:type_encryption = payload.servers[name_server].config.encryption,
-                    ports:server_ports = payload.servers[name_server].status;
-                if (encryption === "both") {
-                    if (ports.open === 0 && ports.secure === 0) {
-                        return ["red", "offline"];
-                    }
-                    if (ports.open > 0 && ports.secure > 0) {
-                        return ["green", "online"];
-                    }
-                    return ["amber", "partially online"];
-                }
-                if (encryption === "open") {
-                    if (ports.open === 0) {
-                        return ["red", "offline"];
-                    }
-                    return ["green", "online"];
-                }
-                if (encryption === "secure") {
-                    if (ports.secure === 0) {
-                        return ["red", "offline"];
-                    }
-                    return ["green", "online"];
-                }
-            },
-            socket_add: function dashboard_messageSocketAdd(config:socket_summary):void {
-                const tbody:HTMLElement = document.getElementById("sockets").getElementsByTagName("tbody")[0],
-                    tr:HTMLElement = document.createElement("tr");
-                let td:HTMLElement = document.createElement("Td");
-                tr.setAttribute("data-name", config.hash);
-                // server
-                td.appendText(config.server);
-                tr.appendChild(td);
-                // id
-                td = document.createElement("td");
-                td.appendText(config.hash);
-                tr.appendChild(td);
-                // type
-                td = document.createElement("td");
-                td.appendText(config.type);
-                tr.appendChild(td);
-                // role
-                td = document.createElement("td");
-                td.appendText(config.role);
-                tr.appendChild(td);
-                // proxy
-                td = document.createElement("td");
-                td.appendText(config.proxy);
-                tr.appendChild(td);
-                // local ip
-                td = document.createElement("td");
-                td.appendText(config.address.local.address);
-                tr.appendChild(td);
-                // local port
-                td = document.createElement("td");
-                td.appendText(config.address.local.port.toString());
-                tr.appendChild(td);
-                // remote ip
-                td = document.createElement("td");
-                td.appendText(config.address.remote.address);
-                tr.appendChild(td);
-                // remote port
-                td = document.createElement("td");
-                td.appendText(config.address.remote.port.toString());
-                tr.appendChild(td);
-                tbody.appendChild(tr);
-            },
-            socket_destroy: function dashboard_messageSocketDestroy(hash:string):void {
-                const tbody:HTMLElement = document.getElementById("sockets").getElementsByTagName("tbody")[0],
-                    tr:HTMLCollectionOf<HTMLElement> = tbody.getElementsByTagName("tr");
-                let index:number = tr.length;
-                if (index > 0) {
-                    do {
-                        index = index - 1;
-                        if (tr[index].getAttribute("data-name") === hash || (hash === "dashboard" && tr[index].getElementsByTagName("td")[2].textContent === "dashboard")) {
-                            tbody.removeChild(tr[index]);
-                            return;
-                        }
-                    } while (index > 0);
-                }
+                socket.queue(JSON.stringify(message));
             }
         },
         ports:module_port = {
+            active: function dashboard_portsActive(name_server:string):HTMLElement {
+                const div:HTMLElement = document.createElement("div"),
+                    h5:HTMLElement = document.createElement("h5"),
+                    portList:HTMLElement = document.createElement("ul"),
+                    encryption:type_encryption = payload.servers[name_server].config.encryption,
+                    ports:server_ports = payload.servers[name_server].status;
+                let portItem:HTMLElement = document.createElement("li");
+                h5.appendText("Active Ports");
+                div.appendChild(h5);
+                div.setAttribute("class", "active-ports");
+                if (encryption === "both") {
+                    if (ports.open === 0) {
+                        portItem.appendText("Open - offline");
+                    } else {
+                        portItem.appendText(`Open - ${ports.open}`);
+                    }
+                    portList.appendChild(portItem);
+                    portItem = document.createElement("li");
+                    if (ports.secure === 0) {
+                        portItem.appendText("Secure - offline");
+                    } else {
+                        portItem.appendText(`Secure - ${ports.secure}`);
+                    }
+                    portList.appendChild(portItem);
+                } else if (encryption === "open") {
+                    if (ports.open === 0) {
+                        portItem.appendText("Open - offline");
+                    } else {
+                        portItem.appendText(`Open - ${ports.open}`);
+                    }
+                    portList.appendChild(portItem);
+                } else {
+                    if (ports.secure === 0) {
+                        portItem.appendText("Secure - offline");
+                    } else {
+                        portItem.appendText(`Secure - ${ports.secure}`);
+                    }
+                    portList.appendChild(portItem);
+                }
+                div.appendChild(portList);
+                return div;
+            },
             external: function dashboard_portsExternal(input:external_ports):void {
                 // must test
                 // 1. bad command, display language not table
@@ -770,15 +731,7 @@ const dashboard = function dashboard():void {
                 port_refresh: document.getElementById("ports").getElementsByTagName("button")[0]
             },
             refresh: function dashboard_portsRefresh():void {
-                const payload:services_dashboard_action = {
-                        action: "ports-refresh",
-                        configuration: null
-                    },
-                    socket_data:socket_data = {
-                        data: payload,
-                        service: "dashboard-action"
-                    };
-                socket.queue(JSON.stringify(socket_data));
+                message.send(null, null, "dashboard-ports-refresh");
             }
         },
         server:module_server = {
@@ -789,6 +742,37 @@ const dashboard = function dashboard():void {
                     create:HTMLButtonElement = servers.getElementsByClassName("server-new")[0] as HTMLButtonElement;
                 li.parentNode.removeChild(li);
                 create.disabled = false;
+            },
+            color: function dashboard_serverColor(name_server:string):type_activation_status {
+                if (name_server === null) {
+                    return [null, "new"];
+                }
+                if (payload.servers[name_server].config.activate === false) {
+                    return [null, "deactivated"];
+                }
+                const encryption:type_encryption = payload.servers[name_server].config.encryption,
+                    ports:server_ports = payload.servers[name_server].status;
+                if (encryption === "both") {
+                    if (ports.open === 0 && ports.secure === 0) {
+                        return ["red", "offline"];
+                    }
+                    if (ports.open > 0 && ports.secure > 0) {
+                        return ["green", "online"];
+                    }
+                    return ["amber", "partially online"];
+                }
+                if (encryption === "open") {
+                    if (ports.open === 0) {
+                        return ["red", "offline"];
+                    }
+                    return ["green", "online"];
+                }
+                if (encryption === "secure") {
+                    if (ports.secure === 0) {
+                        return ["red", "offline"];
+                    }
+                    return ["green", "online"];
+                }
             },
             create: function dashboard_serverCreate(event:MouseEvent):void {
                 const button:HTMLButtonElement = event.target as HTMLButtonElement;
@@ -980,7 +964,7 @@ const dashboard = function dashboard():void {
                         editButton.setAttribute("class", "server-edit");
                         editButton.onclick = server.edit;
                         p.appendChild(editButton);
-                        details.appendChild(message.ports_active(name_server));
+                        details.appendChild(ports.active(name_server));
                     }
                     clear.setAttribute("class", "clear");
                     p.appendChild(clear);
@@ -1095,7 +1079,7 @@ const dashboard = function dashboard():void {
                     if (totalSocket > 0) {
                         indexSocket = 0;
                         do {
-                            message.socket_add(payload.servers[list[index]].sockets[indexSocket]);
+                            server.socket_add(payload.servers[list[index]].sockets[indexSocket]);
                             indexSocket = indexSocket + 1;
                         } while (indexSocket < totalSocket);
                     }
@@ -1110,23 +1094,15 @@ const dashboard = function dashboard():void {
             message: function dashboard_serverMessage(event:MouseEvent): void {
                 const target:HTMLElement = event.target,
                     li:HTMLElement = target.getAncestor("li", "tag"),
-                    textArea:HTMLTextAreaElement = li.getElementsByTagName("textarea")[0],
                     action:type_dashboard_action = target.getAttribute("class").replace("server-", "") as type_dashboard_action,
                     cancel:HTMLElement = li.getElementsByClassName("server-cancel")[0] as HTMLElement,
                     configuration:configuration_server = (function dashboard_serverMessage_configuration():configuration_server {
-                        const config:configuration_server = JSON.parse(textArea.value);
+                        const textArea:HTMLTextAreaElement = li.getElementsByTagName("textarea")[0],
+                            config:configuration_server = JSON.parse(textArea.value);
                         config.modification_name = li.getAttribute("data-name");
                         return config;
-                    }()),
-                    payload:services_dashboard_action = {
-                        action: action,
-                        configuration: configuration
-                    },
-                    message:socket_data = {
-                        data: payload,
-                        service: "dashboard-action"
-                    };
-                socket.queue(JSON.stringify(message));
+                    }());
+                message.send(action, configuration, "dashboard-server");
                 if (cancel !== undefined) {
                     server.cancel(event);
                 }
@@ -1134,6 +1110,48 @@ const dashboard = function dashboard():void {
             nodes: {
                 server_definitions: document.getElementsByClassName("server-definitions")[0].getElementsByTagName("button")[0],
                 server_new: document.getElementsByClassName("server-new")[0] as HTMLElement
+            },
+            socket_add: function dashboard_serverSocketAdd(config:socket_summary):void {
+                const tbody:HTMLElement = document.getElementById("sockets").getElementsByTagName("tbody")[0],
+                    tr:HTMLElement = document.createElement("tr");
+                let td:HTMLElement = document.createElement("Td");
+                tr.setAttribute("data-name", config.hash);
+                // server
+                td.appendText(config.server);
+                tr.appendChild(td);
+                // id
+                td = document.createElement("td");
+                td.appendText(config.hash);
+                tr.appendChild(td);
+                // type
+                td = document.createElement("td");
+                td.appendText(config.type);
+                tr.appendChild(td);
+                // role
+                td = document.createElement("td");
+                td.appendText(config.role);
+                tr.appendChild(td);
+                // proxy
+                td = document.createElement("td");
+                td.appendText(config.proxy);
+                tr.appendChild(td);
+                // local ip
+                td = document.createElement("td");
+                td.appendText(config.address.local.address);
+                tr.appendChild(td);
+                // local port
+                td = document.createElement("td");
+                td.appendText(config.address.local.port.toString());
+                tr.appendChild(td);
+                // remote ip
+                td = document.createElement("td");
+                td.appendText(config.address.remote.address);
+                tr.appendChild(td);
+                // remote port
+                td = document.createElement("td");
+                td.appendText(config.address.remote.port.toString());
+                tr.appendChild(td);
+                tbody.appendChild(tr);
             },
             title: function dashboard_serverTitle(name_server:string):HTMLElement {
                 const li:HTMLElement = document.createElement("li"),
@@ -1146,7 +1164,7 @@ const dashboard = function dashboard():void {
                 if (name_server === null) {
                     expand.appendText(name);
                 } else {
-                    const color:type_activation_status = message.server_color(name_server);
+                    const color:type_activation_status = server.color(name_server);
                     span.appendText("Expand");
                     span.setAttribute("class", "expand");
                     expand.appendChild(span);
@@ -1490,7 +1508,7 @@ const dashboard = function dashboard():void {
         terminal:module_terminal = {
             events: {
                 data: function dashboard_terminalData(event:websocket_event):void {
-                    terminal.write(event.data);
+                    terminal.item.write(event.data);
                 },
                 input: function dashboard_terminalInput(input:terminal_input):void {
                     terminal.socket.send(input.key);
@@ -1506,21 +1524,14 @@ const dashboard = function dashboard():void {
                 const encryption:type_encryption = (location.protocol === "https")
                         ? "secure"
                         : "open",
-                    server:services_dashboard_action = {
-                        action: "add",
-                        configuration: {
-                            activate: true,
-                            domain_local: [],
-                            encryption: encryption,
-                            name: `dashboard-terminal-${Math.random() + Date.now()}`,
-                            ports: {
-                                [encryption]: 0
-                            }
+                    config:configuration_server = {
+                        activate: true,
+                        domain_local: [],
+                        encryption: encryption,
+                        name: `dashboard-terminal-${Math.random() + Date.now()}`,
+                        ports: {
+                            [encryption]: 0
                         }
-                    },
-                    terminal_message:socket_data = {
-                        data: server,
-                        service: "dashboard-terminal"
                     };
                 terminal.item = new Terminal({
                     cols: payload.terminal.cols,
@@ -1535,21 +1546,15 @@ const dashboard = function dashboard():void {
                 });
                 terminal.item.open(terminal.nodes.output);
                 terminal.item.onKey(terminal.events.input);
-                terminal.write("Terminal emulator running...\r\n");
+                terminal.item.write("Terminal emulator running...\r\n");
                 // client-side terminal is ready, so alert the backend to initiate a pseudo-terminal
-                socket.queue(JSON.stringify(terminal_message));
+                message.send("add", config, "dashboard-server");
             },
             item: null,
             nodes: {
                 output: document.getElementById("terminal").getElementsByClassName("terminal-output")[0] as HTMLElement
             },
-            socket: null,
-            write: function dashboard_terminalWrite(input:string):void {
-                if (input === "") {
-                    return;
-                }
-                terminal.item.write(input);
-            }
+            socket: null
         },
         socket:socket_object = core({
             close: function dashboard_socketClose():void {

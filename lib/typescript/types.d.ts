@@ -1,7 +1,7 @@
 
 type type_activation_status = ["amber" | "green" | "red", "deactivated" | "new" | "offline" | "online" | "partially online"];
 type type_certKey = "ca" | "crt" | "key";
-type type_dashboard_action = type_halt_action | "activate" | "add" | "ports-refresh";
+type type_dashboard_action = type_halt_action | "activate" | "add";
 type type_dashboard_config = config_websocket_create | config_websocket_server | external_ports | node_childProcess_ExecException | node_error | server | services_dashboard_activate | socket_summary;
 type type_dashboard_status = "error" | "informational" | "success";
 type type_dashboard_type = "log" | "port" | "server" | "socket" | "terminal";
@@ -19,8 +19,17 @@ type type_paths = "storage" | "web_root";
 type type_search = "fragment" | "negation" | "regex";
 type type_selector = "class" | "id" | "tag";
 type type_server_property = "block_list" | "domain_local" | "encryption" | "http" | "name" | "ports" | "redirect_domain" | "redirect_internal";
-type type_service = "dashboard-action" | "dashboard-payload" | "dashboard-status" | "dashboard-terminal" | "process-kill" | "youtube-download-status" | "youtube-download";
-type type_socket_data = services_dashboard_action | services_dashboard_status | services_dashboard_terminal | services_processKill | services_youtubeDownload | services_youtubeStatus | transmit_dashboard;
+
+//   service name            - data type transmitted     - description
+// * dashboard-compose-container - store_string              - Docker compose variables
+// * dashboard-compose-variables - store_string              - Stores YAML configuration content and a name for a single docker container
+// * dashboard-payload           - transmit_dashboard        - Contains all dynamic data for populating a browser page
+// * dashboard-ports-refresh     - null                      - Updated external port information
+// * dashboard-server            - services_dashboard_status - A single server's configuration data plus an action to perform
+// * dashboard-status            - services_dashboard_status - Typically conveys log entries
+// * dashboard-terminal          - null (socket handshake)   - Invokes a pseudo-terminal
+type type_service = "dashboard-compose-container" | "dashboard-compose-variables" | "dashboard-payload" | "dashboard-ports-refresh" | "dashboard-server" | "dashboard-status" | "dashboard-terminal" | "youtube-download-status";
+type type_socket_data = services_compose_container | services_dashboard_action | services_dashboard_status | services_dashboard_terminal | services_processKill | services_youtubeDownload | services_youtubeStatus | store_string | transmit_dashboard;
 type type_socket_status = "closed" | "end" | "open" | "pending";
 type type_ui_control = "select" | "text";
 type type_vars = "block_list" | "domain_local" | "ports" | "redirect_domain" | "redirect_internal" | "server_name";

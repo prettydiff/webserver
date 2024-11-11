@@ -36,10 +36,10 @@
         "url": "git+https://github.com/prettydiff/webserver.git"
     },
     "scripts": {
-        "build": "npx swc ./lib -d ./js --ignore servers, compose",
-        "lint": "npx eslint ./",
-        "server": "node js/lib/index.js",
-        "tsc": "npx tsc --pretty"
+        "build":  "npx swc ./lib -d ./js --ignore servers, compose",
+        "lint":   "node --disable-warning=ExperimentalWarning node_modules/eslint/bin/eslint.js ./",
+        "server": "node --disable-warning=ExperimentalWarning js/lib/index.js",
+        "tsc":    "node --disable-warning=ExperimentalWarning node_modules/typescript/bin/tsc --pretty"
     },
     "types": "/lib/typescript",
     "type": "module",

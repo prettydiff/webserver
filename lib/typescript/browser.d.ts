@@ -67,14 +67,12 @@ declare global {
     }
 
     interface module_message {
-        ports_active: (name_server:string) => HTMLElement;
         receiver: (event:websocket_event) => void;
-        server_color: (name_server:string) => type_activation_status;
-        socket_add: (config:socket_summary) => void;
-        socket_destroy: (hash:string) => void;
+        send: (action:type_dashboard_action, config:configuration_server|services_compose_container|store_string, service:type_service) => void;
     }
 
     interface module_port {
+        active: (name_server:string) => HTMLElement;
         external: (input:external_ports) => void;
         internal: () => void;
         nodes: {
@@ -85,6 +83,7 @@ declare global {
 
     interface module_server {
         cancel: (event:MouseEvent) => void;
+        color: (name_server:string) => type_activation_status;
         create: (event:MouseEvent) => void;
         definitions: (event:MouseEvent) => void;
         details: (event:MouseEvent) => void;
@@ -95,6 +94,7 @@ declare global {
             server_definitions: HTMLElement;
             server_new: HTMLElement;
         };
+        socket_add: (config:socket_summary) => void;
         title: (name_server:string) => HTMLElement;
         validate: (event:FocusEvent|KeyboardEvent) => void;
     }
@@ -116,7 +116,6 @@ declare global {
             output: HTMLElement;
         };
         socket: WebSocket;
-        write: (input:string) => void;
     }
 
     interface socket_object {
@@ -129,16 +128,5 @@ declare global {
     interface terminal_input {
         domEvent:KeyboardEvent;
         key:string;
-    }
-
-    interface terminal_selection {
-        end: {
-            x: number;
-            y: number;
-        };
-        start: {
-            x: number;
-            y: number;
-        };
     }
 }

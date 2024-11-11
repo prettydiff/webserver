@@ -1,5 +1,6 @@
 
 import dashboard from "../services/dashboard.js";
+import port_map from "../utilities/port_map.js";
 import process_kill from "../services/processKill.js";
 import send from "./send.js";
 import terminal from "../services/terminal.js";
@@ -9,7 +10,6 @@ import youtube_download from "../services/youtubeDownload.js";
 const router = function transmit_router(socketData:socket_data, transmit:transmit_socket):void {
     const services:type_service = socketData.service,
         actions:transmit_receiver = {
-            "dashboard-action": dashboard,
             "dashboard_payload": function transmit_router_payload():void {
                 const socket:websocket_client = transmit.socket as websocket_client,
                     browser:transmit_dashboard = {
@@ -24,6 +24,8 @@ const router = function transmit_router(socketData:socket_data, transmit:transmi
                     service: "dashboard-payload"
                 }, socket, 1);
             },
+            "dashboard-ports-refresh": port_map,
+            "dashboard-server": dashboard,
             "dashboard-terminal": terminal.server,
             "process-kill": process_kill,
             "youtube-download": youtube_download

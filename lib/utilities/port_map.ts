@@ -6,7 +6,7 @@ import vars from "./vars.js";
 
 // cspell: words nmap;
 
-const port_map = function utilities_portMap(data:services_dashboard_action, callback:() => void):void {
+const port_map = function utilities_portMap(config:socket_data, transmit:transmit_socket, callback?:() => void):void {
     const command:string = "nmap",
         handler_error = function utilities_portMap_error(error:node_childProcess_ExecException):void {
             const message:string = `When gathering port data command '${command}' failed with an error.  Perhaps application NMap is not available.`;
@@ -34,7 +34,7 @@ const port_map = function utilities_portMap(data:services_dashboard_action, call
                 lines:string[] = data.replace(/\r\n/g, "\n").split("\n"),
                 total:number = lines.length,
                 payload:services_dashboard_status = {
-                    action: "ports-refresh",
+                    action: "modify",
                     configuration: null,
                     message: "External ports refreshed.",
                     status: "success",
@@ -67,7 +67,7 @@ const port_map = function utilities_portMap(data:services_dashboard_action, call
                 data: payload,
                 service: "dashboard-status"
             });
-            if (callback !== null) {
+            if (callback !== null && callback !== undefined) {
                 callback();
             }
         },
