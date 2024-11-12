@@ -517,7 +517,7 @@ const dashboard = function dashboard():void {
                                             break;
                                         }
                                     } while (index > 0);
-                                    if (config.name.indexOf("dashboard-terminal-") === 0) {
+                                    if (config.name === terminal.id) {
                                         const encryption:"open"|"secure" = payload.servers[config.name].config.encryption as "open"|"secure",
                                             scheme:"ws"|"wss" = (encryption === "open")
                                                 ? "ws"
@@ -1586,21 +1586,24 @@ const dashboard = function dashboard():void {
                     }
                 }
             },
+            id: null,
             info: null,
             init: function dashboard_terminalItem():void {
                 const encryption:type_encryption = (location.protocol === "https")
                         ? "secure"
                         : "open",
+                    id:string = `dashboard-terminal-${Math.random() + Date.now()}`,
                     config:configuration_server = {
                         activate: true,
                         domain_local: [],
                         encryption: encryption,
-                        name: `dashboard-terminal-${Math.random() + Date.now()}`,
+                        name: id,
                         ports: {
                             [encryption]: 0
                         },
                         temporary: true
                     };
+                terminal.id = id;
                 terminal.item = new Terminal({
                     cols: payload.terminal.cols,
                     cursorBlink: true,
@@ -1614,7 +1617,7 @@ const dashboard = function dashboard():void {
                 });
                 terminal.item.open(terminal.nodes.output);
                 terminal.item.onKey(terminal.events.input);
-                terminal.item.write("Terminal emulator running...\r\n");
+                terminal.item.write("Terminal emulator pending connection...\r\n");
                 // client-side terminal is ready, so alert the backend to initiate a pseudo-terminal
                 message.send("add", config, "dashboard-server");
             },

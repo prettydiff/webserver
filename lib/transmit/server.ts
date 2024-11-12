@@ -14,20 +14,23 @@ import socket_extension from "./socketExtension.js";
 import terminal from "../services/terminal.js";
 import vars from "../utilities/vars.js";
 
+// cspell: words untrapped
+
 const server = function transmit_server(data:services_dashboard_action, callback:(name:string) => void):void {
     let count:number = 0;
     const connection = function transmit_server_connection(TLS_socket:node_tls_TLSSocket):void {
             // eslint-disable-next-line no-restricted-syntax
             const server_name:string = this.name,
                 server:configuration_server = vars.servers[server_name].config,
-                socket:websocket_client = TLS_socket as websocket_client,
                 handshake = function transmit_server_connection_handshake(data:Buffer):void {
                     let nonceHeader:string = null,
                         domain:string = "",
                         key:string = "",
                         referer:boolean = null,
                         type:string = "";
-                    const dataString:string = data.toString("utf-8"),
+                    // eslint-disable-next-line no-restricted-syntax
+                    const socket:websocket_client = this,
+                        dataString:string = data.toString("utf-8"),
                         headerIndex:number = dataString.indexOf("\r\n\r\n"),
                         headerString:string = (headerIndex > 0)
                             ? dataString.slice(0, headerIndex)
@@ -288,10 +291,10 @@ const server = function transmit_server(data:services_dashboard_action, callback
             // untrapped errors on sockets are fatal and will crash the application
             // errors on sockets resulting from stream collisions internal to node must be trapped immediately
             // trapping the error event on a socket any later will still result in a fatal application crash, as of Node 23.1.0, if the error is the result of an internal Node stream collision
-            socket.on("error", function transmit_server_connection_handshake_error():void{
+            TLS_socket.on("error", function transmit_server_connection_handshake_error():void{
                 return null;
             });
-            socket.once("data", handshake);
+            TLS_socket.once("data", handshake);
         },
         start = function transmit_server_start(options:transmit_tlsOptions):void {
             const wsServer:server_instance = (options === null)

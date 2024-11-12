@@ -64,7 +64,7 @@ const terminal:terminal_library = {
                 name: socket.server,
                 rows: vars.terminal.rows
             }),
-            close = function services_terminalShell_close():void {console.log("closed for "+socket.server);
+            close = function services_terminalShell_close():void {
                 if (terminal.delay !== null) {
                     clearTimeout(terminal.delay);
                     terminal.delay = null;
@@ -80,7 +80,7 @@ const terminal:terminal_library = {
                 }
                 pty.kill();
             },
-            error = function services_terminalShell_error(err:node_error):void {console.log(err);
+            error = function services_terminalShell_error(err:node_error):void {
                 const config:config_log = {
                     action: "activate",
                     config: err,
