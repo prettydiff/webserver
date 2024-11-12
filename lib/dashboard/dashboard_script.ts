@@ -523,7 +523,7 @@ const dashboard = function dashboard():void {
                                                 ? "ws"
                                                 : "wss";
                                         terminal.socket = new WebSocket(`${scheme}://${location.host.split(":")[0]}:${config.ports[encryption]}`, ["terminal"]);
-                                        terminal.socket.onmessage = terminal.events.data;
+                                        terminal.socket.onmessage = terminal.events.firstData;
                                     }
                                 } else if (data.action === "deactivate") {
                                     payload.servers[config.name].status = {
@@ -1575,16 +1575,18 @@ const dashboard = function dashboard():void {
                 data: function dashboard_terminalData(event:websocket_event):void {
                     terminal.item.write(event.data);
                 },
+                firstData: function dashboard_terminalFirstData(event:websocket_event):void {
+                    terminal.socket.onmessage = terminal.events.data;
+                    terminal.info = JSON.parse(event.data);
+                    terminal.nodes.output.setAttribute("data-info", event.data);
+                },
                 input: function dashboard_terminalInput(input:terminal_input):void {
-                    terminal.socket.send(input.key);
+                    if (terminal.socket.readyState === 1) {
+                        terminal.socket.send(input.key);
+                    }
                 }
             },
-            info: {
-                entries: [],
-                lenVert: 0,
-                posVert: 0,
-                prompt: 0
-            },
+            info: null,
             init: function dashboard_terminalItem():void {
                 const encryption:type_encryption = (location.protocol === "https")
                         ? "secure"
@@ -1596,7 +1598,8 @@ const dashboard = function dashboard():void {
                         name: `dashboard-terminal-${Math.random() + Date.now()}`,
                         ports: {
                             [encryption]: 0
-                        }
+                        },
+                        temporary: true
                     };
                 terminal.item = new Terminal({
                     cols: payload.terminal.cols,
@@ -1640,7 +1643,7 @@ const dashboard = function dashboard():void {
                 }, 10000);
             },
             message: message.receiver,
-            open: function dashboard_socketOpen(event:Event):void {console.log("open");
+            open: function dashboard_socketOpen(event:Event):void {
                 const target:WebSocket = event.target as WebSocket,
                     status:HTMLElement = document.getElementById("connection-status"),
                     payload:socket_data = {

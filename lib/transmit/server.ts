@@ -1,4 +1,5 @@
 
+import file from "../utilities/file.js";
 import get_address from "../utilities/getAddress.js";
 import hash from "../utilities/hash.js";
 import http from "../http/index.js";
@@ -152,8 +153,7 @@ const server = function transmit_server(data:services_dashboard_action, callback
                                             }
                                             if (terminalFlag === true) {
                                                 terminal.shell(socket);
-                                            }
-                                            if (typeValue === "dashboard" && socket.server === "dashboard") {
+                                            } else if (typeValue === "dashboard" && socket.server === "dashboard") {
                                                 const browser:transmit_dashboard = {
                                                     compose: vars.compose,
                                                     logs: vars.logs,
@@ -390,13 +390,36 @@ const server = function transmit_server(data:services_dashboard_action, callback
         };
     }
     if (vars.servers[data.configuration.name].config.encryption === "open") {
-        start(null);
+        if (vars.servers[data.configuration.name].config.temporary === true) {
+            file.remove({
+                callback: function transmit_server_readCerts_starterOpen():void {
+                    start(null);
+                },
+                error_terminate: null,
+                exclusions: null,
+                location: `${vars.path.project}servers${vars.sep + data.configuration.name}`
+            });
+        } else {
+            start(null);
+        }
     } else {
-        read_certs(data.configuration.name, function transmit_server_readCerts(name:string, options:transmit_tlsOptions):void {
-            if (vars.servers[data.configuration.name].config.encryption === "both") {
-                start(null);
+        read_certs(data.configuration.name, function transmit_server_readCerts(server_name:string, options:transmit_tlsOptions):void {
+            const starter = function transmit_server_readCerts_starterSecure():void {
+                if (vars.servers[server_name].config.encryption === "both") {
+                    start(null);
+                }
+                start(options);
+            };
+            if (vars.servers[server_name].config.temporary === true) {
+                file.remove({
+                    callback: starter,
+                    error_terminate: null,
+                    exclusions: null,
+                    location: `${vars.path.project}servers${vars.sep + server_name}`
+                });
+            } else {
+                starter();
             }
-            start(options);
         });
     }
 };

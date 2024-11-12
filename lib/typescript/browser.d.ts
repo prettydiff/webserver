@@ -103,14 +103,10 @@ declare global {
     interface module_terminal {
         events: {
             data: (event:websocket_event) => void;
+            firstData: (event:websocket_event) => void;
             input: (input:terminal_input) => void;
         };
-        info: {
-            entries: string[];
-            lenVert: number;
-            posVert: number;
-            prompt: number;
-        };
+        info: terminal_identifiers;
         init: () => void;
         item: Terminal;
         nodes: {
@@ -124,6 +120,13 @@ declare global {
         queue: (message:string) => void;
         queueStore: string[];
         socket: WebSocket;
+    }
+
+    interface terminal_identifiers {
+        pid: number,
+        port_browser: number,
+        port_terminal: number,
+        server_name: string
     }
 
     interface terminal_input {

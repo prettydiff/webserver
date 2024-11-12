@@ -89,7 +89,7 @@ const server_halt = function services_serverHalt(data:services_dashboard_action,
         let index:number = (sockets_open === undefined)
             ? 0
             : sockets_open.length;
-        if (temporary === true || old.indexOf("dashboard-terminal-") === 0) {
+        if (temporary === true) {
             data.action = "destroy";
         }
         // 1. turn off active servers and delete their corresponding objects

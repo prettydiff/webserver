@@ -86,7 +86,7 @@ const server_create = function services_serverCreate(data:services_dashboard_act
             let index:number = 0;
             do {
                 delete vars.servers[keys[index]].config.modification_name;
-                if (vars.servers[keys[index]].config.name.indexOf("dashboard-terminal-") !== 0) {
+                if (vars.servers[keys[index]].config.temporary !== true) {
                     servers[keys[index]] = vars.servers[keys[index]].config;
                 }
                 index = index + 1;

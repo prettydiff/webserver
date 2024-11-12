@@ -1,4 +1,5 @@
 
+import get_address from "../utilities/getAddress.js";
 import log from "../utilities/log.js";
 import send from "../transmit/send.js";
 import server from "../transmit/server.js";
@@ -43,7 +44,7 @@ const terminal:terminal_library = {
                 const type:"open"|"secure" = vars.servers[name].config.encryption as "open"|"secure";
                 if (vars.server_meta[name].sockets[type].length < 1) {
                     server_halt({
-                        action: "deactivate",
+                        action: "destroy",
                         configuration: vars.servers[name].config
                     }, function services_terminal_callback_delay_callback():void {
                         delete vars.server_meta[name];
@@ -63,13 +64,14 @@ const terminal:terminal_library = {
                 name: socket.server,
                 rows: vars.terminal.rows
             }),
-            close = function services_terminalShell_close():void {
+            close = function services_terminalShell_close():void {console.log("closed for "+socket.server);
                 if (terminal.delay !== null) {
                     clearTimeout(terminal.delay);
+                    terminal.delay = null;
                 }
                 if (vars.servers[socket.server] !== undefined) {
                     server_halt({
-                        action: "deactivate",
+                        action: "destroy",
                         configuration: vars.servers[socket.server].config
                     }, function services_terminal_callback_delay_callback():void {
                         delete vars.server_meta[socket.server];
@@ -78,7 +80,7 @@ const terminal:terminal_library = {
                 }
                 pty.kill();
             },
-            error = function services_terminalShell_error(err:node_error):void {
+            error = function services_terminalShell_error(err:node_error):void {console.log(err);
                 const config:config_log = {
                     action: "activate",
                     config: err,
@@ -95,9 +97,20 @@ const terminal:terminal_library = {
             },
             out = function services_terminalShell_out(output:string):void {
                 send(output, socket, 3);
+            },
+            address:transmit_addresses_socket = get_address({
+                socket: socket,
+                type: "ws"
+            }),
+            identifiers:terminal_identifiers = {
+                pid: pty.pid,
+                port_browser: address.remote.port,
+                port_terminal: address.local.port,
+                server_name: socket.server
             };
         let input:string = null;
         socket.handler = handler;
+        send(JSON.stringify(identifiers), socket, 3);
         pty.onData(out);
         pty.onExit(close);
         socket.on("close", close);
