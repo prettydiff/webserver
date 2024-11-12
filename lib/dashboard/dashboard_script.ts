@@ -235,13 +235,13 @@ const dashboard = function dashboard():void {
             },
             message: function dashboard_composeMessage(event:MouseEvent):void {
                 const target:HTMLElement = event.target,
-                    container:boolean = (target.getAncestor("section", "class").getElementsByTagName("h3")[0] === undefined);
-                const section:HTMLElement = (container === true)
+                    container:boolean = (target.getAncestor("section", "class").getElementsByTagName("h3")[0] === undefined),
+                    section:HTMLElement = (container === true)
                         ? target.getAncestor("section", "class").getAncestor("section", "class")
-                        : target.getAncestor("section", "class");
-                const cancel:HTMLButtonElement = section.getElementsByClassName("server-cancel")[0] as HTMLButtonElement;
-                const title:string = section.getElementsByTagName("h3")[0].textContent;
-                const value:string = section.getElementsByTagName("textarea")[0].value;
+                        : target.getAncestor("section", "class"),
+                    cancel:HTMLButtonElement = section.getElementsByClassName("server-cancel")[0] as HTMLButtonElement,
+                    title:string = section.getElementsByTagName("h3")[0].textContent,
+                    value:string = section.getElementsByTagName("textarea")[0].value;
                 if (title === "Environmental Variables") {
                     const variables:store_string = JSON.parse(value);
                     message.send("modify", variables, "dashboard-compose-variables");

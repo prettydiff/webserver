@@ -124,10 +124,10 @@ declare global {
     }
 
     interface terminal_identifiers {
-        pid: number,
-        port_browser: number,
-        port_terminal: number,
-        server_name: string
+        pid: number;
+        port_browser: number;
+        port_terminal: number;
+        server_name: string;
     }
 
     interface terminal_input {

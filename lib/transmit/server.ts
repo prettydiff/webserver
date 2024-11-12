@@ -28,7 +28,7 @@ const server = function transmit_server(data:services_dashboard_action, callback
                         key:string = "",
                         referer:boolean = null,
                         type:string = "";
-                    // eslint-disable-next-line no-restricted-syntax
+                    // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
                     const socket:websocket_client = this,
                         dataString:string = data.toString("utf-8"),
                         headerIndex:number = dataString.indexOf("\r\n\r\n"),

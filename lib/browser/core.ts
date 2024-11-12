@@ -1,10 +1,7 @@
 
 const core = function core(config:config_core):socket_object {
     const socketCall = function core_socketCall():WebSocket {
-            const port:string = (location.protocol === "http:")
-                    ? "80"
-                    : "443",
-                scheme:string = (location.protocol === "http:")
+            const scheme:string = (location.protocol === "http:")
                     ? "ws"
                     : "wss",
                 socketItem:WebSocket = new WebSocket(`${scheme}://${location.host}`, [config.type]),
