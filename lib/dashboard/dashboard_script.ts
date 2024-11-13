@@ -67,6 +67,10 @@ const dashboard = function dashboard():void {
                 if (terminal.socket !== null) {
                     terminal.socket.close();
                 }
+                if (compose.nodes.containers_new.disabled === true) {
+                    const compose_containers_cancel:HTMLButtonElement = document.getElementById("compose").getElementsByClassName("section")[1].getElementsByClassName("server-cancel")[0] as HTMLButtonElement;
+                    compose_containers_cancel.click();
+                }
                 if (compose.nodes.variables_new.disabled === true) {
                     const compose_variable_cancel:HTMLButtonElement = document.getElementById("compose").getElementsByClassName("section")[0].getElementsByClassName("server-cancel")[0] as HTMLButtonElement;
                     compose_variable_cancel.click();
@@ -96,9 +100,9 @@ const dashboard = function dashboard():void {
                 const target:HTMLButtonElement = event.target as HTMLButtonElement,
                     div:HTMLElement = document.createElement("div"),
                     input:HTMLInputElement = document.createElement("input"),
-                    textArea:HTMLTextAreaElement = document.createElement("textarea"),
                     h4:HTMLElement = document.createElement("h4");
                 let p:HTMLElement = document.createElement("p"),
+                    textArea:HTMLTextAreaElement = document.createElement("textarea"),
                     label:HTMLElement = document.createElement("label"),
                     span:HTMLElement = document.createElement("span"),
                     button:HTMLElement = document.createElement("button");
@@ -106,7 +110,7 @@ const dashboard = function dashboard():void {
                 div.appendChild(h4);
 
                 // name input
-                span.appendText("Container Name");
+                span.appendText("Container Name (required)");
                 span.setAttribute("class", "text");
                 input.type = "text";
                 label.appendChild(span);
@@ -118,7 +122,20 @@ const dashboard = function dashboard():void {
                 p = document.createElement("p");
                 label = document.createElement("label");
                 span = document.createElement("span");
-                span.appendText("Docker Compose File Contents");
+                span.appendText("Description (optional)");
+                span.setAttribute("class", "text");
+                textArea.setAttribute("class", "short");
+                label.appendChild(span);
+                label.appendChild(textArea);
+                p.appendChild(label);console.log(textArea);
+                div.appendChild(p);
+
+                // compose textarea
+                p = document.createElement("p");
+                textArea = document.createElement("textarea");
+                label = document.createElement("label");
+                span = document.createElement("span");
+                span.appendText("Docker Compose YAML (required)");
                 span.setAttribute("class", "text");
                 label.appendChild(span);
                 label.appendChild(textArea);

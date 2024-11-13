@@ -72,7 +72,7 @@ const port_map = function utilities_portMap(config:socket_data, transmit:transmi
             }
         },
         stdout:Buffer[] = [],
-        spawn:node_childProcess_ChildProcess = node.child_process.spawn(command, ["-p-", "127.0.0.1"]);
+        spawn:node_childProcess_ChildProcess = node.child_process.spawn(command, ["--open", "-p-", "127.0.0.1"]);
     spawn.stdout.on("data", handler_stdout);
     spawn.stdout.on("end", handler_stdoutEnd);
     spawn.on("error", handler_error);
