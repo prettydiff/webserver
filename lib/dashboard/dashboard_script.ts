@@ -232,8 +232,8 @@ const dashboard = function dashboard():void {
                 if (len > 0) {
                     do {
                         if (type === "containers") {
-                            li = server.title(payload.compose.containers[index].title);
-                            parent.appendChild(li);
+                            // li = server.title(payload.compose.containers[index].title);
+                            // parent.appendChild(li);
                         } else if (type === "variables") {
                             li = document.createElement("li");
                             strong = document.createElement("strong");
