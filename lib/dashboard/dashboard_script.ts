@@ -127,7 +127,7 @@ const dashboard = function dashboard():void {
                 textArea.setAttribute("class", "short");
                 label.appendChild(span);
                 label.appendChild(textArea);
-                p.appendChild(label);console.log(textArea);
+                p.appendChild(label);
                 div.appendChild(p);
 
                 // compose textarea
@@ -417,7 +417,9 @@ const dashboard = function dashboard():void {
                         payload.logs.forEach(function dashboard_logsEach(item:services_dashboard_status):void {
                             log(item);
                         });
-                        // port data
+                        // port data from nmap
+                        ports.external(payload.ports);
+                        // port data from application
                         ports.internal();
                         // start the terminal
                         terminal.init();
@@ -689,24 +691,32 @@ const dashboard = function dashboard():void {
                     return;
                 }
                 if (input.list[0] === null) {
-                    const ul:HTMLElement = document.createElement("ul"),
-                        p:HTMLElement = portElement.getElementsByTagName("p")[0];
-                    let li:HTMLElement = document.createElement("li"),
-                        code:HTMLElement = document.createElement("code");
-                    p.textContent = `${input.list[1][1]} Download and install NMap with these commands:`;
-                    li.appendText("Windows ");
-                    code.appendText("winget install -e --id Insecure.Nmap");
-                    li.appendChild(code);
-                    ul.appendChild(li);
-                    li = document.createElement("li");
-                    code = document.createElement("code");
-                    li.appendText("Debian Linux ");
-                    code.appendText("sudo apt-get install nmap");
-                    li.appendChild(code);
-                    ul.appendChild(li);
-                    p.parentNode.insertBefore(ul, p.nextSibling);
-                    tbody_old.parentNode.style.display = "none";
-                    updated.style.display = "none";
+                    if (updated.style.display !== "none") {
+                        const ul:HTMLElement = document.createElement("ul"),
+                            section:HTMLElement = portElement.getElementsByClassName("section")[0] as HTMLElement,
+                            p:HTMLElement = section.getElementsByTagName("p")[0],
+                            em:HTMLElement = document.createElement("em"),
+                            text:string[] = input.list[1][1].split("'");
+                        let li:HTMLElement = document.createElement("li"),
+                            code:HTMLElement = document.createElement("code");
+                        p.textContent = text[0];
+                        em.textContent = text[1];
+                        p.appendChild(em);
+                        p.appendText(`${text[2]} Download and install NMap with these commands:`);
+                        li.appendText("Windows ");
+                        code.appendText("winget install -e --id Insecure.Nmap");
+                        li.appendChild(code);
+                        ul.appendChild(li);
+                        li = document.createElement("li");
+                        code = document.createElement("code");
+                        li.appendText("Debian Linux ");
+                        code.appendText("sudo apt-get install nmap");
+                        li.appendChild(code);
+                        ul.appendChild(li);
+                        p.parentNode.insertBefore(ul, p.nextSibling);
+                        tbody_old.parentNode.style.display = "none";
+                        updated.style.display = "none";
+                    }
                     return;
                 }
                 if (indexServers > 0) {
