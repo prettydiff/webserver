@@ -1,33 +1,7 @@
 
 interface configuration_compose {
-    containers: services_compose_container[];
+    containers: store_compose;
     variables: store_string;
-}
-
-interface configuration_server {
-    activate: boolean;
-    block_list?: {
-        host: string[];
-        ip: string[];
-        referrer: string[];
-    };
-    domain_local: string[];
-    encryption: type_encryption;
-    http?: {
-        delete?: string;
-        post?: string;
-        put?: string;
-    };
-    modification_name?: string;
-    name: string;
-    ports: server_ports;
-    redirect_domain?: {
-        [key:string]: [string, number];
-    };
-    redirect_internal?: {
-        [key:string]: store_string;
-    };
-    temporary?: boolean;
 }
 
 interface directory_data {
@@ -98,7 +72,7 @@ interface hash_output {
 }
 
 interface server {
-    config: configuration_server;
+    config: services_server;
     sockets: socket_summary[];
     status: server_ports;
 }
@@ -141,6 +115,10 @@ interface socket_summary {
     type: string;
 }
 
+interface store_compose {
+    [key:string]: services_compose;
+}
+
 interface store_flag {
     [key:string]: boolean;
 }
@@ -154,7 +132,7 @@ interface store_ports {
 }
 
 interface store_server_config {
-    [key:string]: configuration_server;
+    [key:string]: services_server;
 }
 
 interface store_servers {

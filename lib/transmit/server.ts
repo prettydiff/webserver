@@ -21,7 +21,7 @@ const server = function transmit_server(data:services_dashboard_action, callback
     const connection = function transmit_server_connection(TLS_socket:node_tls_TLSSocket):void {
             // eslint-disable-next-line no-restricted-syntax
             const server_name:string = this.name,
-                server:configuration_server = vars.servers[server_name].config,
+                server:services_server = vars.servers[server_name].config,
                 handshake = function transmit_server_connection_handshake(data:Buffer):void {
                     let nonceHeader:string = null,
                         domain:string = "",

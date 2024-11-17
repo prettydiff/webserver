@@ -14,7 +14,7 @@ import vars from "../utilities/vars.js";
 
 const server_create = function services_serverCreate(data:services_dashboard_action, callback:() => void):void {
     let count:number = 0;
-    const config:configuration_server = data.configuration,
+    const config:services_server = data.configuration,
         path_config:string = `${vars.path.project}servers.json`,
         path_servers:string = `${vars.path.project}servers${vars.sep}`,
         path_name:string = path_servers + config.name + vars.sep,

@@ -160,7 +160,7 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
         <div id="servers">
             <h2>Servers</h2>
             <p class="tab-description">A list of configured HTTP/WS servers hosted by this application and their respective status.</p>
-            <div class="server-definitions">
+            <div class="section">
                 <h3>Definitions of Server Object Properties <button class="expand">Expand</button></h3>
                 <dl>
                     <dt><em>activate</em> (string)</dt>
@@ -185,7 +185,11 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
                     <dd>Providing property <em>temporary</em> with value <em>true</em> will create a server that only accepts a first successful HTTP or WebSocket connection.  All other connections will be ignored and the server will automatically remove itself once that connection completes.</dd>
                 </dl>
             </div>
-            <p class="buttons"><button class="server-new">Create Server</button></p>
+            <div class="section">
+                <h3>Server List</h3>
+                <p class="buttons"><button class="server-new">Create Server</button></p>
+                <ul class="server-list"></ul>
+            </div>
         </div>
         <div id="sockets">
             <h2>Socket Summary</h2>

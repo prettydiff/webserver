@@ -52,7 +52,7 @@ const port_map = function utilities_portMap(config:socket_data, transmit:transmi
             }
         },
         handler_error = function utilities_portMap_error(error:node_childProcess_ExecException):void {
-            const message:string = `When gathering port data command '${command} ${args.join(" ")}' failed with an error.  Perhaps application NMap is not available.`;
+            const message:string = `When gathering port data command '${command} ${args.join(" ")}' failed with an error. Perhaps application NMap is not available or not in the system path.`;
             finish([null, [0, message, ""]], message, error);
         },
         handler_stdout = function utilities_portMap_stdout(data:Buffer):void {

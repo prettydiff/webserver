@@ -5,7 +5,7 @@ import startup from "./utilities/startup.js";
 import vars from "./utilities/vars.js";
 
 startup(function index():void {
-    const default_server = function index_defaultServer(name:string):configuration_server {
+    const default_server = function index_defaultServer(name:string):services_server {
         return {
             activate: true,
             domain_local: [

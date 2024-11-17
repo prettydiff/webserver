@@ -100,7 +100,7 @@ td .icon{display:inline-block;width:1.5em}
 #dashboard button{background:var(--background_button);border-color:var(--border_color);border-style:solid;border-radius:0;border-width:0.065em;font-size:1.2em;font-weight:bold;text-shadow:0.05em 0.05em var(--background_dark);width:10em}
 #dashboard button:hover{background:var(--border_input)}
 #dashboard button:hover:disabled{background:var(--background_button);color:var(--border_input);cursor:auto}
-#dashboard button:disabled{color:var(--border_input)}
+#dashboard .buttons button:disabled{color:var(--border_input)}
 #dashboard code {background:var(--background_textarea);border-color:var(--border_color);border-style:solid;border-width:0.1em;margin:0.5em 2em;padding:0.5em}
 #dashboard nav ul{border-color:var(--border_color);border-style:none none solid;border-width:0.1em;margin:0 0 4em;padding:0 0 1em}
 #dashboard nav li{border-color:var(--border_color);border-style:none solid none none;border-width:0.1em;display:inline-block;padding:0 0.5em}
@@ -110,32 +110,37 @@ td .icon{display:inline-block;width:1.5em}
 #dashboard .tab-description{border-color:var(--border_soft);border-style:none none solid;border-width:0.1em;margin:0 0 2em;padding:0 0 0.5em}
 #dashboard h1,
 #servers .detail_item p{margin:0 0 0.5em}
+#dashboard .compose-container-list,
+#dashboard .server-list{padding:0}
 #servers p,
 #dashboard h2,
-#servers .server-list h4{margin:0 0 0.42em}
-#servers .server-list h4{cursor:pointer}
-#servers .server-list h4:hover{background:rgba(0,0,0,0.25)}
-#servers .server-list > ul > .amber{background:var(--status_amber)}
+#dashboard .compose-container-list h4,
+#dashboard .server-list h4{cursor:pointer;margin:0 0 0.42em}
+#dashboard .compose-container-list h4:hover,
+#dashboard .server-list h4:hover{background:rgba(0,0,0,0.25)}
+#dashboard .compose-container-list .amber,
+#dashboard .server-list .amber{background:var(--status_amber)}
 #connection-status.connection-online,
-#servers .server-list > ul > .green{background:var(--status_green)}
+#dashboard .compose-container-list .green,
+#dashboard .server-list .green{background:var(--status_green)}
 #connection-status.connection-offline,
-#servers .server-list > ul > .red{background:var(--status_red)}
-#servers h5{font-size:1em;margin:0}
-#servers div.edit{font-size:1.6em}
-#servers .server-definitions dl{display:none}
-#servers .server-definitions h3{margin:0 0 0.5em}
-#servers .server-list h4 button{background:none;border-style:none;box-shadow:none;display:block;font-size:1em;padding:0;text-align:left;width:100%}
-#servers .server-definitions .expand,
-#servers .server-list h4 .expand{display:block;float:right}
-#servers .server-definitions .expand{font-size:0.5em}
-#servers .server-list h4 .expand{font-size:0.5em}
-#servers ul{font-size:1em;margin:1em 0 0;padding:0}
-#servers .server-definitions,
-#servers .server-list,
-#compose .compose-variable-list li,
-#servers li{border-color:var(--border_color);border-style:solid;border-width:0.1em;font-size:1em;padding:1em 1em 0}
-#servers .server-list{padding-bottom:1em}
-#compose .compose-variable-list li,
+#dashboard .compose-container-list .red,
+#dashboard .server-list .red{background:var(--status_red)}
+#dashboard .edit .summary h5{font-size:1em;margin:0}
+#dashboard div.edit{font-size:1.6em;}
+#dashboard div > .edit{border-color:var(--border_input);border-style:solid;border-width:0.1em;padding:1em}
+#dashboard div.edit p{font-size:1em}
+#servers .section dl{display:none}
+#dashboard .section > .buttons{margin:0 0 2em}
+#dashboard .compose-container-list h4 button,
+#dashboard .server-list h4 button{background:none;border-style:none;box-shadow:none;display:block;font-size:1em;padding:0;text-align:left;width:100%}
+#dashboard h3 .expand,
+#dashboard h4 .expand{display:block;float:right;font-size:0.5em}
+#dashboard h3 .expand{font-size:0.8em}
+#dashboard h4 .expand{font-size:0.5em}
+#dashboard .edit .summary ul{font-size:1em;margin:1em 0 0;padding:0}
+#dashboard main li{border-color:var(--border_color);border-style:solid;border-width:0.1em;font-size:1em;padding:1em 1em 0}
+#compose li,
 #servers li{list-style:none}
 #compose .compose-variable-list li{background:var(--background_textarea);padding:1em}
 #compose .compose-variable-list span,
@@ -145,47 +150,41 @@ td .icon{display:inline-block;width:1.5em}
 #servers label span.details-redundant,
 #dashboard label span.text{background:transparent;border-style:none;display:inline-block;font-size:1em;font-weight:bold;line-height:2.5;width:auto}
 #servers label span.details-redundant{text-indent:-2000em}
-#compose .server-cancel,
-#compose .server-modify,
-#servers .server-activate,
-#servers .server-add,
-#servers .server-deactivate,
-#servers .server-cancel,
-#servers .server-modify,
-#servers .server-destroy{margin:1em 3em}
-#compose .server-modify,
-#servers .server-activate,
-#servers .server-add,
-#servers .server-modify{float:right}
-#servers .server-deactivate,
-#servers .server-destroy{float:left}
+#dashboard button.server-activate,
+#dashboard button.server-add,
+#dashboard button.server-deactivate,
+#dashboard button.server-cancel,
+#dashboard button.server-modify,
+#dashboard button.server-destroy{margin:1em 3em}
+#dashboard button.server-add,
+#dashboard button.server-modify,
+#dashboard button.server-activate{float:right}
+#dashboard button.server-deactivate,
+#dashboard button.server-destroy{float:left}
 #dashboard .pass-true,
 #logs li.log-success,
-#compose .server-modify,
-#servers .server-add,
-#servers .server-modify{color:var(--text_green)}
-#servers .server-edit{display:block;margin:1em auto}
-#servers .server-edit,
+#dashboard button.server-modify,
+#dashboard button.server-add{color:var(--text_green)}
+#dashboard button.server-edit{display:block;margin:1em auto}
+#dashboard button.server-edit,
 #dashboard .pass-warn,
-#compose .server-cancel,
-#servers .server-activate,
-#servers .server-deactivate,
-#servers .server-cancel{color:var(--text_yellow)}
-#servers .server-destroy{color:var(--fail_dark)}
-#servers .server-new{margin:2em 0}
+#dashboard button.server-activate,
+#dashboard button.server-deactivate,
+#dashboard button.server-cancel{color:var(--text_yellow)}
+#dashboard button.server-destroy{color:var(--fail_dark)}
 #dashboard input,
 #dashboard textarea{box-sizing:border-box;display:block;font-size:1em;margin:0 0 1em;width:100%}
 #dashboard textarea{height:35em;overflow:scroll}
 #servers .active-ports,
-#servers .summary{background:var(--background);border-color:var(--border_color);border-style:solid;border-width:0.1em;margin:0 0 1em;padding:1em 0.5em}
-#servers .summary{display:none}
-#servers .edit label,
-#servers .edit label span{display:block}
-#servers .edit label span{height:2em}
-#servers .edit h4{font-size:1.2em}
-#servers .edit li{border-style:none;list-style-type:disc;margin:0.5em 0 0 1em;padding:0}
-#servers .edit dt,
-#servers .edit dd{font-size:1em}
+#dashboard .edit .summary{background:var(--background);border-color:var(--border_input);border-style:solid;border-width:0.1em;margin:0 0 1em;padding:1em 0.5em}
+#dashboard .edit .summary{display:none}
+#dashboard .edit label,
+#dashboard .edit label span{display:block}
+#dashboard .edit label span{height:2em}
+#dashboard .edit h4{font-size:1.2em}
+#dashboard .edit li{border-style:none;list-style-type:disc;margin:0.5em 0 0 1em;padding:0}
+#dashboard .edit dt,
+#dashboard .edit dd{font-size:1em}
 #dashboard #servers .note{clear:both;font-size:1.2em}
 #dashboard .pass-false{color:var(--fail_bright)}
 #logs > ul{background:var(--background_textarea);border-color:var(--textarea_border);border-style:solid;border-width:0.1em;padding:0.5em}

@@ -1,8 +1,10 @@
 import { IModes } from "@xterm/xterm";
 
 declare global {
-    interface services_compose_container {
+
+    interface services_compose {
         compose: string;
+        description: string;
         status: type_activation_status;
         title: string;
     }
@@ -17,7 +19,7 @@ declare global {
 
     interface services_dashboard_action {
         action: type_dashboard_action;
-        configuration: configuration_server;
+        configuration: services_server;
     }
 
     interface services_dashboard_activate {
@@ -50,6 +52,32 @@ declare global {
 
     interface services_processKill {
         process: number;
+    }
+
+    interface services_server {
+        activate: boolean;
+        block_list?: {
+            host: string[];
+            ip: string[];
+            referrer: string[];
+        };
+        domain_local: string[];
+        encryption: type_encryption;
+        http?: {
+            delete?: string;
+            post?: string;
+            put?: string;
+        };
+        modification_name?: string;
+        name: string;
+        ports: server_ports;
+        redirect_domain?: {
+            [key:string]: [string, number];
+        };
+        redirect_internal?: {
+            [key:string]: store_string;
+        };
+        temporary?: boolean;
     }
 
     interface services_terminal_request {

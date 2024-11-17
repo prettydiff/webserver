@@ -50,7 +50,6 @@ declare global {
     }
 
     interface module_compose {
-        cancelCreate: (event:MouseEvent) => void;
         cancelVariables: (event:MouseEvent) => void;
         create: (event:MouseEvent) => void;
         editVariables: () => void;
@@ -69,7 +68,7 @@ declare global {
 
     interface module_message {
         receiver: (event:websocket_event) => void;
-        send: (action:type_dashboard_action, config:configuration_server|services_compose_container|store_string, service:type_service) => void;
+        send: (action:type_dashboard_action, config:services_compose|services_server|store_string, service:type_service) => void;
     }
 
     interface module_port {
@@ -84,7 +83,7 @@ declare global {
 
     interface module_server {
         cancel: (event:MouseEvent) => void;
-        color: (name_server:string) => type_activation_status;
+        color: (name_server:string, type:type_dashboard_list) => type_activation_status;
         create: (event:MouseEvent) => void;
         definitions: (event:MouseEvent) => void;
         details: (event:MouseEvent) => void;
@@ -92,11 +91,12 @@ declare global {
         list: () => void;
         message: (event:MouseEvent) => void;
         nodes: {
+            list: HTMLElement;
             server_definitions: HTMLElement;
-            server_new: HTMLElement;
+            server_new: HTMLButtonElement;
         };
         socket_add: (config:socket_summary) => void;
-        title: (name_server:string) => HTMLElement;
+        title: (name_server:string, type:type_dashboard_list) => HTMLElement;
         validate: (event:FocusEvent|KeyboardEvent) => void;
     }
 

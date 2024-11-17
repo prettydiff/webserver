@@ -1,6 +1,5 @@
 
-import compose_container from "../services/compose_container.js";
-import compose_variables from "../services/compose_variables.js";
+import compose from "../services/compose.js";
 import dashboard from "../services/dashboard.js";
 import port_map from "../utilities/port_map.js";
 import process_kill from "../services/processKill.js";
@@ -12,8 +11,8 @@ import youtube_download from "../services/youtubeDownload.js";
 const router = function transmit_router(socketData:socket_data, transmit:transmit_socket):void {
     const services:type_service = socketData.service,
         actions:transmit_receiver = {
-            "dashboard-compose-container": compose_container,
-            "dashboard-compose-variables": compose_variables,
+            "dashboard-compose-container": compose,
+            "dashboard-compose-variables": compose,
             "dashboard_payload": function transmit_router_payload():void {
                 const socket:websocket_client = transmit.socket as websocket_client,
                     browser:transmit_dashboard = {
