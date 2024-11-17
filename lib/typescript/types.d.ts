@@ -29,8 +29,7 @@ type type_server_property = "block_list" | "domain_local" | "encryption" | "http
 // * dashboard-ports-refresh     - null                      - Updated external port information
 // * dashboard-server            - services_dashboard_status - A single server's configuration data plus an action to perform
 // * dashboard-status            - services_dashboard_status - Typically conveys log entries
-// * dashboard-terminal          - null (socket handshake)   - Invokes a pseudo-terminal
-type type_service = "dashboard-compose-container" | "dashboard-compose-variables" | "dashboard-payload" | "dashboard-ports-refresh" | "dashboard-server" | "dashboard-status" | "dashboard-terminal" | "youtube-download-status";
+type type_service = "dashboard-compose-container" | "dashboard-compose-variables" | "dashboard-payload" | "dashboard-ports-refresh" | "dashboard-server" | "dashboard-status" | "youtube-download-status";
 type type_socket_data = services_compose | services_dashboard_action | services_dashboard_status | services_dashboard_terminal | services_processKill | services_youtubeDownload | services_youtubeStatus | store_string | transmit_dashboard;
 type type_socket_status = "closed" | "end" | "open" | "pending";
 type type_ui_control = "select" | "text";

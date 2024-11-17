@@ -4,7 +4,6 @@ import dashboard from "../services/dashboard.js";
 import port_map from "../utilities/port_map.js";
 import process_kill from "../services/processKill.js";
 import send from "./send.js";
-import terminal from "../services/terminal.js";
 import vars from "../utilities/vars.js";
 import youtube_download from "../services/youtubeDownload.js";
 
@@ -29,7 +28,6 @@ const router = function transmit_router(socketData:socket_data, transmit:transmi
             },
             "dashboard-ports-refresh": port_map,
             "dashboard-server": dashboard,
-            "dashboard-terminal": terminal.server,
             "process-kill": process_kill,
             "youtube-download": youtube_download
         };

@@ -54,12 +54,10 @@ const dashboard = function dashboard():void {
                 server_new.disabled = false;
                 status.setAttribute("class", "connection-offline");
                 status.getElementsByTagName("strong")[0].textContent = "Offline";
-                if (serverList !== undefined) {
-                    serverList.parentNode.removeChild(serverList);
-                }
                 compose.nodes.containers_list = replace(compose.nodes.containers_list, true);
                 compose.nodes.variables_list = replace(compose.nodes.variables_list, true);
                 terminal.nodes.output = replace(terminal_output, true);
+                server.nodes.list = replace(serverList, true);
                 replace(logs_old, false);
                 replace(ports_old[0], false);
                 replace(ports_old[1], false);
@@ -457,14 +455,6 @@ const dashboard = function dashboard():void {
                                             break;
                                         }
                                     } while (index > 0);
-                                    if (config.name === terminal.id) {
-                                        const encryption:"open"|"secure" = payload.servers[config.name].config.encryption as "open"|"secure",
-                                            scheme:"ws"|"wss" = (encryption === "open")
-                                                ? "ws"
-                                                : "wss";
-                                        terminal.socket = new WebSocket(`${scheme}://${location.host.split(":")[0]}:${config.ports[encryption]}`, ["terminal"]);
-                                        terminal.socket.onmessage = terminal.events.firstData;
-                                    }
                                 } else if (data.action === "deactivate") {
                                     payload.servers[config.name].status = {
                                         open: 0,
@@ -1054,6 +1044,7 @@ const dashboard = function dashboard():void {
                     edit:HTMLElement = (createServer === true)
                         ? target.getAncestor("section", "class").getElementsByClassName("edit")[0] as HTMLElement
                         : target.getAncestor("edit", "class"),
+                    editButton:HTMLElement = edit.getElementsByClassName("server-edit")[0] as HTMLElement,
                     listItem:HTMLElement = edit.parentNode,
                     dashboard:boolean = (createServer === false && listItem.getAttribute("data-name") === "dashboard"),
                     p:HTMLElement = edit.lastChild as HTMLElement,
@@ -1097,7 +1088,7 @@ const dashboard = function dashboard():void {
                     save.appendText("✔ Create");
                     save.setAttribute("class", "server-add");
                 } else {
-                    //p.removeChild(p.getElementsByClassName("server-edit")[0]);
+                    editButton.parentNode.removeChild(editButton);
                     save.appendText("🖪 Modify");
                     save.setAttribute("class", "server-modify");
                 }
@@ -1196,7 +1187,7 @@ const dashboard = function dashboard():void {
             nodes: {
                 list: document.getElementById("servers").getElementsByClassName("server-list")[0] as HTMLElement,
                 server_definitions: document.getElementById("servers").getElementsByClassName("expand")[0] as HTMLElement,
-                server_new: document.getElementsByClassName("server-new")[0] as HTMLButtonElement
+                server_new: document.getElementById("servers").getElementsByClassName("server-new")[0] as HTMLButtonElement
             },
             socket_add: function dashboard_serverSocketAdd(config:socket_summary):void {
                 const tbody:HTMLElement = document.getElementById("sockets").getElementsByTagName("tbody")[0],
@@ -1614,17 +1605,10 @@ const dashboard = function dashboard():void {
                 const encryption:type_encryption = (location.protocol === "https")
                         ? "secure"
                         : "open",
-                    id:string = `dashboard-terminal-${Math.random() + Date.now()}`,
-                    config:services_server = {
-                        activate: true,
-                        domain_local: [],
-                        encryption: encryption,
-                        name: id,
-                        ports: {
-                            [encryption]: 0
-                        },
-                        temporary: true
-                    };
+                    scheme:"ws"|"wss" = (encryption === "open")
+                        ? "ws"
+                        : "wss",
+                    id:string = `dashboard-terminal-${Math.random() + Date.now()}`;
                 terminal.id = id;
                 terminal.item = new Terminal({
                     cols: payload.terminal.cols,
@@ -1641,7 +1625,8 @@ const dashboard = function dashboard():void {
                 terminal.item.onKey(terminal.events.input);
                 terminal.item.write("Terminal emulator pending connection...\r\n");
                 // client-side terminal is ready, so alert the backend to initiate a pseudo-terminal
-                message.send("add", config, "dashboard-server");
+                terminal.socket = new WebSocket(`${scheme}://${location.host}`, [id]);
+                terminal.socket.onmessage = terminal.events.firstData;
             },
             item: null,
             nodes: {

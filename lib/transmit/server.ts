@@ -155,8 +155,8 @@ const server = function transmit_server(data:services_dashboard_action, callback
                                                 vars.server_meta[server_name].server[security].removeAllListeners();
                                             }
                                             if (terminalFlag === true) {
-                                                terminal.shell(socket);
-                                            } else if (typeValue === "dashboard" && socket.server === "dashboard") {
+                                                terminal(socket);
+                                            } else if (server_name === "dashboard") {
                                                 const browser:transmit_dashboard = {
                                                     compose: vars.compose,
                                                     logs: vars.logs,
@@ -170,13 +170,10 @@ const server = function transmit_server(data:services_dashboard_action, callback
                                                 }, socket, 1);
                                             }
                                         },
-                                        terminalFlag:boolean = (server_name.indexOf("dashboard-terminal-") === 0),
+                                        terminalFlag:boolean = (server_name === "dashboard" && type.indexOf("dashboard-terminal-") === 0),
                                         identifier:string = (terminalFlag === true)
                                             ? server_name
-                                            : `browserSocket-${hashOutput.hash}`,
-                                        typeValue:string = (terminalFlag === true)
-                                            ? "dashboard-terminal"
-                                            : type;
+                                            : `browserSocket-${hashOutput.hash}`;
                                     socket_extension({
                                         callback: client_respond,
                                         handler: message_handler.default,
@@ -186,7 +183,7 @@ const server = function transmit_server(data:services_dashboard_action, callback
                                         server: server_name,
                                         socket: socket,
                                         temporary: temporary,
-                                        type: typeValue
+                                        type: type
                                     });
                                 };
                                 hash({

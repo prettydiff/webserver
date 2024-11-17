@@ -83,7 +83,7 @@ const socket_extension = function transmit_socketExtension(config:config_websock
             config.socket.pong = {};                  // stores termination times and callbacks for pong handling
             config.socket.queue = [];                 // stores messages for transmit, because websocket protocol cannot intermix messages
             config.socket.status = "open";            // sets the status flag for the socket
-            if (config.server.indexOf("dashboard-terminal-") !== 0) {
+            if (config.type.indexOf("dashboard-terminal-") !== 0) {
                 if (config.temporary === true) {
                     const temporary = function transmit_socketExtension_temporary():void {
                         // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
