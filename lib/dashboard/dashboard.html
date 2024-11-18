@@ -73,23 +73,23 @@
                 <h4>NMap</h4>
                 <p>NMap is the port scanner used to generate the list of ports consumed by the local machine but not related to this application instance.</p>
                 <ul>
-                    <li>Windows: <a href="https://nmap.org/download.html">download the binary</a> or install command line <code>winget install -e --id Insecure.Nmap</code> Be sure to install for all users, not for administrators only, otherwise it will prompt for Administrative privilege each time it runs.</li>
-                    <li>Debian
+                    <li><p>Windows: <a href="https://nmap.org/download.html">download the binary</a> or install command line <code>winget install -e --id Insecure.Nmap</code> Be sure to install for all users, not for administrators only, otherwise it will prompt for Administrative privilege each time it runs.</p></li>
+                    <li><p>Debian
 <code>sudo apt-get update
 apt-get upgrade
-apt-get install nmap</code></li>
+apt-get install nmap</code></p></li>
                 </ul>
                 <h4>Docker Compose</h4>
                 <p>Docker Compose is a more convenient way to launch Docker containers by using a tiny YAML file to reference a prebuilt image and map resources from the container to the host machine.</p>
                 <ul>
-                    <li>Windows - (Administrative Terminal)
+                    <li><p>Windows - (Administrative Terminal)
 <code>winget install --id=Docker.DockerCLI -e
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 mkdir 'C:\Program Files\Docker'
 Start-BitsTransfer `
     -Source "https://github.com/docker/compose/releases/download/v2.30.1/docker-compose-windows-x86_64.exe" `
-    -Destination $Env:ProgramFiles\Docker\docker-compose.exe</code></li>
-                    <li>Debian
+    -Destination $Env:ProgramFiles\Docker\docker-compose.exe</code></p></li>
+                    <li><p>Debian
 <code># Add Docker's official GPG key:
 sudo apt-get update
 sudo apt-get install ca-certificates curl
@@ -104,7 +104,7 @@ echo "deb \
     $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
     sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 sudo apt-get update
-sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin</code></li>
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin</code></p></li>
                 </ul>
             </div>
         </div>

@@ -824,7 +824,7 @@ const dashboard = function dashboard():void {
                         label:HTMLElement = document.createElement("label"),
                         textArea:HTMLTextAreaElement = document.createElement("textarea"),
                         span:HTMLElement = document.createElement("span"),
-                        value:string = (section === 'servers')
+                        value:string = (section === "servers")
                             ? (function dashboard_serverDetails_value():string {
                                 const array = function dashboard_serverDetails_value_array(indent:boolean, name:string, property:string[]):void {
                                         const ind:string = (indent === true)

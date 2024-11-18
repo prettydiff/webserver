@@ -2,7 +2,6 @@
 import get_address from "../utilities/getAddress.js";
 import log from "../utilities/log.js";
 import send from "../transmit/send.js";
-import server_halt from "./server_halt.js";
 import vars from "../utilities/vars.js";
 
 import { spawn } from "@lydell/node-pty";
@@ -18,15 +17,6 @@ const terminal = function services_terminal(socket:websocket_client):void {
             rows: vars.terminal.rows
         }),
         close = function services_terminalShell_close():void {
-            if (vars.servers[socket.server] !== undefined) {
-                server_halt({
-                    action: "destroy",
-                    configuration: vars.servers[socket.server].config
-                }, function services_terminal_callback_delay_callback():void {
-                    delete vars.server_meta[socket.server];
-                    delete vars.servers[socket.server];
-                });
-            }
             pty.kill();
         },
         error = function services_terminalShell_error(err:node_error):void {

@@ -149,11 +149,13 @@ const server_halt = function services_serverHalt(data:services_dashboard_action,
                 keys:string[] = Object.keys(vars.servers),
                 total:number = keys.length - 1;
             let index:number = 0;
-            do {
-                delete vars.servers[keys[index]].config.modification_name;
-                servers[keys[index]] = vars.servers[keys[index]].config;
-                index = index + 1;
-            } while (index < total);
+            if (index > 0) {
+                do {
+                    delete vars.servers[keys[index]].config.modification_name;
+                    servers[keys[index]] = vars.servers[keys[index]].config;
+                    index = index + 1;
+                } while (index < total);
+            }
             file.write({
                 callback: function services_serverHalt_writeConfig():void {
                     complete("config");

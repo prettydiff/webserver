@@ -24,6 +24,8 @@
     --text_table_header:#282828;
     --text_yellow:#ca3;
     --textarea_border:#676767;
+
+    --font-size:1.6em;
 }
 
 html{font-size:10px}
@@ -35,7 +37,7 @@ h3{font-size:2.4em}
 h4{font-size:2em}
 h5{font-size:1.8em}
 h1,h2,h3,h4,h5,h6{margin:0 0 1em}
-p,li,dd,dt,td,th,textarea{font-size:1.6em}
+p,li,dd,dt,td,th,textarea{font-size:var(--font-size)}
 li li{font-size:1em}
 label input{display:block}
 dt em{color:var(--text_input);font-size:1.4em;font-style:normal;font-weight:bold;text-decoration:underline}
@@ -65,7 +67,7 @@ textarea{border-color:var(--textarea_border);box-shadow:0 0 0.1em var(--black)}
 .fail{color:var(--fail_bright);font-weight:bold}
 .success{color:var(--text_green);font-weight:bold}
 .yt strong{color:var(--text_yellow);font-weight:bold}
-.ytStatus{background:var(--background_textarea);border-color:var(--border_input);border-style:solid;border-radius:1.6em;border-width:0.065em;box-shadow:0.1em 0.1em 0.5em var(--black);font-family:monospace;height:50em;overflow:scroll;padding:0 0.5em;white-space:nowrap;width:100%}
+.ytStatus{background:var(--background_textarea);border-color:var(--border_input);border-style:solid;border-radius:var(--font-size);border-width:0.065em;box-shadow:0.1em 0.1em 0.5em var(--black);font-family:monospace;height:50em;overflow:scroll;padding:0 0.5em;white-space:nowrap;width:100%}
 .ytStatus h2{margin:0 0 1em}
 .buttons span,
 label.radio{display:inline-block;width:45%}
@@ -127,7 +129,7 @@ td .icon{display:inline-block;width:1.5em}
 #dashboard .compose-container-list .red,
 #dashboard .server-list .red{background:var(--status_red)}
 #dashboard .edit .summary h5{font-size:1em;margin:0}
-#dashboard div.edit{font-size:1.6em;}
+#dashboard div.edit{font-size:var(--font-size)}
 #dashboard div > .edit{border-color:var(--border_input);border-style:solid;border-width:0.1em;padding:1em}
 #dashboard div.edit p{font-size:1em}
 #servers .section dl{display:none}
@@ -139,12 +141,13 @@ td .icon{display:inline-block;width:1.5em}
 #dashboard h3 .expand{font-size:0.8em}
 #dashboard h4 .expand{font-size:0.5em}
 #dashboard .edit .summary ul{font-size:1em;margin:1em 0 0;padding:0}
-#dashboard main li{border-color:var(--border_color);border-style:solid;border-width:0.1em;font-size:1em;padding:1em 1em 0}
+#dashboard main li{border-color:var(--border_color);border-style:solid;border-width:0.1em;font-size:1em;list-style:none;padding:1em 1em 0}
+#help ul{padding:0}
 #compose li,
 #servers li{list-style:none}
 #compose .compose-variable-list li{background:var(--background_textarea);padding:1em}
 #compose .compose-variable-list span,
-#compose .compose-variable-list strong{font-size:1.6em}
+#compose .compose-variable-list strong{font-size:var(--font-size)}
 #compose .compose-variable-list strong{border-color:var(--text);border-style:none solid none none;border-width:0 0.065em 0 0;display:inline-block;margin:0 1.5em 0 0;width:10em}
 #servers label{display:flex;width:100%}
 #servers label span.details-redundant,
@@ -195,8 +198,8 @@ td .icon{display:inline-block;width:1.5em}
 #sockets,
 #terminal{display:none}
 #logs ul{height:83.9em;overflow:scroll}
-#logs li{font-family:monospace;list-style:none;margin:0.5em 0 0;white-space:pre}
-#logs li.log-error{color:var(--fail_dark)}
+#dashboard #logs li{border-style:none;font-size:var(--font-size);font-family:monospace;list-style:none;margin:0.5em 0 0;padding:0;white-space:pre}
+#logs li.log-error{color:var(--fail_bright)}
 #logs time{color:var(--text_cyan);display:inline-block;margin:0 1em 0 0}
 #logs code{color:var(--fail_bright)}
 #dashboard table{border-collapse:collapse;margin:0 0 4em}

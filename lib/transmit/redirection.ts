@@ -26,15 +26,17 @@ const redirection = function transmit_redirection(domain:string, message:Buffer|
             
             // look for wildcard matches second
             index = keys.length;
-            do {
-                index = index - 1;
-                key = keys[index];
-                wild = key.replace(/\*$/, "");
-                if (key.charAt(key.length - 1) === "*" && header[1].indexOf(wild) === 0 && header[1].indexOf(server.redirect_internal[domain][key]) !== 0) {
-                    header[1] = header[1].replace(wild, server.redirect_internal[domain][key]);
-                    return Buffer.from(str.replace(headerStr, header.join(" ")));
-                }
-            } while (index > 0);
+            if (index > 0) {
+                do {
+                    index = index - 1;
+                    key = keys[index];
+                    wild = key.replace(/\*$/, "");
+                    if (key.charAt(key.length - 1) === "*" && header[1].indexOf(wild) === 0 && header[1].indexOf(server.redirect_internal[domain][key]) !== 0) {
+                        header[1] = header[1].replace(wild, server.redirect_internal[domain][key]);
+                        return Buffer.from(str.replace(headerStr, header.join(" ")));
+                    }
+                } while (index > 0);
+            }
         }
         return message;
     }
