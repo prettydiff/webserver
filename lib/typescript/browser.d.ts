@@ -49,6 +49,14 @@ declare global {
         target: HTMLElement;
     }
 
+    interface module_common {
+        cancel: (event:MouseEvent) => void;
+        color: (name_server:string, type:type_dashboard_list) => type_activation_status;
+        details: (event:MouseEvent) => void;
+        edit: (event:MouseEvent) => void;
+        title: (name_server:string, type:type_dashboard_list) => HTMLElement;
+    }
+
     interface module_compose {
         cancelVariables: (event:MouseEvent) => void;
         create: (event:MouseEvent) => void;
@@ -82,12 +90,8 @@ declare global {
     }
 
     interface module_server {
-        cancel: (event:MouseEvent) => void;
-        color: (name_server:string, type:type_dashboard_list) => type_activation_status;
         create: (event:MouseEvent) => void;
         definitions: (event:MouseEvent) => void;
-        details: (event:MouseEvent) => void;
-        edit: (event:MouseEvent) => void;
         list: () => void;
         message: (event:MouseEvent) => void;
         nodes: {
@@ -96,7 +100,6 @@ declare global {
             server_new: HTMLButtonElement;
         };
         socket_add: (config:socket_summary) => void;
-        title: (name_server:string, type:type_dashboard_list) => HTMLElement;
         validate: (event:FocusEvent|KeyboardEvent) => void;
     }
 
