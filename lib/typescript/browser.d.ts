@@ -83,10 +83,6 @@ declare global {
         active: (name_server:string) => HTMLElement;
         external: (input:external_ports) => void;
         internal: () => void;
-        nodes: {
-            port_refresh: HTMLElement;
-        };
-        refresh: () => void;
     }
 
     interface module_server {

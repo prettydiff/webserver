@@ -26,10 +26,9 @@ type type_server_property = "block_list" | "domain_local" | "encryption" | "http
 // * dashboard-compose-container - store_string              - Docker compose variables
 // * dashboard-compose-variables - store_string              - Stores YAML configuration content and a name for a single docker container
 // * dashboard-payload           - transmit_dashboard        - Contains all dynamic data for populating a browser page
-// * dashboard-ports-refresh     - null                      - Updated external port information
 // * dashboard-server            - services_dashboard_status - A single server's configuration data plus an action to perform
 // * dashboard-status            - services_dashboard_status - Typically conveys log entries
-type type_service = "dashboard-compose-container" | "dashboard-compose-variables" | "dashboard-payload" | "dashboard-ports-refresh" | "dashboard-server" | "dashboard-status" | "youtube-download-status";
+type type_service = "dashboard-compose-container" | "dashboard-compose-variables" | "dashboard-payload" | "dashboard-server" | "dashboard-status" | "youtube-download-status";
 type type_socket_data = services_compose | services_dashboard_action | services_dashboard_status | services_dashboard_terminal | services_processKill | services_youtubeDownload | services_youtubeStatus | store_string | transmit_dashboard;
 type type_socket_status = "closed" | "end" | "open" | "pending";
 type type_ui_control = "select" | "text";

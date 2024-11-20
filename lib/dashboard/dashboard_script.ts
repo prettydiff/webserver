@@ -1099,7 +1099,6 @@ const dashboard = function dashboard():void {
                     tr:HTMLElement = null,
                     td:HTMLElement = null;
                 ports.external(payload.ports);
-                ports.nodes.port_refresh.onclick = ports.refresh;
                 do {
                     indexServers = indexServers - 1;
                     if (typeof payload.servers[servers[indexServers]].status.open === "number" && payload.servers[servers[indexServers]].status.open > 0) {
@@ -1140,12 +1139,6 @@ const dashboard = function dashboard():void {
                     tbody_old.parentNode.appendChild(tbody_new);
                     tbody_old.parentNode.removeChild(tbody_old);
                 }
-            },
-            nodes: {
-                port_refresh: document.getElementById("ports").getElementsByTagName("button")[0]
-            },
-            refresh: function dashboard_portsRefresh():void {
-                message.send(null, null, "dashboard-ports-refresh");
             }
         },
         server:module_server = {
