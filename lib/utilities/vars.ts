@@ -17,7 +17,9 @@ const vars:vars = {
     ],
     logs: [],
     path: {
-        project: ""
+        compose: "",
+        project: "",
+        servers: ""
     },
     processes: {},
     sep: node.path.sep,

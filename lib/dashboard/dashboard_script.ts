@@ -490,12 +490,9 @@ const dashboard = function dashboard():void {
         compose:module_compose = {
             cancelVariables: function dashboard_composeCancelVariables(event:MouseEvent):void {
                 const target:HTMLElement = event.target.getAncestor("div", "tag"),
-                    edit:HTMLElement = target.getElementsByClassName("compose-edit")[0] as HTMLElement,
-                    buttons:HTMLElement = target.getElementsByClassName("buttons")[1] as HTMLElement,
-                    ul:HTMLElement = target.getElementsByClassName("validation")[0] as HTMLElement;
+                    section:HTMLElement = target.getAncestor("section", "class"),
+                    edit:HTMLElement = section.getElementsByClassName("edit")[0] as HTMLElement;
                 edit.parentNode.removeChild(edit);
-                buttons.parentNode.removeChild(buttons);
-                ul.parentNode.removeChild(ul);
                 compose.nodes.variables_list.style.display = "block";
                 compose.nodes.variables_new.disabled = false;
             },
@@ -508,6 +505,8 @@ const dashboard = function dashboard():void {
                 const p:HTMLElement = document.createElement("p"),
                     buttons:HTMLElement = document.createElement("p"),
                     label:HTMLElement = document.createElement("label"),
+                    edit:HTMLElement = document.createElement("div"),
+                    ul:HTMLElement = document.createElement("ul"),
                     textArea:HTMLTextAreaElement = document.createElement("textarea"),
                     keys:string[] = Object.keys(payload.compose.variables).sort(),
                     output:string[] = [],
@@ -515,6 +514,7 @@ const dashboard = function dashboard():void {
                     cancel:HTMLElement = document.createElement("button"),
                     save:HTMLElement = document.createElement("button");
                 let index:number = 0;
+                edit.setAttribute("class", "edit");
                 if (len > 0) {
                     do {
                         output.push(`"${keys[index]}": "${payload.compose.variables[keys[index]]}"`);
@@ -537,8 +537,10 @@ const dashboard = function dashboard():void {
                 p.setAttribute("class", "compose-edit");
                 p.appendChild(label);
                 buttons.setAttribute("class", "buttons");
-                compose.nodes.variables_list.parentNode.appendChild(p);
-                compose.nodes.variables_list.parentNode.appendChild(buttons);
+                edit.appendChild(p);
+                edit.appendChild(ul);
+                edit.appendChild(buttons);
+                compose.nodes.variables_list.parentNode.appendChild(edit);
                 compose.nodes.variables_new.disabled = true;
                 textArea.onkeyup = compose.validateVariables;
                 textArea.onfocus = compose.validateVariables;
@@ -586,6 +588,7 @@ const dashboard = function dashboard():void {
             },
             message: function dashboard_composeMessage(event:MouseEvent):void {
                 const target:HTMLElement = event.target,
+                    classy:string = target.getAttribute("class"),
                     container:boolean = (target.getAncestor("section", "class").getElementsByTagName("h3")[0] === undefined),
                     section:HTMLElement = (container === true)
                         ? target.getAncestor("section", "class").getAncestor("section", "class")
@@ -602,6 +605,7 @@ const dashboard = function dashboard():void {
                             return input.replace(/^\s+/, "").replace(/\s+$/, "");
                         },
                         item:services_compose = {
+                            action: classy.replace("server-", "") as type_dashboard_action,
                             compose: trim(yaml),
                             description: trim(value),
                             status: ["red", "offline"],
@@ -680,12 +684,12 @@ const dashboard = function dashboard():void {
                 const target:HTMLTextAreaElement = event.target as HTMLTextAreaElement,
                     value:string = target.value,
                     section:HTMLElement = target.getAncestor("section", "class"),
+                    edit:HTMLElement = section.getElementsByClassName("edit")[0] as HTMLElement,
                     modify:HTMLButtonElement = section.getElementsByClassName("server-modify")[0] as HTMLButtonElement,
+                    ulOld:HTMLElement = edit.getElementsByTagName("ul")[0],
+                    ulNew:HTMLElement = document.createElement("ul"),
                     text = function dashboard_composeValidateVariables_fail(message:string, pass:boolean):void {
-                        const ul:HTMLElement = document.createElement("ul"),
-                            old:HTMLElement = section.getElementsByClassName("validation")[0] as HTMLElement,
-                            buttons:HTMLElement = section.getElementsByClassName("buttons")[1] as HTMLElement,
-                            li:HTMLElement = document.createElement("li");
+                        const li:HTMLElement = document.createElement("li");
                         if (pass === true) {
                             modify.disabled = false;
                         } else {
@@ -693,12 +697,7 @@ const dashboard = function dashboard():void {
                         }
                         li.setAttribute("class", `pass-${pass}`);
                         li.appendText(message);
-                        ul.appendChild(li);
-                        ul.setAttribute("class", "validation");
-                        if (old !== undefined) {
-                            section.removeChild(old);
-                        }
-                        section.insertBefore(ul, buttons);
+                        ulNew.appendChild(li);
                     },
                     sort = function dashboard_composeValidateVariables_sort(object:store_string):string {
                         const store:store_string = {},
@@ -713,6 +712,8 @@ const dashboard = function dashboard():void {
                         return JSON.stringify(store);
                     };
                 let variables:store_string = null;
+                ulOld.parentNode.insertBefore(ulNew, ulOld);
+                ulOld.parentNode.removeChild(ulOld);
                 if (value === "" || (/^\s*\{\s*\}\s*$/).test(value) === true) {
                     text("Supply key/value pairs in JSON format.", false);
                 } else {

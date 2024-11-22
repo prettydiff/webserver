@@ -29,7 +29,7 @@ const server_halt = function services_serverHalt(data:services_dashboard_action,
         });
     } else {
         const path_config:string = `${vars.path.project}servers.json`,
-            path_name:string = `${vars.path.project}servers${vars.sep + old + vars.sep}`,
+            path_name:string = vars.path.servers + old + vars.sep,
             flags:store_flag = {
                 config: false,
                 remove: (data.action === "destroy")
@@ -67,7 +67,7 @@ const server_halt = function services_serverHalt(data:services_dashboard_action,
                 location: path_name
             },
             server_restart = function services_serverHalt_serverRestart():void {
-                node.fs.cp(path_name, `${vars.path.project}servers${vars.sep + data.configuration.name + vars.sep}`, {
+                node.fs.cp(path_name, vars.path.servers + data.configuration.name + vars.sep, {
                     recursive: true
                 }, function server_restart_cp(erc:node_error):void {
                     if (erc === null) {

@@ -16,7 +16,7 @@ const yt_config = function services_ytConfig(name:string, callback:() => void):v
             type: "log"
         });
     } else {
-        const dest:string = `${vars.path.project}servers${vars.sep + name + vars.sep}`,
+        const dest:string = vars.path.servers + name + vars.sep,
             confWritten = function services_ytConfig_confWritten():void {
                 conf_count = conf_count + 1;
                 if (conf_count === conf_total) {

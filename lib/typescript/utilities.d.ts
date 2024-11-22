@@ -158,7 +158,9 @@ interface vars {
     interfaces: string[];
     logs: services_dashboard_status[];
     path: {
+        compose: string;
         project: string;
+        servers: string;
     };
     processes: {
         [key:string]: node_childProcess_ChildProcess;

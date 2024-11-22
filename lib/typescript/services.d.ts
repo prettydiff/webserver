@@ -3,6 +3,7 @@ import { IModes } from "@xterm/xterm";
 declare global {
 
     interface services_compose {
+        action: type_dashboard_action;
         compose: string;
         description: string;
         status: type_activation_status;

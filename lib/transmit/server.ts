@@ -397,7 +397,7 @@ const server = function transmit_server(data:services_dashboard_action, callback
                 },
                 error_terminate: null,
                 exclusions: null,
-                location: `${vars.path.project}servers${vars.sep + data.configuration.name}`
+                location: vars.path.servers + data.configuration.name
             });
         } else {
             start(null);
@@ -415,7 +415,7 @@ const server = function transmit_server(data:services_dashboard_action, callback
                     callback: starter,
                     error_terminate: null,
                     exclusions: null,
-                    location: `${vars.path.project}servers${vars.sep + server_name}`
+                    location: vars.path.servers + server_name
                 });
             } else {
                 starter();

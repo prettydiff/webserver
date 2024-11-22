@@ -156,6 +156,8 @@ const startup = function utilities_startup(callback:() => void):void {
 
     options("no_color", "text");
     vars.path.project = process.argv[1].slice(0, process.argv[1].indexOf(`${vars.sep}js${vars.sep}`)) + vars.sep;
+    vars.path.compose = `${vars.path.project}compose${vars.sep}`;
+    vars.path.servers = `${vars.path.project}servers${vars.sep}`;
     port_map(null, null, portCallback);
     if (process.platform !== "win32") {
         file.stat({

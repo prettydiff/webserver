@@ -18,7 +18,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
             ? "HEAD"
             : "GET",
         server_name:string = socket.server,
-        path:string = `${vars.path.project}servers${vars.sep + server_name + vars.sep}assets${vars.sep}`,
+        path:string = `${vars.path.servers + server_name + vars.sep}assets${vars.sep}`,
         resource:string = index0[1],
         asset:string[] = resource.split("/"),
         fileFragment:string = asset.join(vars.sep).replace(/^(\\|\/)/, ""),
