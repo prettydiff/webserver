@@ -3,11 +3,11 @@ import core from "../browser/core.js";
 import dashboard_script from "../dashboard/dashboard_script.js";
 import dateTime from "./dateTime.js";
 import file from "./file.js";
-import port_map from "./port_map.js";
 import node from "./node.js";
+import port_map from "./port_map.js";
 import vars from "./vars.js";
 
-// cspell: words bestaudio, keyid, multistreams, pathlen
+// cspell: words bestaudio, keyid, multistreams, nmap, pathlen
 
 const startup = function utilities_startup(callback:() => void):void {
     const flags:store_flag = {
@@ -158,7 +158,7 @@ const startup = function utilities_startup(callback:() => void):void {
     vars.path.project = process.argv[1].slice(0, process.argv[1].indexOf(`${vars.sep}js${vars.sep}`)) + vars.sep;
     vars.path.compose = `${vars.path.project}compose${vars.sep}`;
     vars.path.servers = `${vars.path.project}servers${vars.sep}`;
-    port_map(null, null, portCallback);
+    port_map(portCallback);
     if (process.platform !== "win32") {
         file.stat({
             callback: function utilities_startup_bash(stat:node_fs_BigIntStats):void {

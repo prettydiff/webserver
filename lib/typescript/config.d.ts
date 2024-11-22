@@ -51,6 +51,13 @@ interface config_log {
     type: type_dashboard_type;
 }
 
+interface config_spawn {
+    args: string[];
+    callback: (data:string, error:node_childProcess_ExecException) => void;
+    command: string;
+    recurse: number;
+}
+
 interface config_validate_serverKeys {
     name: "block_list" | "http" | "ports" | "redirect_domain" | "redirect_internal";
     required_name: boolean;

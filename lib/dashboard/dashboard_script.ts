@@ -1580,6 +1580,7 @@ const dashboard = function dashboard():void {
             }
         },
         terminal:module_terminal = {
+            // https://xtermjs.org/docs/
             events: {
                 data: function dashboard_terminalData(event:websocket_event):void {
                     terminal.item.write(event.data);
@@ -1593,6 +1594,10 @@ const dashboard = function dashboard():void {
                     if (terminal.socket.readyState === 1) {
                         terminal.socket.send(input.key);
                     }
+                },
+                selection: function dashboard_terminalSelection():void {
+                    const clip:ClipboardItem = new ClipboardItem({["text/plain"]: terminal.item.getSelection()});
+                    navigator.clipboard.write([clip]);
                 }
             },
             id: null,
@@ -1620,6 +1625,7 @@ const dashboard = function dashboard():void {
                 terminal.item.open(terminal.nodes.output);
                 terminal.item.onKey(terminal.events.input);
                 terminal.item.write("Terminal emulator pending connection...\r\n");
+                terminal.item.onSelectionChange(terminal.events.selection);
                 // client-side terminal is ready, so alert the backend to initiate a pseudo-terminal
                 terminal.socket = new WebSocket(`${scheme}://${location.host}`, [id]);
                 terminal.socket.onmessage = terminal.events.firstData;

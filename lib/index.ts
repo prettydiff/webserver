@@ -1,9 +1,10 @@
 
-import port_map from "./utilities/port_map.js";
 import server from "./transmit/server.js";
 import server_create from "./services/server_create.js";
 import startup from "./utilities/startup.js";
 import vars from "./utilities/vars.js";
+
+// cspell: words nmap
 
 startup(function index():void {
     const default_server = function index_defaultServer(name:string):services_server {
@@ -56,12 +57,6 @@ startup(function index():void {
                             } else {
                                 logs.push(str);
                             }
-                        },
-                        ports = function index_start_serverCallback_ports():void {
-                            const map = function index_start_serverCallback_ports_map():void {
-                                port_map(null, null, index_start_serverCallback_ports);
-                            };
-                            setTimeout(map, 60000);
                         };
                     servers.sort();
                     let items:number = 0;
@@ -78,7 +73,6 @@ startup(function index():void {
                     } while (items < servers.length);
                     // eslint-disable-next-line no-console
                     console.log(logs.join("\n"));
-                    ports();
                 }
             };
         let count:number = 0,

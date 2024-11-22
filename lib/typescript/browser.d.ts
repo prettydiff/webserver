@@ -104,6 +104,7 @@ declare global {
             data: (event:websocket_event) => void;
             firstData: (event:websocket_event) => void;
             input: (input:terminal_input) => void;
+            selection: () => void;
         };
         id: string;
         info: terminal_identifiers;
