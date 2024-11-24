@@ -6,6 +6,7 @@ declare global {
         action: type_dashboard_action;
         compose: string;
         description: string;
+        ports: number[];
         status: type_activation_status;
         title: string;
     }

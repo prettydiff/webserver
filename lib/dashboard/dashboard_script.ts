@@ -276,24 +276,10 @@ const dashboard = function dashboard():void {
                         editButton:HTMLElement = document.createElement("button"),
                         clear:HTMLElement = document.createElement("span");
                     if (section === "compose") {
-                        const input:HTMLInputElement = document.createElement("input"),
-                            textArea:HTMLTextAreaElement = document.createElement("textarea");
+                        const textArea:HTMLTextAreaElement = document.createElement("textarea");
                         let p:HTMLElement = document.createElement("p"),
                             label:HTMLElement = document.createElement("label"),
                             span:HTMLElement = document.createElement("span");
-                        // name input
-                        input.spellcheck = false;
-                        input.readOnly = true;
-                        span.appendText("Container Name (required)");
-                        span.setAttribute("class", "text");
-                        input.type = "text";
-                        if (newFlag === false) {
-                            input.value = name_server;
-                        }
-                        label.appendChild(span);
-                        label.appendChild(input);
-                        p.appendChild(label);
-                        details.appendChild(p);
 
                         // compose textarea
                         textArea.spellcheck = false;
@@ -382,16 +368,22 @@ const dashboard = function dashboard():void {
                         buttons:HTMLElement = document.createElement("p");
                     destroy.appendText("✘ Destroy");
                     destroy.setAttribute("class", "server-destroy");
-                    destroy.onclick = server.message;
+                    destroy.onclick = (section === "compose")
+                        ? compose.message
+                        : server.message;
                     activate.appendText("⌁ Activate");
                     activate.setAttribute("class", "server-activate");
                     if (listItem.getAttribute("class") === "green") {
                         activate.disabled = true;
                     }
-                    activate.onclick = server.message;
+                    activate.onclick = (section === "compose")
+                        ? compose.message
+                        : server.message;
                     deactivate.appendText("። Deactivate");
                     deactivate.setAttribute("class", "server-deactivate");
-                    deactivate.onclick = server.message;
+                    deactivate.onclick = (section === "compose")
+                        ? compose.message
+                        : server.message;
                     if (listItem.getAttribute("class") === "red") {
                         deactivate.disabled = true;
                     }
@@ -430,25 +422,20 @@ const dashboard = function dashboard():void {
                     note.setAttribute("class", "note");
                     p.parentNode.appendChild(note);
                 } else if (dashboard === false) {
-                    const item:string = (section === "servers")
-                        ? "server"
-                        : "container";
-                    note.textContent = `Destroying a ${item} will delete all associated file system artifacts. Back up your data first.`;
+                    note.textContent = (section === "compose")
+                        ? `Changing the container name of an existing container will create a new container. Ensure the compose file mentions PUID and PGID with values ${payload.user.uid} and ${payload.user.gid} to prevent writing files as root.`
+                        : "Destroying a server will delete all associated file system artifacts. Back up your data first.`"
                     note.setAttribute("class", "note");
                     p.parentNode.appendChild(note);
                 }
                 if (section === "compose") {
-                    const input:HTMLInputElement = edit.getElementsByTagName("input")[0],
-                        textArea0:HTMLTextAreaElement = edit.getElementsByTagName("textarea")[0],
+                    const textArea0:HTMLTextAreaElement = edit.getElementsByTagName("textarea")[0],
                         textArea1:HTMLTextAreaElement = edit.getElementsByTagName("textarea")[1];
-                    input.readOnly = false;
-                    input.onkeyup = compose.validateContainer;
-                    input.onfocus = compose.validateContainer;
                     textArea0.readOnly = false;
                     textArea1.readOnly = false;
                     textArea1.onkeyup = compose.validateContainer;
                     textArea1.onfocus = compose.validateContainer;
-                    input.focus();
+                    textArea0.focus();
                 } else {
                     const textArea:HTMLTextAreaElement = edit.getElementsByTagName("textarea")[0];
                     textArea.readOnly = false;
@@ -546,6 +533,21 @@ const dashboard = function dashboard():void {
                 textArea.onfocus = compose.validateVariables;
                 textArea.focus();
             },
+            getTitle: function dashboard_composeGetTitle(textArea:HTMLTextAreaElement):string {
+                const regTitle:RegExp = (/^\s+container_name\s*:\s*/),
+                    values:string[] = textArea.value.split("\n"),
+                    len:number = values.length;
+                let index:number = 0;
+                if (len > 0) {
+                    do {
+                        if (regTitle.test(values[index]) === true) {
+                            return values[index].replace(regTitle, "").replace(/^("|')/, "").replace(/\s*("|')$/, "");
+                        }
+                        index = index + 1;
+                    } while (index < len);
+                }
+                return "";
+            },
             init: function dashboard_composeInit():void {
                 compose.list("containers");
                 compose.list("variables");
@@ -589,18 +591,18 @@ const dashboard = function dashboard():void {
             message: function dashboard_composeMessage(event:MouseEvent):void {
                 const target:HTMLElement = event.target,
                     classy:string = target.getAttribute("class"),
-                    container:boolean = (target.getAncestor("section", "class").getElementsByTagName("h3")[0] === undefined),
-                    section:HTMLElement = (container === true)
-                        ? target.getAncestor("section", "class").getAncestor("section", "class")
-                        : target.getAncestor("section", "class"),
-                    cancel:HTMLButtonElement = section.getElementsByClassName("server-cancel")[0] as HTMLButtonElement,
+                    edit:HTMLElement = target.getAncestor("edit", "class"),
+                    section:HTMLElement = edit.getAncestor("section", "class"),
                     title:string = section.getElementsByTagName("h3")[0].textContent,
-                    value:string = section.getElementsByTagName("textarea")[0].value;
+                    cancel:HTMLButtonElement = edit.getElementsByClassName("server-cancel")[0] as HTMLButtonElement,
+                    textArea:HTMLTextAreaElement = edit.getElementsByTagName("textarea")[1],
+                    value:string = edit.getElementsByTagName("textarea")[0].value,
+                    newTitle:string = compose.getTitle(textArea);
                 if (title === "Environmental Variables") {
                     const variables:store_string = JSON.parse(value);
                     message.send("modify", variables, "dashboard-compose-variables");
                 } else {
-                    const yaml:string = section.getElementsByTagName("textarea")[1].value,
+                    const yaml:string = textArea.value,
                         trim = function dashboard_composeMessage_trim(input:string):string {
                             return input.replace(/^\s+/, "").replace(/\s+$/, "");
                         },
@@ -608,12 +610,17 @@ const dashboard = function dashboard():void {
                             action: classy.replace("server-", "") as type_dashboard_action,
                             compose: trim(yaml),
                             description: trim(value),
+                            ports: [],
                             status: ["red", "offline"],
-                            title: trim(section.getElementsByTagName("input")[0].value)
+                            title: newTitle
                         };
                     message.send("add", item, "dashboard-compose-container");
                 }
-                cancel.click();
+                if (cancel === undefined) {
+                    edit.parentNode.getElementsByTagName("button")[0].click();
+                } else {
+                    common.cancel(event);
+                }
             },
             nodes: {
                 containers_list: document.getElementById("compose").getElementsByClassName("compose-container-list")[0] as HTMLElement,
@@ -625,7 +632,6 @@ const dashboard = function dashboard():void {
                 const target:HTMLElement = event.target,
                     section:HTMLElement = target.getAncestor("edit", "class"),
                     newItem:boolean = (section.parentNode.getAttribute("class") === "section"),
-                    input:HTMLInputElement = section.getElementsByTagName("input")[0],
                     textArea:HTMLTextAreaElement = section.getElementsByTagName("textarea")[1],
                     buttons:HTMLElement = section.getElementsByClassName("buttons")[0] as HTMLElement,
                     summary:HTMLElement = section.getElementsByClassName("summary")[0] as HTMLElement,
@@ -634,37 +640,33 @@ const dashboard = function dashboard():void {
                         ? buttons.getElementsByClassName("server-add")[0] as HTMLButtonElement
                         : buttons.getElementsByClassName("server-modify")[0] as HTMLButtonElement,
                     ul:HTMLElement = document.createElement("ul"),
-                    reg:RegExp = (/^\s*$/);
+                    reg:RegExp = (/^\s*$/),
+                    value:string = textArea.value;
                 let valid:boolean = true,
-                    li:HTMLElement = document.createElement("li");
+                    li:HTMLElement = document.createElement("li"),
+                    title:string = compose.getTitle(textArea);
                 summary.style.display = "block";
-                if (reg.test(input.value) === true) {
-                    valid = false;
-                    li.appendText("Title field must have a value.");
-                    li.setAttribute("class", "pass-false");
-                } else {
-                    li.appendText("Title field contains a value.");
-                    li.setAttribute("class", "pass-true");
-                }
-                ul.appendChild(li);
-                li = document.createElement("li");
-                if (reg.test(textArea.value) === true) {
+                if (reg.test(value) === true) {
                     valid = false;
                     li.appendText("Compose file contents must have a value.");
+                    li.setAttribute("class", "pass-false");
+                } else if (title === "") {
+                    valid = false;
+                    li.appendText("Compose file does not contain a valid container name.");
                     li.setAttribute("class", "pass-false");
                 } else {
                     li.appendText("Compose file contents field contains a value.");
                     li.setAttribute("class", "pass-true");
                 }
                 ul.appendChild(li);
-                if (valid === true && payload.compose.containers[input.value] !== undefined) {
+                if (valid === true && payload.compose.containers[title] !== undefined) {
                     if (newItem === true) {
                         valid = false;
                         li = document.createElement("li");
                         li.appendText("There is already a container with this name.");
                         li.setAttribute("class", "pass-false");
                         ul.appendChild(li);
-                    } else if (payload.compose.containers[input.value].compose === textArea.value) {
+                    } else if (payload.compose.containers[title].compose === value) {
                         valid = false;
                         li = document.createElement("li");
                         li.appendText("Values are populated, but aren't modified.");
@@ -738,16 +740,26 @@ const dashboard = function dashboard():void {
                 if (typeof event.data === "string") {
                     const message_item:socket_data = JSON.parse(event.data);
                     if (message_item.service === "dashboard-payload" && loaded === false) {
-                        loaded = true;
                         payload = message_item.data as transmit_dashboard;
-                        // populate docker containers
-                        compose.init();
-                        // populate server list
-                        server.list();
                         // populate log data
                         payload.logs.forEach(function dashboard_logsEach(item:services_dashboard_status):void {
                             log(item);
                         });
+                        if (loaded === false) {
+                            loaded = true;
+                            log({
+                                action: "activate",
+                                configuration: null,
+                                message: "Dashboard browser connection online.",
+                                status: "informational",
+                                time: Date.now(),
+                                type: "log"
+                            });
+                        }
+                        // populate docker containers
+                        compose.init();
+                        // populate server list
+                        server.list();
                         // port data from nmap
                         ports.external(payload.ports);
                         // port data from application
@@ -1195,17 +1207,19 @@ const dashboard = function dashboard():void {
             },
             message: function dashboard_serverMessage(event:MouseEvent): void {
                 const target:HTMLElement = event.target,
-                    li:HTMLElement = target.getAncestor("li", "tag"),
+                    edit:HTMLElement = target.getAncestor("edit", "class"),
                     action:type_dashboard_action = target.getAttribute("class").replace("server-", "") as type_dashboard_action,
-                    cancel:HTMLElement = li.getElementsByClassName("server-cancel")[0] as HTMLElement,
+                    cancel:HTMLElement = edit.getElementsByClassName("server-cancel")[0] as HTMLElement,
                     configuration:services_server = (function dashboard_serverMessage_configuration():services_server {
-                        const textArea:HTMLTextAreaElement = li.getElementsByTagName("textarea")[0],
+                        const textArea:HTMLTextAreaElement = edit.getElementsByTagName("textarea")[0],
                             config:services_server = JSON.parse(textArea.value);
-                        config.modification_name = li.getAttribute("data-name");
+                        config.modification_name = edit.parentNode.getAttribute("data-name");
                         return config;
                     }());
                 message.send(action, configuration, "dashboard-server");
-                if (cancel !== undefined) {
+                if (cancel === undefined) {
+                    edit.parentNode.getElementsByTagName("button")[0].click();
+                } else {
                     common.cancel(event);
                 }
             },
@@ -1664,16 +1678,6 @@ const dashboard = function dashboard():void {
                     };
                 if (status !== null ) {
                     status.getElementsByTagName("strong")[0].textContent = "Online";
-                    if (log !== undefined && status.getAttribute("class") === "connection-offline") {
-                        log({
-                            action: "activate",
-                            configuration: null,
-                            message: "Dashboard browser connection online.",
-                            status: "informational",
-                            time: Date.now(),
-                            type: "log"
-                        });
-                    }
                     status.setAttribute("class", "connection-online");
                 }
                 target.send(JSON.stringify(payload));

@@ -1,6 +1,7 @@
 
 import file from "../utilities/file.js";
 import log from "../utilities/log.js";
+import spawn from "../utilities/spawn.js";
 import vars from "../utilities/vars.js";
 
 const compose_variables = function services_compose(socket_data:socket_data):void {
@@ -82,6 +83,32 @@ const compose_variables = function services_compose(socket_data:socket_data):voi
             vars.compose.variables = data;
             stat(output, `${vars.path.compose}.env`, "variables");
         }
+    } else if (data.action === "activate" || data.action === "deactivate") {
+        const direction:string = (data.action === "activate")
+            ? "up"
+            : "down";
+        spawn({
+            args: ["compose", "-f", `${vars.path.compose + data.title}.yml`, direction],
+            callback: function services_compose(stderr:string, stdout:string, error:node_childProcess_ExecException):void {
+                if (stderr === "" && error === null) {
+                    console.log(stdout);
+                } else {
+                    log({
+                        action: data.action,
+                        config: (error === null)
+                            ? {
+                                message: stderr
+                            }
+                            : error,
+                        message: `Error on ${data.action} of container ${data.title}.`,
+                        status: "error",
+                        type: "compose-containers"
+                    });
+                }
+            },
+            command: "docker",
+            recurse: 0
+        });
     }
 };
 

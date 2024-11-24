@@ -61,6 +61,7 @@ declare global {
         cancelVariables: (event:MouseEvent) => void;
         create: (event:MouseEvent) => void;
         editVariables: () => void;
+        getTitle: (textArea:HTMLTextAreaElement) => string;
         init: () => void;
         list: (type:"containers"|"variables") => void;
         message: (event:MouseEvent) => void;

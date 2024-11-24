@@ -173,4 +173,8 @@ interface vars {
     system_ports: external_ports;
     terminal: terminal_size;
     text: store_string;
+    user: {
+        gid: number;
+        uid: number;
+    }
 }

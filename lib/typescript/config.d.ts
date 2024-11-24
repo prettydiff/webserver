@@ -53,7 +53,7 @@ interface config_log {
 
 interface config_spawn {
     args: string[];
-    callback: (data:string, error:node_childProcess_ExecException) => void;
+    callback: (stderr:string, stdout:string, error:node_childProcess_ExecException) => void;
     command: string;
     recurse: number;
 }

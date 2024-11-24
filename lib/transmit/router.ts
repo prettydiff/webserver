@@ -18,7 +18,8 @@ const router = function transmit_router(socketData:socket_data, transmit:transmi
                         logs: vars.logs,
                         ports: vars.system_ports,
                         servers: vars.servers,
-                        terminal: vars.terminal
+                        terminal: vars.terminal,
+                        user: vars.user
                     };
                 send({
                     data: browser,

@@ -9,10 +9,10 @@ import vars from "./vars.js";
 const port_map = function utilities_portMap(callback:() => void):void {
     const command = "nmap",
         args:string[] = ["--open", "-p-", "127.0.0.1"],
-        callbackSpawn = function utilities_portMap_callbackSpawn(data:string, error:node_childProcess_ExecException):void {
+        callbackSpawn = function utilities_portMap_callbackSpawn(stderr:string, stdout:string, error:node_childProcess_ExecException):void {
             if (error === null) {
                 const output:type_external_port[] = [],
-                    lines:string[] = data.replace(/\r\n/g, "\n").split("\n"),
+                    lines:string[] = stdout.replace(/\r\n/g, "\n").split("\n"),
                     total:number = lines.length,
                     payload:services_dashboard_status = {
                         action: "modify",

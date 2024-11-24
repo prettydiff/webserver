@@ -162,7 +162,8 @@ const server = function transmit_server(data:services_dashboard_action, callback
                                                     logs: vars.logs,
                                                     ports: vars.system_ports,
                                                     servers: vars.servers,
-                                                    terminal: vars.terminal
+                                                    terminal: vars.terminal,
+                                                    user: vars.user
                                                 };
                                                 send({
                                                     data: browser,

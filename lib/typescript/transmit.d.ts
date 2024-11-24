@@ -33,6 +33,10 @@ interface transmit_dashboard {
     };
     servers: store_servers;
     terminal: terminal_size;
+    user: {
+        gid: number;
+        uid: number;
+    };
 }
 
 interface transmit_receiver {

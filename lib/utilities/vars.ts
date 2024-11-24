@@ -51,6 +51,10 @@ const vars:vars = {
         red      : "\u001b[31m",
         underline: "\u001b[4m",
         yellow   : "\u001b[33m"
+    },
+    user: {
+        gid: process.getgid(),
+        uid: process.getuid()
     }
 };
 
