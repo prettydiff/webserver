@@ -2,9 +2,10 @@
 import core from "../browser/core.js";
 import dashboard_script from "../dashboard/dashboard_script.js";
 import dateTime from "./dateTime.js";
+import docker_ps from "../services/docker_ps.js";
 import file from "./file.js";
 import node from "./node.js";
-import port_map from "./port_map.js";
+import port_map from "../services/port_map.js";
 import vars from "./vars.js";
 
 // cspell: words bestaudio, keyid, multistreams, nmap, pathlen
@@ -13,7 +14,9 @@ const startup = function utilities_startup(callback:() => void):void {
     const flags:store_flag = {
             compose: false,
             config: false,
-            html: false
+            docker: false,
+            html: false,
+            ports: false
         },
         readComplete = function utilities_startup_readComplete(flag:"compose"|"config"|"html"):void {
             flags[flag] = true;
@@ -130,25 +133,39 @@ const startup = function utilities_startup(callback:() => void):void {
             // eslint-disable-next-line no-restricted-syntax
             return this.charAt(0).toUpperCase() + this.slice(1);
         },
+        commandsCallback = function utilities_startup_commandsCallback():void {
+            if (flags.docker === true && flags.ports === true) {
+                if (vars.compose === null) {
+                    readComplete("compose");
+                } else {
+                    file.read({
+                        callback: readCompose,
+                        error_terminate: null,
+                        location: `${vars.path.project}compose.json`,
+                        no_file: null
+                    });
+                }
+                file.read({
+                    callback: readConfig,
+                    error_terminate: null,
+                    location: `${vars.path.project}servers.json`,
+                    no_file: null
+                });
+                file.read({
+                    callback: readHTML,
+                    error_terminate: null,
+                    location: `${vars.path.project}lib${vars.sep}dashboard${vars.sep}dashboard.html`,
+                    no_file: null
+                });
+            }
+        },
         portCallback = function utilities_startup_portCallback():void {
-            file.read({
-                callback: readCompose,
-                error_terminate: null,
-                location: `${vars.path.project}compose.json`,
-                no_file: null
-            });
-            file.read({
-                callback: readConfig,
-                error_terminate: null,
-                location: `${vars.path.project}servers.json`,
-                no_file: null
-            });
-            file.read({
-                callback: readHTML,
-                error_terminate: null,
-                location: `${vars.path.project}lib${vars.sep}dashboard${vars.sep}dashboard.html`,
-                no_file: null
-            });
+            flags.ports = true;
+            commandsCallback();
+        },
+        dockerCallback = function utilities_startup_dockerCallback():void {
+            flags.docker = true;
+            commandsCallback();
         };
 
     String.prototype.capitalize = capitalize;
@@ -159,6 +176,7 @@ const startup = function utilities_startup(callback:() => void):void {
     vars.path.compose = `${vars.path.project}compose${vars.sep}`;
     vars.path.servers = `${vars.path.project}servers${vars.sep}`;
     port_map(portCallback);
+    docker_ps(dockerCallback);
     if (process.platform !== "win32") {
         file.stat({
             callback: function utilities_startup_bash(stat:node_fs_BigIntStats):void {

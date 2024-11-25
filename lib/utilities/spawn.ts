@@ -1,5 +1,6 @@
 
 import node from "./node.js";
+import vars from "./vars.js";
 
 const spawn = function utilities_spawn(config:config_spawn):void {
     let err:boolean = false;
@@ -42,7 +43,10 @@ const spawn = function utilities_spawn(config:config_spawn):void {
         },
         stderr:Buffer[] = [],
         stdout:Buffer[] = [],
-        spawn:node_childProcess_ChildProcess = node.child_process.spawn(config.command, config.args);
+        spawn:node_childProcess_ChildProcess = node.child_process.spawn(config.command, config.args, {
+            cwd: vars.path.project,
+            shell: true
+        });
     spawn.stderr.on("data", handler_stderr);
     spawn.stderr.on("end", handler_stderrEnd);
     spawn.stdout.on("data", handler_stdout);

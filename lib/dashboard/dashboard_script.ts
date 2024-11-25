@@ -54,8 +54,10 @@ const dashboard = function dashboard():void {
                 server_new.disabled = false;
                 status.setAttribute("class", "connection-offline");
                 status.getElementsByTagName("strong")[0].textContent = "Offline";
-                compose.nodes.containers_list = replace(compose.nodes.containers_list, true);
-                compose.nodes.variables_list = replace(compose.nodes.variables_list, true);
+                if (compose.nodes !== null) {
+                    compose.nodes.containers_list = replace(compose.nodes.containers_list, true);
+                    compose.nodes.variables_list = replace(compose.nodes.variables_list, true);
+                }
                 terminal.nodes.output = replace(terminal_output, true);
                 server.nodes.list = replace(serverList, true);
                 replace(logs_old, false);
@@ -424,7 +426,7 @@ const dashboard = function dashboard():void {
                 } else if (dashboard === false) {
                     note.textContent = (section === "compose")
                         ? `Changing the container name of an existing container will create a new container. Ensure the compose file mentions PUID and PGID with values ${payload.user.uid} and ${payload.user.gid} to prevent writing files as root.`
-                        : "Destroying a server will delete all associated file system artifacts. Back up your data first.`"
+                        : "Destroying a server will delete all associated file system artifacts. Back up your data first.`";
                     note.setAttribute("class", "note");
                     p.parentNode.appendChild(note);
                 }
@@ -549,6 +551,19 @@ const dashboard = function dashboard():void {
                 return "";
             },
             init: function dashboard_composeInit():void {
+                if (payload.compose === null) {
+                    if (compose.nodes !== null) {
+                        const composeElement:HTMLElement = document.getElementById("compose"),
+                            sections:HTMLCollectionOf<HTMLElement> = composeElement.getElementsByClassName("section") as HTMLCollectionOf<HTMLElement>,
+                            p:HTMLElement = document.createElement("p");
+                        compose.nodes = null;
+                        p.appendText("Docker Compose is not available. Please see the logs for additional information.");
+                        composeElement.removeChild(sections[1]);
+                        composeElement.removeChild(sections[0]);
+                        composeElement.appendChild(p);
+                    }
+                    return;
+                }
                 compose.list("containers");
                 compose.list("variables");
                 compose.nodes.variables_new.onclick = compose.editVariables;
@@ -596,25 +611,35 @@ const dashboard = function dashboard():void {
                     title:string = section.getElementsByTagName("h3")[0].textContent,
                     cancel:HTMLButtonElement = edit.getElementsByClassName("server-cancel")[0] as HTMLButtonElement,
                     textArea:HTMLTextAreaElement = edit.getElementsByTagName("textarea")[1],
-                    value:string = edit.getElementsByTagName("textarea")[0].value,
-                    newTitle:string = compose.getTitle(textArea);
+                    value:string = edit.getElementsByTagName("textarea")[0].value;
                 if (title === "Environmental Variables") {
                     const variables:store_string = JSON.parse(value);
                     message.send("modify", variables, "dashboard-compose-variables");
+                    compose.nodes.variables_new.disabled = false;
                 } else {
-                    const yaml:string = textArea.value,
-                        trim = function dashboard_composeMessage_trim(input:string):string {
-                            return input.replace(/^\s+/, "").replace(/\s+$/, "");
-                        },
-                        item:services_compose = {
-                            action: classy.replace("server-", "") as type_dashboard_action,
-                            compose: trim(yaml),
-                            description: trim(value),
-                            ports: [],
-                            status: ["red", "offline"],
-                            title: newTitle
-                        };
-                    message.send("add", item, "dashboard-compose-container");
+                    const action:type_dashboard_action = classy.replace("server-", "") as type_dashboard_action,
+                        newTitle:string = compose.getTitle(textArea);
+                    if (action === "activate" || action === "deactivate") {
+                        const direction:"down"|"up --detach" = (action === "activate")
+                            ? "up --detach"
+                            : "down";
+                        // terminal.socket.send(`docker compose -f ${payload.path.compose + newTitle}.yml ${direction}\n`);
+                    } else {
+                        const yaml:string = textArea.value,
+                            trim = function dashboard_composeMessage_trim(input:string):string {
+                                return input.replace(/^\s+/, "").replace(/\s+$/, "");
+                            },
+                            item:services_compose = {
+                                action: action as type_dashboard_action,
+                                compose: trim(yaml),
+                                description: trim(value),
+                                ports: [],
+                                status: ["red", "offline"],
+                                title: newTitle
+                            };
+                        message.send("add", item, "dashboard-compose-container");
+                    }
+                    compose.nodes.containers_new.disabled = false;
                 }
                 if (cancel === undefined) {
                     edit.parentNode.getElementsByTagName("button")[0].click();
@@ -641,10 +666,10 @@ const dashboard = function dashboard():void {
                         : buttons.getElementsByClassName("server-modify")[0] as HTMLButtonElement,
                     ul:HTMLElement = document.createElement("ul"),
                     reg:RegExp = (/^\s*$/),
+                    title:string = compose.getTitle(textArea),
                     value:string = textArea.value;
                 let valid:boolean = true,
-                    li:HTMLElement = document.createElement("li"),
-                    title:string = compose.getTitle(textArea);
+                    li:HTMLElement = document.createElement("li");
                 summary.style.display = "block";
                 if (reg.test(value) === true) {
                     valid = false;
@@ -921,9 +946,38 @@ const dashboard = function dashboard():void {
                             } else if (data.type === "port") {
                                 ports.external(data.configuration as external_ports);
                             } else if (data.type === "compose-containers") {
-                                const store:store_compose = data.configuration as store_compose;
-                                payload.compose.containers = store;
-                                compose.list("containers");
+                                if (data.configuration === null) {
+                                    const lines:string[] = data.message.replace(/\s{3,}/g, "   ").split("\n");
+                                    let index:number = lines.length,
+                                        pind:number = 0,
+                                        items:string[] = null,
+                                        ports:string[] = null;
+                                    do {
+                                        index = index - 1;
+                                        items = lines[index].split("   ");
+                                        if (payload.compose.containers[items[6]] !== undefined) {
+                                            if (items[4].indexOf("Up ") === 0) {
+                                                payload.compose.containers[items[6]].status = ["green", "online"];
+                                            } else {
+                                                payload.compose.containers[items[6]].status = ["red", "offline"];
+                                            }
+                                            if ((/0\.0\.0\.0/).test(items[5]) === true && (/::\[?:/).test(items[5]) === true) {
+                                                items[5] = items[5].replace(/\[::\]:\d+->\d+\/((tcp)|(udp))(, )?/g, "");
+                                                ports = items[5].split(", ");
+                                                pind = ports.length;
+                                                payload.compose.containers[items[6]].ports = [];
+                                                do {
+                                                    pind = pind - 1;
+                                                    payload.compose.containers[items[6]].ports.push([Number(ports[pind].slice(ports[pind].lastIndexOf(":"), ports[pind].indexOf("-"))), ports[pind].slice(ports[pind].indexOf("/") + 1) as "tcp"|"udp"]);
+                                                } while (pind > 0);
+                                            }
+                                        }
+                                    } while (index > 0);
+                                } else {
+                                    const store:store_compose = data.configuration as store_compose;
+                                    payload.compose.containers = store;
+                                    compose.list("containers");
+                                }
                             } else if (data.type === "compose-variables") {
                                 const store:store_string = data.configuration as store_string;
                                 payload.compose.variables = store;
@@ -997,9 +1051,6 @@ const dashboard = function dashboard():void {
                 return div;
             },
             external: function dashboard_portsExternal(input:external_ports):void {
-                // must test
-                // 1. bad command, display language not table
-                // 2. on update then update table if not there
                 const servers:string[] = Object.keys(payload.servers),
                     loop_ports = function dashboard_portsExternal(number:number):void {
                         let indexPorts:number = input.list.length;
@@ -1016,16 +1067,7 @@ const dashboard = function dashboard():void {
                     updated:HTMLElement = portElement.getElementsByClassName("updated")[0] as HTMLElement,
                     tbody_old:HTMLElement = portElement.getElementsByTagName("tbody")[0],
                     tbody_new:HTMLElement = document.createElement("tbody");
-                let indexServers:number = servers.length,
-                    indexPorts:number = input.list.length,
-                    indexKeys:number = 0,
-                    keys:string[] = null,
-                    tr:HTMLElement = null,
-                    td:HTMLElement = null;
-                if (indexPorts < 1) {
-                    return;
-                }
-                if (input.list[0] === null) {
+                if (payload.ports === null) {
                     if (updated.style.display !== "none") {
                         const ul:HTMLElement = document.createElement("ul"),
                             section:HTMLElement = portElement.getElementsByClassName("section")[0] as HTMLElement,
@@ -1052,6 +1094,18 @@ const dashboard = function dashboard():void {
                         tbody_old.parentNode.style.display = "none";
                         updated.style.display = "none";
                     }
+                    return;
+                }
+                // must test
+                // 1. bad command, display language not table
+                // 2. on update then update table if not there
+                let indexServers:number = servers.length,
+                    indexPorts:number = input.list.length,
+                    indexKeys:number = 0,
+                    keys:string[] = null,
+                    tr:HTMLElement = null,
+                    td:HTMLElement = null;
+                if (indexPorts < 1) {
                     return;
                 }
                 if (indexServers > 0) {
@@ -1221,6 +1275,7 @@ const dashboard = function dashboard():void {
                     edit.parentNode.getElementsByTagName("button")[0].click();
                 } else {
                     common.cancel(event);
+                    server.nodes.server_new.disabled = false;
                 }
             },
             nodes: {
@@ -1610,8 +1665,10 @@ const dashboard = function dashboard():void {
                     }
                 },
                 selection: function dashboard_terminalSelection():void {
-                    const clip:ClipboardItem = new ClipboardItem({["text/plain"]: terminal.item.getSelection()});
-                    navigator.clipboard.write([clip]);
+                    if (typeof ClipboardItem !== "undefined") {
+                        const clip:ClipboardItem = new ClipboardItem({["text/plain"]: terminal.item.getSelection()});
+                        navigator.clipboard.write([clip]);
+                    }
                 }
             },
             id: null,

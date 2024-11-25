@@ -26,7 +26,13 @@ interface transmit_addresses_socket {
 
 interface transmit_dashboard {
     compose: configuration_compose;
+    intervals: store_number;
     logs: services_dashboard_status[];
+    path: {
+        compose: string;
+        project: string;
+        servers: string;
+    };
     ports: {
         list: type_external_port[];
         time: number;

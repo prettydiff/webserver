@@ -156,6 +156,7 @@ interface vars {
     compose: configuration_compose;
     dashboard: string;
     interfaces: string[];
+    intervals: store_number;
     logs: services_dashboard_status[];
     path: {
         compose: string;
@@ -176,5 +177,5 @@ interface vars {
     user: {
         gid: number;
         uid: number;
-    }
+    };
 }
