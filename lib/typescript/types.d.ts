@@ -2,7 +2,7 @@
 type type_activation_status = ["amber" | "green" | "red", "deactivated" | "new" | "offline" | "online" | "partially online"];
 type type_certKey = "ca" | "crt" | "key";
 type type_dashboard_action = type_halt_action | "activate" | "add";
-type type_dashboard_config = config_websocket_create | config_websocket_server | external_ports | node_childProcess_ExecException | node_error | server | services_dashboard_activate | socket_summary | store_compose | store_string;
+type type_dashboard_config = config_websocket_create | config_websocket_server | external_ports | node_childProcess_ExecException | node_error | server | services_compose | services_dashboard_activate | socket_summary | store_string;
 type type_dashboard_list = "container" | "server";
 type type_dashboard_sections = "compose" | "help" | "log" | "port" | "servers" | "socket" | "terminal";
 type type_dashboard_status = "error" | "informational" | "success";

@@ -60,6 +60,7 @@ declare global {
     interface module_compose {
         activePorts: (name_server:string) => HTMLElement;
         cancelVariables: (event:MouseEvent) => void;
+        container: (config:services_compose) => void;
         create: (event:MouseEvent) => void;
         editVariables: () => void;
         getTitle: (textArea:HTMLTextAreaElement) => string;

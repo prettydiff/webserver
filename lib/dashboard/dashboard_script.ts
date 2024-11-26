@@ -485,7 +485,7 @@ const dashboard = function dashboard():void {
                     portList:HTMLElement = document.createElement("ul"),
                     ports:[number, "tcp"|"udp"][] = payload.compose.containers[name_server].ports;
                 let portItem:HTMLElement = null,
-                    index = ports.length;
+                    index:number = ports.length;
                 if (index < 1) {
                     return div;
                 }
@@ -514,6 +514,24 @@ const dashboard = function dashboard():void {
                 edit.parentNode.removeChild(edit);
                 compose.nodes.variables_list.style.display = "block";
                 compose.nodes.variables_new.disabled = false;
+            },
+            container: function dashboard_composeContainer(config:services_compose):void {
+                const list:HTMLCollectionOf<HTMLElement> = compose.nodes.containers_list.getElementsByTagName("li");
+                let index:number = list.length;
+                payload.compose.containers[config.title] = config;
+                if (index > 0) {
+                    do {
+                        index = index - 1;
+                        if (list[index].getAttribute("data-name") === config.title) {
+                            compose.nodes.containers_list.insertBefore(common.title(config.title, "container"), list[index]);
+                            compose.nodes.containers_list.removeChild(list[index]);
+                            return;
+                        }
+                    } while (index > 0);
+                } else {
+                    compose.nodes.containers_list.appendChild(common.title(config.title, "container"));
+                }
+
             },
             create: function dashboard_composeCreate(event:MouseEvent):void {
                 const button:HTMLButtonElement = event.target as HTMLButtonElement;
@@ -653,7 +671,7 @@ const dashboard = function dashboard():void {
                         const direction:"down"|"up --detach" = (action === "activate")
                             ? "up --detach"
                             : "down";
-                        // terminal.socket.send(`docker compose -f ${payload.path.compose + newTitle}.yml ${direction}\n`);
+                        terminal.socket.send(`docker compose -f ${payload.path.compose + newTitle}.yml ${direction}\n`);
                     } else {
                         const yaml:string = textArea.value,
                             trim = function dashboard_composeMessage_trim(input:string):string {
@@ -977,9 +995,7 @@ const dashboard = function dashboard():void {
                             } else if (data.type === "port") {
                                 ports.external(data.configuration as external_ports);
                             } else if (data.type === "compose-containers") {
-                                const store:store_compose = data.configuration as store_compose;
-                                payload.compose.containers = store;
-                                compose.list("containers");
+                                compose.container(data.configuration as services_compose);
                                 ports.internal();
                             } else if (data.type === "compose-variables") {
                                 const store:store_string = data.configuration as store_string;
