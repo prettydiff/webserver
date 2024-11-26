@@ -8,7 +8,7 @@ import vars from "../utilities/vars.js";
 const compose = function services_compose(socket_data:socket_data):void {
     const data:services_compose = socket_data.data as services_compose,
         name:string = data.title;
-    if (socket_data.service === "dashboard-compose-variables" || data.action === "modify") {
+    if (socket_data.service === "dashboard-compose-variables" || data.action === "add" || data.action === "modify") {
         const flags:store_flag = {
                 compose: false,
                 file: false

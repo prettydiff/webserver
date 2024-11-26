@@ -686,6 +686,8 @@ const dashboard = function dashboard():void {
                                 title: newTitle
                             };
                         message.send("add", item, "dashboard-compose-container");
+                        payload.compose.containers[newTitle] = item;
+                        compose.nodes.containers_list.appendChild(common.title(newTitle, "container"));
                     }
                     compose.nodes.containers_new.disabled = false;
                 }
