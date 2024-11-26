@@ -964,6 +964,7 @@ const dashboard = function dashboard():void {
                                         }
                                     } while (index > 0);
                                 }
+                                ports.internal();
                             } else if (data.type === "socket") {
                                 const config:socket_summary = data.configuration as socket_summary;
                                 if (data.action === "add") {
@@ -979,6 +980,7 @@ const dashboard = function dashboard():void {
                                 const store:store_compose = data.configuration as store_compose;
                                 payload.compose.containers = store;
                                 compose.list("containers");
+                                ports.internal();
                             } else if (data.type === "compose-variables") {
                                 const store:store_string = data.configuration as store_string;
                                 payload.compose.variables = store;
@@ -1011,6 +1013,7 @@ const dashboard = function dashboard():void {
         ports:module_port = {
             external: function dashboard_portsExternal(input:external_ports):void {
                 const servers:string[] = Object.keys(payload.servers),
+                    compose:string[] = Object.keys(payload.compose.containers),
                     loop_ports = function dashboard_portsExternal(number:number):void {
                         let indexPorts:number = input.list.length;
                         if (indexPorts > 0) {
@@ -1067,8 +1070,9 @@ const dashboard = function dashboard():void {
                 if (indexPorts < 1) {
                     return;
                 }
+
+                // per server
                 if (indexServers > 0) {
-                    // per server
                     do {
                         indexPorts = input.list.length;
                         if (indexPorts < 1) {
@@ -1087,11 +1091,27 @@ const dashboard = function dashboard():void {
                         if (indexKeys > 0) {
                             do {
                                 indexKeys = indexKeys - 1;
-                                if (payload.servers[servers[indexServers]].config.redirect_domain[keys[indexKeys]] !== null && typeof payload.servers[servers[indexServers]].config.redirect_domain[keys[indexKeys]][0] === "string" && payload.servers[servers[indexServers]].config.redirect_domain[keys[indexKeys]][0] !== "") {
+                                if (
+                                    payload.servers[servers[indexServers]].config.redirect_domain[keys[indexKeys]] !== null &&
+                                    typeof payload.servers[servers[indexServers]].config.redirect_domain[keys[indexKeys]][0] === "string" &&
+                                    payload.servers[servers[indexServers]].config.redirect_domain[keys[indexKeys]][0] !== ""
+                                ) {
                                     loop_ports(payload.servers[servers[indexServers]].config.redirect_domain[keys[indexKeys]][1]);
                                 }
                             } while (indexKeys > 0);
                         }
+                    } while (indexServers > 0);
+                }
+                // per container
+                indexServers = compose.length;
+                if (indexServers > 0) {
+                    do {
+                        indexServers = indexServers - 1;
+                        indexKeys = payload.compose.containers[compose[indexServers]].ports.length;
+                        do {
+                            indexKeys = indexKeys - 1;
+                            loop_ports(payload.compose.containers[compose[indexServers]].ports[indexKeys][0]);
+                        } while (indexKeys > 0);
                     } while (indexServers > 0);
                 }
                 indexPorts = 0;
@@ -1120,20 +1140,38 @@ const dashboard = function dashboard():void {
                 const output:[number, string, string, string, string][] = [],
                     tbody_old:HTMLElement = document.getElementById("ports").getElementsByTagName("tbody")[1],
                     tbody_new:HTMLElement = document.createElement("tbody"),
-                    servers:string[] = Object.keys(payload.servers);
+                    servers:string[] = Object.keys(payload.servers),
+                    compose:string[] = Object.keys(payload.compose.containers);
                 let indexServers:number = servers.length,
+                    indexPorts:number = 0,
                     tr:HTMLElement = null,
                     td:HTMLElement = null;
+                // per server
                 ports.external(payload.ports);
-                do {
-                    indexServers = indexServers - 1;
-                    if (typeof payload.servers[servers[indexServers]].status.open === "number" && payload.servers[servers[indexServers]].status.open > 0) {
-                        output.push([payload.servers[servers[indexServers]].status.open, "tcp", "server", servers[indexServers], "Open server port"]);
-                    }
-                    if (typeof payload.servers[servers[indexServers]].status.secure === "number" && payload.servers[servers[indexServers]].status.secure > 0) {
-                        output.push([payload.servers[servers[indexServers]].status.secure, "tcp", "server", servers[indexServers], "Secure server port"]);
-                    }
-                } while (indexServers > 0);
+                if (indexServers > 0) {
+                    do {
+                        indexServers = indexServers - 1;
+                        if (typeof payload.servers[servers[indexServers]].status.open === "number" && payload.servers[servers[indexServers]].status.open > 0) {
+                            output.push([payload.servers[servers[indexServers]].status.open, "tcp", "server", servers[indexServers], "Open server port"]);
+                        }
+                        if (typeof payload.servers[servers[indexServers]].status.secure === "number" && payload.servers[servers[indexServers]].status.secure > 0) {
+                            output.push([payload.servers[servers[indexServers]].status.secure, "tcp", "server", servers[indexServers], "Secure server port"]);
+                        }
+                    } while (indexServers > 0);
+                }
+
+                // per container
+                indexServers = compose.length;
+                if (indexServers > 0) {
+                    do {
+                        indexServers = indexServers - 1;
+                        indexPorts = payload.compose.containers[compose[indexServers]].ports.length;
+                        do {
+                            indexPorts = indexPorts - 1;
+                            output.push([payload.compose.containers[compose[indexServers]].ports[indexPorts][0], payload.compose.containers[compose[indexServers]].ports[indexPorts][1], "container", compose[indexServers], "Container port"]);
+                        } while (indexPorts > 0);
+                    } while (indexServers > 0);
+                }
                 output.sort(function dashboard_portsInternal_sort(a:[number, string, string, string, string], b:[number, string, string, string, string]):-1|1 {
                     if (a[0] < b[0]) {
                         return 1;
