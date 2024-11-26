@@ -110,7 +110,7 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
         </div>
         <div id="compose">
             <h2>Docker Compose</h2>
-            <p class="tab-description">A list of configured Docker containers and their status.</p>
+            <p class="tab-description">A list of configured Docker containers and their status. Container status refreshes every ${payload.intervals.compose} seconds.</p>
             <div class="section">
                 <h3>Environmental Variables</h3>
                 <p class="buttons"><button class="compose-variable-new">Edit Variables</button></p>
@@ -129,7 +129,7 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
         </div>
         <div id="ports">
             <h2>Port Summary</h2>
-            <p class="tab-description">A list of ports in active use both from this application and outside this application.</p>
+            <p class="tab-description">A list of ports in active use both from this application and outside this application. External port data refreshes every ${payload.intervals.nmap} seconds.</p>
             <div class="section">
                 <h3>System Ports Outside This Application</h3>
                 <table class="ports-external">

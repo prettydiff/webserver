@@ -159,7 +159,6 @@ const server = function transmit_server(data:services_dashboard_action, callback
                                             } else if (server_name === "dashboard") {
                                                 const browser:transmit_dashboard = {
                                                     compose: vars.compose,
-                                                    intervals: vars.intervals,
                                                     logs: vars.logs,
                                                     path: vars.path,
                                                     ports: vars.system_ports,

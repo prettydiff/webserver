@@ -178,7 +178,8 @@ td .icon{display:inline-block;width:1.5em}
 #dashboard input,
 #dashboard textarea{box-sizing:border-box;display:block;font-size:1em;margin:0 0 1em;width:100%}
 #dashboard textarea{height:35em;overflow:scroll}
-#servers .active-ports,
+#dashboard .active-ports h5{font-size:1.2em}
+#dashboard .active-ports,
 #dashboard .edit .summary{background:var(--background);border-color:var(--border_input);border-style:solid;border-width:0.1em;margin:0 0 1em;padding:1em 0.5em}
 #dashboard .edit .summary{display:none}
 #dashboard .edit label,

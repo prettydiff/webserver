@@ -325,8 +325,10 @@ const dashboard = function dashboard():void {
                         editButton.setAttribute("class", "server-edit");
                         editButton.onclick = common.edit;
                         p.appendChild(editButton);
-                        if (section === "servers") {
-                            details.appendChild(ports.active(name_server));
+                        if (section === "compose") {
+                            details.appendChild(compose.activePorts(name_server));
+                        } else {
+                            details.appendChild(server.activePorts(name_server));
                         }
                     }
                     clear.setAttribute("class", "clear");
@@ -477,6 +479,34 @@ const dashboard = function dashboard():void {
             }
         },
         compose:module_compose = {
+            activePorts: function dashboard_composeActivePorts(name_server:string):HTMLElement {
+                const div:HTMLElement = document.createElement("div"),
+                    h5:HTMLElement = document.createElement("h5"),
+                    portList:HTMLElement = document.createElement("ul"),
+                    ports:[number, "tcp"|"udp"][] = payload.compose.containers[name_server].ports;
+                let portItem:HTMLElement = null,
+                    index = ports.length;
+                if (index < 1) {
+                    return div;
+                }
+                ports.sort(function dashboard_composeActivePorts_sort(a:[number, "tcp"|"udp"],b:[number, "tcp"|"udp"]):-1|1 {
+                    if (a[0] < b[0]) {
+                        return 1;
+                    }
+                    return -1;
+                });
+                h5.appendText("Active Ports");
+                div.appendChild(h5);
+                div.setAttribute("class", "active-ports");
+                do {
+                    index = index - 1;
+                    portItem = document.createElement("li");
+                    portItem.appendText(`${ports[index][0]} (${ports[index][1].toUpperCase()})`);
+                    portList.appendChild(portItem);
+                } while (index > 0);
+                div.appendChild(portList);
+                return div;
+            },
             cancelVariables: function dashboard_composeCancelVariables(event:MouseEvent):void {
                 const target:HTMLElement = event.target.getAncestor("div", "tag"),
                     section:HTMLElement = target.getAncestor("section", "class"),
@@ -807,7 +837,7 @@ const dashboard = function dashboard():void {
                                     } while (index > 0);
                                 }
                             };
-                        if (data.type !== "port" && data.type !== "socket") {
+                        if (data.type !== "port" && data.type !== "socket" && data.message !== "Container status refreshed.") {
                             log(data);
                         }
                         if (data.status === "error") {
@@ -884,7 +914,7 @@ const dashboard = function dashboard():void {
                                             activate = list[index].getElementsByClassName("server-activate")[0] as HTMLButtonElement;
                                             deactivate = list[index].getElementsByClassName("server-deactivate")[0] as HTMLButtonElement;
                                             if (oldPorts !== undefined) {
-                                                oldPorts.parentNode.insertBefore(ports.active(config.name), oldPorts);
+                                                oldPorts.parentNode.insertBefore(server.activePorts(config.name), oldPorts);
                                                 oldPorts.parentNode.removeChild(oldPorts);
                                             }
                                             if (activate !== undefined) {
@@ -921,7 +951,7 @@ const dashboard = function dashboard():void {
                                             activate = list[index].getElementsByClassName("server-activate")[0] as HTMLButtonElement;
                                             deactivate = list[index].getElementsByClassName("server-deactivate")[0] as HTMLButtonElement;
                                             if (oldPorts !== undefined) {
-                                                oldPorts.parentNode.insertBefore(ports.active(config.name), oldPorts);
+                                                oldPorts.parentNode.insertBefore(server.activePorts(config.name), oldPorts);
                                                 oldPorts.parentNode.removeChild(oldPorts);
                                             }
                                             if (activate !== undefined) {
@@ -946,38 +976,9 @@ const dashboard = function dashboard():void {
                             } else if (data.type === "port") {
                                 ports.external(data.configuration as external_ports);
                             } else if (data.type === "compose-containers") {
-                                if (data.configuration === null) {
-                                    const lines:string[] = data.message.replace(/\s{3,}/g, "   ").split("\n");
-                                    let index:number = lines.length,
-                                        pind:number = 0,
-                                        items:string[] = null,
-                                        ports:string[] = null;
-                                    do {
-                                        index = index - 1;
-                                        items = lines[index].split("   ");
-                                        if (payload.compose.containers[items[6]] !== undefined) {
-                                            if (items[4].indexOf("Up ") === 0) {
-                                                payload.compose.containers[items[6]].status = ["green", "online"];
-                                            } else {
-                                                payload.compose.containers[items[6]].status = ["red", "offline"];
-                                            }
-                                            if ((/0\.0\.0\.0/).test(items[5]) === true && (/::\[?:/).test(items[5]) === true) {
-                                                items[5] = items[5].replace(/\[::\]:\d+->\d+\/((tcp)|(udp))(, )?/g, "");
-                                                ports = items[5].split(", ");
-                                                pind = ports.length;
-                                                payload.compose.containers[items[6]].ports = [];
-                                                do {
-                                                    pind = pind - 1;
-                                                    payload.compose.containers[items[6]].ports.push([Number(ports[pind].slice(ports[pind].lastIndexOf(":"), ports[pind].indexOf("-"))), ports[pind].slice(ports[pind].indexOf("/") + 1) as "tcp"|"udp"]);
-                                                } while (pind > 0);
-                                            }
-                                        }
-                                    } while (index > 0);
-                                } else {
-                                    const store:store_compose = data.configuration as store_compose;
-                                    payload.compose.containers = store;
-                                    compose.list("containers");
-                                }
+                                const store:store_compose = data.configuration as store_compose;
+                                payload.compose.containers = store;
+                                compose.list("containers");
                             } else if (data.type === "compose-variables") {
                                 const store:store_string = data.configuration as store_string;
                                 payload.compose.variables = store;
@@ -1008,48 +1009,6 @@ const dashboard = function dashboard():void {
             }
         },
         ports:module_port = {
-            active: function dashboard_portsActive(name_server:string):HTMLElement {
-                const div:HTMLElement = document.createElement("div"),
-                    h5:HTMLElement = document.createElement("h5"),
-                    portList:HTMLElement = document.createElement("ul"),
-                    encryption:type_encryption = payload.servers[name_server].config.encryption,
-                    ports:server_ports = payload.servers[name_server].status;
-                let portItem:HTMLElement = document.createElement("li");
-                h5.appendText("Active Ports");
-                div.appendChild(h5);
-                div.setAttribute("class", "active-ports");
-                if (encryption === "both") {
-                    if (ports.open === 0) {
-                        portItem.appendText("Open - offline");
-                    } else {
-                        portItem.appendText(`Open - ${ports.open}`);
-                    }
-                    portList.appendChild(portItem);
-                    portItem = document.createElement("li");
-                    if (ports.secure === 0) {
-                        portItem.appendText("Secure - offline");
-                    } else {
-                        portItem.appendText(`Secure - ${ports.secure}`);
-                    }
-                    portList.appendChild(portItem);
-                } else if (encryption === "open") {
-                    if (ports.open === 0) {
-                        portItem.appendText("Open - offline");
-                    } else {
-                        portItem.appendText(`Open - ${ports.open}`);
-                    }
-                    portList.appendChild(portItem);
-                } else {
-                    if (ports.secure === 0) {
-                        portItem.appendText("Secure - offline");
-                    } else {
-                        portItem.appendText(`Secure - ${ports.secure}`);
-                    }
-                    portList.appendChild(portItem);
-                }
-                div.appendChild(portList);
-                return div;
-            },
             external: function dashboard_portsExternal(input:external_ports):void {
                 const servers:string[] = Object.keys(payload.servers),
                     loop_ports = function dashboard_portsExternal(number:number):void {
@@ -1209,6 +1168,49 @@ const dashboard = function dashboard():void {
             }
         },
         server:module_server = {
+            activePorts: function dashboard_serverActivePorts(name_server:string):HTMLElement {
+                const div:HTMLElement = document.createElement("div"),
+                    h5:HTMLElement = document.createElement("h5"),
+                    portList:HTMLElement = document.createElement("ul"),
+                    encryption:type_encryption = payload.servers[name_server].config.encryption,
+                    ports:server_ports = payload.servers[name_server].status;
+                let portItem:HTMLElement = document.createElement("li");
+                h5.appendText("Active Ports");
+                div.appendChild(h5);
+                div.setAttribute("class", "active-ports");
+                
+                if (encryption === "both") {
+                    if (ports.open === 0) {
+                        portItem.appendText("Open - offline");
+                    } else {
+                        portItem.appendText(`Open - ${ports.open} (TCP)`);
+                    }
+                    portList.appendChild(portItem);
+                    portItem = document.createElement("li");
+                    if (ports.secure === 0) {
+                        portItem.appendText("Secure - offline");
+                    } else {
+                        portItem.appendText(`Secure - ${ports.secure} (TCP)`);
+                    }
+                    portList.appendChild(portItem);
+                } else if (encryption === "open") {
+                    if (ports.open === 0) {
+                        portItem.appendText("Open - offline");
+                    } else {
+                        portItem.appendText(`Open - ${ports.open} (TCP)`);
+                    }
+                    portList.appendChild(portItem);
+                } else {
+                    if (ports.secure === 0) {
+                        portItem.appendText("Secure - offline");
+                    } else {
+                        portItem.appendText(`Secure - ${ports.secure} (TCP)`);
+                    }
+                    portList.appendChild(portItem);
+                }
+                div.appendChild(portList);
+                return div;
+            },
             create: function dashboard_serverCreate(event:MouseEvent):void {
                 const button:HTMLButtonElement = event.target as HTMLButtonElement;
                 button.disabled = true;

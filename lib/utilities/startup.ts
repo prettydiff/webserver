@@ -18,9 +18,9 @@ const startup = function utilities_startup(callback:() => void):void {
             html: false,
             ports: false
         },
-        readComplete = function utilities_startup_readComplete(flag:"compose"|"config"|"html"):void {
+        readComplete = function utilities_startup_readComplete(flag:"config"|"docker"|"html"):void {
             flags[flag] = true;
-            if (flags.compose === true && flags.config === true && flags.html === true) {
+            if (flags.config === true && flags.docker === true && flags.html === true) {
                 callback();
             }
         },
@@ -33,7 +33,8 @@ const startup = function utilities_startup(callback:() => void):void {
             } else {
                 vars.compose = JSON.parse(fileContents.toString());
             }
-            readComplete("compose");
+            flags.compose = true;
+            commandsCallback();
         },
         readConfig = function utilities_startup_readConfig(fileContents:Buffer):void {
             if (fileContents === null) {
@@ -109,7 +110,10 @@ const startup = function utilities_startup(callback:() => void):void {
             readComplete("config");
         },
         readHTML = function utilities_startup_readHTML(fileContents:Buffer):void {
-            vars.dashboard = fileContents.toString().replace("replace_javascript", `(${dashboard_script.toString().replace(/\(\s*\)/, "(core)")}(${core.toString()}));`);
+            vars.dashboard = fileContents.toString()
+                .replace("${payload.intervals.nmap}", (vars.intervals.nmap / 1000).toString())
+                .replace("${payload.intervals.compose}", (vars.intervals.compose / 1000).toString())
+                .replace("replace_javascript", `(${dashboard_script.toString().replace(/\(\s*\)/, "(core)")}(${core.toString()}));`);
             readComplete("html");
         },
         options = function utilities_startup_options(key:"no_color"|"verbose", iterate:string):void {
@@ -134,17 +138,8 @@ const startup = function utilities_startup(callback:() => void):void {
             return this.charAt(0).toUpperCase() + this.slice(1);
         },
         commandsCallback = function utilities_startup_commandsCallback():void {
-            if (flags.docker === true && flags.ports === true) {
-                if (vars.compose === null) {
-                    readComplete("compose");
-                } else {
-                    file.read({
-                        callback: readCompose,
-                        error_terminate: null,
-                        location: `${vars.path.project}compose.json`,
-                        no_file: null
-                    });
-                }
+            if (flags.compose === true && flags.ports === true) {
+                docker_ps(dockerCallback);
                 file.read({
                     callback: readConfig,
                     error_terminate: null,
@@ -164,8 +159,7 @@ const startup = function utilities_startup(callback:() => void):void {
             commandsCallback();
         },
         dockerCallback = function utilities_startup_dockerCallback():void {
-            flags.docker = true;
-            commandsCallback();
+            readComplete("docker");
         };
 
     String.prototype.capitalize = capitalize;
@@ -176,7 +170,12 @@ const startup = function utilities_startup(callback:() => void):void {
     vars.path.compose = `${vars.path.project}compose${vars.sep}`;
     vars.path.servers = `${vars.path.project}servers${vars.sep}`;
     port_map(portCallback);
-    docker_ps(dockerCallback);
+    file.read({
+        callback: readCompose,
+        error_terminate: null,
+        location: `${vars.path.project}compose.json`,
+        no_file: null
+    });
     if (process.platform !== "win32") {
         file.stat({
             callback: function utilities_startup_bash(stat:node_fs_BigIntStats):void {

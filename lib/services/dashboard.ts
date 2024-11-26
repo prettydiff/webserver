@@ -21,7 +21,6 @@ const dashboard = function services_dashboard(socketData:socket_data, transmit:t
         const socket:websocket_client = transmit.socket as websocket_client,
             browser:transmit_dashboard = {
                 compose: vars.compose,
-                intervals: vars.intervals,
                 logs: vars.logs,
                 path: vars.path,
                 ports: vars.system_ports,

@@ -58,6 +58,7 @@ declare global {
     }
 
     interface module_compose {
+        activePorts: (name_server:string) => HTMLElement;
         cancelVariables: (event:MouseEvent) => void;
         create: (event:MouseEvent) => void;
         editVariables: () => void;
@@ -81,12 +82,12 @@ declare global {
     }
 
     interface module_port {
-        active: (name_server:string) => HTMLElement;
         external: (input:external_ports) => void;
         internal: () => void;
     }
 
     interface module_server {
+        activePorts: (name_server:string) => HTMLElement;
         create: (event:MouseEvent) => void;
         definitions: (event:MouseEvent) => void;
         list: () => void;
