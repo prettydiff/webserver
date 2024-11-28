@@ -2,6 +2,7 @@
 import file from "../utilities/file.js";
 import log from "../utilities/log.js";
 import node from "../utilities/node.js";
+import server from "../transmit/server.js";
 import server_create from "./server_create.js";
 import vars from "../utilities/vars.js";
 
@@ -49,6 +50,9 @@ const server_halt = function services_serverHalt(data:services_dashboard_action,
                         // 8. call the callback
                         callback();
                     }
+                    if (data.action === "modify") {
+                        data.configuration.modification_name = old;
+                    }
                     log({
                         action: data.action,
                         config: data.configuration,
@@ -92,11 +96,11 @@ const server_halt = function services_serverHalt(data:services_dashboard_action,
         if (temporary === true) {
             data.action = "destroy";
         }
-        // 1. turn off active servers and delete their corresponding objects
-        if (vars.server_meta[old].server.open !== undefined) {
+        // 1. turn off active servers
+        if (vars.server_meta[old].server.open !== undefined && vars.server_meta[old].server.open !== null) {
             vars.server_meta[old].server.open.close();
         }
-        if (vars.server_meta[old].server.secure !== undefined) {
+        if (vars.server_meta[old].server.secure !== undefined && vars.server_meta[old].server.secure !== null) {
             vars.server_meta[old].server.open.close();
         }
         vars.servers[old].status = {
@@ -132,14 +136,18 @@ const server_halt = function services_serverHalt(data:services_dashboard_action,
         // 6. modify the server
         if (data.action === "modify") {
             delete data.configuration.modification_name;
-            server_create({
-                action: "add",
-                configuration: data.configuration
-            }, server_restart);
+            vars.servers[data.configuration.name].config = data.configuration;
             if (data.configuration.name !== old) {
                 delete vars.servers[old];
+                server_create({
+                    action: "add",
+                    configuration: data.configuration
+                }, server_restart);
+            } else {
+                server(data, function services_serverHalt_restartComplete():void {
+                    complete("restart");
+                });
             }
-            vars.servers[data.configuration.name].config = data.configuration;
         } else {
             complete("restart");
         }
@@ -147,9 +155,10 @@ const server_halt = function services_serverHalt(data:services_dashboard_action,
             // 7. modify the servers.json file
             const servers:store_server_config = {},
                 keys:string[] = Object.keys(vars.servers),
-                total:number = keys.length - 1;
+                total:number = keys.length;
             let index:number = 0;
-            if (index > 0) {
+            // the servers.json file only stores the config property of each server's data
+            if (total > 0) {
                 do {
                     delete vars.servers[keys[index]].config.modification_name;
                     servers[keys[index]] = vars.servers[keys[index]].config;

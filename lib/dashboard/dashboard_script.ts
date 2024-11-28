@@ -57,6 +57,14 @@ const dashboard = function dashboard():void {
                 if (compose.nodes !== null) {
                     compose.nodes.containers_list = replace(compose.nodes.containers_list, true);
                     compose.nodes.variables_list = replace(compose.nodes.variables_list, true);
+                    if (compose.nodes.containers_new.disabled === true) {
+                        const compose_containers_cancel:HTMLButtonElement = document.getElementById("compose").getElementsByClassName("section")[1].getElementsByClassName("server-cancel")[0] as HTMLButtonElement;
+                        compose_containers_cancel.click();
+                    }
+                    if (compose.nodes.variables_new.disabled === true) {
+                        const compose_variable_cancel:HTMLButtonElement = document.getElementById("compose").getElementsByClassName("section")[0].getElementsByClassName("server-cancel")[0] as HTMLButtonElement;
+                        compose_variable_cancel.click();
+                    }
                 }
                 terminal.nodes.output = replace(terminal_output, true);
                 server.nodes.list = replace(serverList, true);
@@ -67,14 +75,6 @@ const dashboard = function dashboard():void {
                 socket.socket = null;
                 if (terminal.socket !== null) {
                     terminal.socket.close();
-                }
-                if (compose.nodes.containers_new.disabled === true) {
-                    const compose_containers_cancel:HTMLButtonElement = document.getElementById("compose").getElementsByClassName("section")[1].getElementsByClassName("server-cancel")[0] as HTMLButtonElement;
-                    compose_containers_cancel.click();
-                }
-                if (compose.nodes.variables_new.disabled === true) {
-                    const compose_variable_cancel:HTMLButtonElement = document.getElementById("compose").getElementsByClassName("section")[0].getElementsByClassName("server-cancel")[0] as HTMLButtonElement;
-                    compose_variable_cancel.click();
                 }
             }
         },
@@ -370,6 +370,7 @@ const dashboard = function dashboard():void {
                 if (createServer === false && dashboard === false) {
                     const span:HTMLElement = document.createElement("span"),
                         buttons:HTMLElement = document.createElement("p");
+                    buttons.setAttribute("class", "buttons");
                     destroy.appendText("✘ Destroy");
                     destroy.setAttribute("class", "server-destroy");
                     destroy.onclick = (section === "compose")
@@ -889,7 +890,7 @@ const dashboard = function dashboard():void {
                                         }
                                     };
                                     const names:string[] = Object.keys(payload.servers),
-                                        ul_current:HTMLElement = document.getElementById("servers").getElementsByClassName("server-list")[0].getElementsByTagName("ul")[0],
+                                        ul_current:HTMLElement = document.getElementById("servers").getElementsByClassName("server-list")[0] as HTMLElement,
                                         ul:HTMLElement = (ul_current === undefined)
                                             ? document.createElement("ul")
                                             : ul_current;
@@ -983,6 +984,21 @@ const dashboard = function dashboard():void {
                                             break;
                                         }
                                     } while (index > 0);
+                                } else if (data.action === "modify") {
+                                    const list:HTMLElement = document.getElementById("servers").getElementsByClassName("server-list")[0] as HTMLElement,
+                                        items:HTMLCollectionOf<HTMLElement> = list.getElementsByTagName("li");
+                                    let index:number = items.length;
+                                    payload.servers[config.name].config = config;
+                                    if (index > 0) {
+                                        do {
+                                            index = index - 1;
+                                            if (items[index].getAttribute("data-name") === config.name) {
+                                                list.insertBefore(common.title(config.name, "server"), items[index]);
+                                                list.removeChild(items[index]);
+                                                break;
+                                            }
+                                        } while (index > 0);
+                                    }
                                 }
                                 ports.internal();
                             } else if (data.type === "socket") {
@@ -1031,7 +1047,9 @@ const dashboard = function dashboard():void {
         ports:module_port = {
             external: function dashboard_portsExternal(input:external_ports):void {
                 const servers:string[] = Object.keys(payload.servers),
-                    compose:string[] = Object.keys(payload.compose.containers),
+                    compose:string[] = (payload.compose === null)
+                        ? null
+                        : Object.keys(payload.compose.containers),
                     loop_ports = function dashboard_portsExternal(number:number):void {
                         let indexPorts:number = input.list.length;
                         if (indexPorts > 0) {
@@ -1121,7 +1139,9 @@ const dashboard = function dashboard():void {
                     } while (indexServers > 0);
                 }
                 // per container
-                indexServers = compose.length;
+                indexServers = (compose === null)
+                    ? 0
+                    : compose.length;
                 if (indexServers > 0) {
                     do {
                         indexServers = indexServers - 1;
@@ -1159,7 +1179,9 @@ const dashboard = function dashboard():void {
                     tbody_old:HTMLElement = document.getElementById("ports").getElementsByTagName("tbody")[1],
                     tbody_new:HTMLElement = document.createElement("tbody"),
                     servers:string[] = Object.keys(payload.servers),
-                    compose:string[] = Object.keys(payload.compose.containers);
+                    compose:string[] = (payload.compose === null)
+                        ? null
+                        : Object.keys(payload.compose.containers);
                 let indexServers:number = servers.length,
                     indexPorts:number = 0,
                     tr:HTMLElement = null,
@@ -1179,7 +1201,9 @@ const dashboard = function dashboard():void {
                 }
 
                 // per container
-                indexServers = compose.length;
+                indexServers = (compose === null)
+                    ? 0
+                    : compose.length;
                 if (indexServers > 0) {
                     do {
                         indexServers = indexServers - 1;

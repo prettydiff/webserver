@@ -169,11 +169,11 @@ td .icon{display:inline-block;width:1.5em}
 #dashboard button.server-modify,
 #dashboard button.server-add{color:var(--text_green)}
 #dashboard button.server-edit{display:block;margin:1em auto}
-#dashboard button.server-edit,
+#dashboard .server-edit,
 #dashboard .pass-warn,
-#dashboard button.server-activate,
-#dashboard button.server-deactivate,
-#dashboard button.server-cancel{color:var(--text_yellow)}
+#dashboard .server-activate,
+#dashboard .server-deactivate,
+#dashboard .server-cancel{color:var(--text_yellow)}
 #dashboard button.server-destroy{color:var(--fail_dark)}
 #dashboard input,
 #dashboard textarea{box-sizing:border-box;display:block;font-size:1em;margin:0 0 1em;width:100%}
