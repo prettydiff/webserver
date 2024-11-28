@@ -1368,7 +1368,10 @@ const dashboard = function dashboard():void {
             socket_add: function dashboard_serverSocketAdd(config:socket_summary):void {
                 const tbody:HTMLElement = document.getElementById("sockets").getElementsByTagName("tbody")[0],
                     tr:HTMLElement = document.createElement("tr");
-                let td:HTMLElement = document.createElement("Td");
+                let td:HTMLElement = document.createElement("td");
+                if (config.address.local.port === undefined || config.address.remote.port === undefined) {
+                    return;
+                }
                 tr.setAttribute("data-name", config.hash);
                 // server
                 td.appendText(config.server);

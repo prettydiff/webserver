@@ -101,7 +101,7 @@ const server_halt = function services_serverHalt(data:services_dashboard_action,
             vars.server_meta[old].server.open.close();
         }
         if (vars.server_meta[old].server.secure !== undefined && vars.server_meta[old].server.secure !== null) {
-            vars.server_meta[old].server.open.close();
+            vars.server_meta[old].server.secure.close();
         }
         vars.servers[old].status = {
             open: 0,

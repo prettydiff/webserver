@@ -233,11 +233,11 @@ const server = function transmit_server(data:services_dashboard_action, callback
                                     count = count + 1;
                                     if (count > 1) {
                                         proxy.pipe(socket);
-                                        if (server.redirect_domain === undefined || server.redirect_domain === null || server.redirect_internal[domain] === undefined) {
+                                        if (server.redirect_domain !== undefined && server.redirect_domain !== null && (server.redirect_domain[domain] !== undefined || (socket.encrypted === true && server.redirect_domain[`${domain}.secure`] !== undefined))) {console.log("proxy");
                                             socket.pipe(proxy);
                                             proxy.write(data);
                                         } else {
-                                            // HTTP redirection support
+                                            // internal redirection
                                             socket.on("data", function transmit_server_connection_handshake_createProxy_redirect(message:Buffer):void {
                                                 proxy.write(redirection(domain, message, server_name));
                                             });
