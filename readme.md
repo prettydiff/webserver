@@ -18,6 +18,7 @@ Serves and proxies HTTP over WebSockets for both TCP and TLS.
 * Stream any supported media through the browser no matter the size
 * More intelligent HTTP file system directory lists
 * Lists all connected sockets to all managed servers
+* Servers include a *temporary* option which creates a server with no state management, no changes to the file system, and is fully destroyed once the first connected socket ends
 
 ### Docker Containers
 * Provides a dashboard list of all managed containers with status in near real time via Docker Compose
@@ -31,6 +32,21 @@ Serves and proxies HTTP over WebSockets for both TCP and TLS.
 6. Build the application: `npm run build`.
 7. Run the application: `npm run server`.
 6. Access the dashboard in a browser on the specified random port.
+
+## Planned Enhancements
+* Server detachment.
+  Current docker containers are fully detatched from this application as separate processes.
+  If this application goes down the applications running in the docker containers will continue to be available.
+  A future enhancement will include detatchment as an option for servers, which will require more advanced messaging for management and real time status
+* Component features.
+  The application is currently built around a central architecture.
+  A future enhancement will refactor the organization of the application's architecture such that capabilities can be added or removed without impact to other features.
+* Process management and file system tools.
+  A future enhacnement will include process management and file system tools to better manage operations between services and containers as optional component features.
+* DNS service support.
+  A future enhancement will include DNS services for the creation of local domains.
+  In the meantime I strongly recommend running [PiHole](https://pi-hole.net/) via docker compose image *pihole/pihole:latest* from Docker Hub.
+  I use this image: 
 
 ## Limitations
 ### HTTP Methods

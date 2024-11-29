@@ -7,7 +7,6 @@ import directory from "../utilities/directory.js";
 import file from "../utilities/file.js";
 import file_list from "../browser/file_list.js";
 import node from "../utilities/node.js";
-import redirection from "../transmit/redirection.js";
 import vars from "../utilities/vars.js";
 
 /* cspell: words msvideo, nofollow, onnection, prettydiff */
@@ -325,7 +324,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
     } else {
         // all other HTTP requests
         input = path + decoded;
-    }console.log(input);
+    }
     file.stat({
         callback: statTest,
         error_terminate: null,

@@ -31,7 +31,15 @@
             <h3>Frequently Asked Questions</h3>
             <p class="tab-description">Please review these items to help troubleshoot common problems.</p>
             <div class="section">
-                <h3>I created a redirect_asset rule for an absolute path, but it doesn't work.</h3>
+                <h3>Servers - On Windows I can create servers using ports 80 and 443, but it keeps resulting in an error on Linux.</h3>
+                <p>
+                    Linux, by policy, restricts normal users from running services on ports below 1025.
+                    This can be circumvented by running this application with elevated privilege, as an OS service, or using the package <a href="https://archlinux.org/packages/core/x86_64/libcap/">libcap</a>.
+                    My preference is to run the application as an OS service using systemd.
+                </p>
+            </div>
+            <div class="section">
+                <h3>Servers - I created a redirect_asset rule for an absolute path, but it doesn't work.</h3>
                 <p>
                     For security reasons server paths are absolute to the server's asset location on the machine file system and not the root of the file system.
                     If redirection should occur for assets outside the server's asset tree I recommend creating a symbolic link in the server's asset location.
@@ -71,6 +79,18 @@
                     Partial encryption still encrypts data between the proxy, your server running from this application, and the users.
                     Partial encryption will not encrypt data between the proxy and the destination.
                     Typically partical encryption is good enough for privacy, but should not be trusted with sensitive data like passwords or connections to financial institutions.
+                </p>
+            </div>
+            <div class="section">
+                <h3>Containers - None of the Docker commands seem to work, as though they aren't even there. I verified Docker and Docker Compose are installed.</h3>
+                <p>
+                    Most of the docker commands require elevated privilege to run and otherwise pretend to not exist.
+                    Docker does provide a <a href="https://docs.docker.com/engine/install/linux-postinstall/">guide</a> to run docker commands as a regular user on Linux, but it seems many people (myself included) cannot get this to work.
+                </p>
+                <p>
+                    For security reasons I strongly recommend not executing docker commands directly with sudo unless you have no other choice.
+                    Instead I recommend running docker commands via some interface that is already running as a service.
+                    My personal solution is to run this application via systemd on Linux and then run Docker command via the terminal provided by the browser dashboard.
                 </p>
             </div>
             <div class="section">
