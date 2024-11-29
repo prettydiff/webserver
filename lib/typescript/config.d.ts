@@ -59,7 +59,7 @@ interface config_spawn {
 }
 
 interface config_validate_serverKeys {
-    name: "block_list" | "http" | "ports" | "redirect_domain" | "redirect_internal";
+    name: "block_list" | "http" | "ports" | "redirect_asset" | "redirect_domain";
     required_name: boolean;
     required_property: boolean;
     supported: string[];

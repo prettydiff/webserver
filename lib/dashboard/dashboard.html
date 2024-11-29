@@ -31,24 +31,57 @@
             <h3>Frequently Asked Questions</h3>
             <p class="tab-description">Please review these items to help troubleshoot common problems.</p>
             <div class="section">
+                <h3>I created a redirect_asset rule for an absolute path, but it doesn't work.</h3>
+                <p>
+                    For security reasons server paths are absolute to the server's asset location on the machine file system and not the root of the file system.
+                    If redirection should occur for assets outside the server's asset tree I recommend creating a symbolic link in the server's asset location.
+                    In Linux this is accomplished with <code>ln -s /desired/path link_name</code> where the first path is where the files actually are and the second is where the link will be in the file system.
+                </p>
+            </div>
+            <div class="section">
                 <h3>Servers - I am trying to redirect traffic to a vanity domain from one server spawned by this application to another server spawned by this application, but it isn't working.</h3>
-                <p>The destination server must have the vanity domain listed in its <em>domain_local</em> list.</p>
+                <p>
+                    The destination server must have the vanity domain listed in its <em>domain_local</em> list.
+                    For increased security servers will only accept connections to known addresses, which includes IP address and wildcards already supported on local machine interfaces.
+                </p>
             </div>
             <div class="section">
                 <h3>Servers - How can I ensure an end-to-end encrypted tunnel between my users and a proxied destination?</h3>
-                <p>First, verify the given server is set to <em>encryption</em> values <strong>both</strong> or <strong>secure</strong>. If the given server does not have a secure TLS instance running it will not be able to proxy to an encrypted TLS destination.</p>
-                <p>Second, ensure there is a <em>redirect_domain</em> entry for the given server named with a <strong>.secure</strong> suffix, such as mybank.com.secure as opposed to just mybank.com. That tells this application to only proxy via TLS on incoming TLS connections.</p>
+                <p>
+                    First, verify the given server is set to <em>encryption</em> values <strong>both</strong> or <strong>secure</strong>.
+                    If the given server does not have a secure TLS instance running it will not be able to proxy to an encrypted TLS destination.
+                </p>
+                <p>
+                    Second, ensure there is a <em>redirect_domain</em> entry for the given server named with a <strong>.secure</strong> suffix, such as mybank.com.secure as opposed to just mybank.com.
+                    That tells this application to only proxy via TLS on incoming TLS connections.
+                </p>
             </div>
             <div class="section">
                 <h3>Servers - On a server entry I specified a <em>redirect_domain</em> entry using <strong>.secure</strong> as a naming suffix to create an end-to-end encrypted connection, but it does not work.</h3>
-                <p>First, verify the given server is set to <em>encryption</em> values <strong>both</strong> or <strong>secure</strong>. If the given server does not have a secure TLS instance running it will not be able to proxy to an encrypted TLS destination.</p>
-                <p>Second, verify the destination is working without using a proxy connection by directly going to the destination address and port in a web browser. If the destination fails via direct request then a proxy connection will also expect to fail.</p>
-                <p>Third, if the destination is failing through direct encrypted access via HTTPS but still works through unencrypted HTTP access you can fall back to partial encryption by deleting the <em>redirect_domain</em> entry with the <strong>.secure</strong> suffix. Partial encryption still encrypts data between the proxy, your server running from this application, and the users. Partial encryption will not encrypt data between the proxy and the destination. Typically partical encryption is good enough for privacy, but should not be trusted with sensitive data like passwords or connections to financial institutions.</p>
+                <p>
+                    First, verify the given server is set to <em>encryption</em> values <strong>both</strong> or <strong>secure</strong>.
+                    If the given server does not have a secure TLS instance running it will not be able to proxy to an encrypted TLS destination.
+                </p>
+                <p>
+                    Second, verify the destination is working without using a proxy connection by directly going to the destination address and port in a web browser.
+                    If the destination fails via direct request then a proxy connection will also expect to fail.
+                </p>
+                <p>
+                    Third, if the destination is failing through direct encrypted access via HTTPS but still works through unencrypted HTTP access you can fall back to partial encryption by deleting the <em>redirect_domain</em> entry with the <strong>.secure</strong> suffix.
+                    Partial encryption still encrypts data between the proxy, your server running from this application, and the users.
+                    Partial encryption will not encrypt data between the proxy and the destination.
+                    Typically partical encryption is good enough for privacy, but should not be trusted with sensitive data like passwords or connections to financial institutions.
+                </p>
             </div>
             <div class="section">
                 <h3>Containers - I added a new Docker Container but it's showing offline. I also ran <em>docker ps</em> in the terminal and the new container is not in the list.</h3>
                 <p>Because the Docker Daemon is a service unrelated to this application containers require a separate activation step.</p>
-                <p>After the new container is submitted click on the new container that now displays in the container list. Once expanded there will exist an Edit button under the Docker Compose text area. Click the Edit button and then click the <em>Activate</em> button that appears. This button will run the equivalent of Docker's <strong>up</strong> command and dump the output to the terminal.</p>
+                <p>
+                    After the new container is submitted click on the new container that now displays in the container list.
+                    Once expanded there will exist an Edit button under the Docker Compose text area.
+                    Click the Edit button and then click the <em>Activate</em> button that appears.
+                    This button will run the equivalent of Docker's <strong>up</strong> command and dump the output to the terminal.
+                </p>
             </div>
         </div>
         <div class="tab" id="help">
@@ -187,25 +220,68 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
                 <h3>Definitions of Server Object Properties <button class="expand">Expand</button></h3>
                 <dl>
                     <dt><em>activate</em> (string)</dt>
-                    <dd>Instructs the application to bring the server online automatically at application start and server creation.</dd>
+                    <dd><p>
+                        Instructs the application to bring the server online automatically at application start and server creation.
+                    </p></dd>
                     <dt><em>block_list</em> (string array)</dt>
-                    <dd>The block list contains three optional string arrays of criteria to determine if matching sockets should be instantly destroyed. At this time wildcards, CIDR notation, and ranges are not supported.</dd>
+                    <dd><p>
+                        The block list contains three optional string arrays of criteria to determine if matching sockets should be instantly destroyed.
+                        At this time wildcards, CIDR notation, and ranges are not supported.
+                    </p></dd>
                     <dt><em>domain_local</em> (string array)</dt>
-                    <dd>Sockets featuring HTTP request host names in this list will be served from this server.  Sockets featuring HTTP request host names not in this list or in the redirect_domain list will be destroyed.</dd>
+                    <dd><p>
+                        Sockets featuring HTTP request host names in this list will be served from this server.
+                        Sockets featuring HTTP request host names not in this list or in the redirect_domain list will be destroyed.
+                    </p></dd>
                     <dt><em>encryption</em> (string)</dt>
-                    <dd>Whether to create an encrypted server for HTTPS and WSS protocols, an unencrypted server for HTTP and WS protocols, or both. Accepted values are <em>both</em>, <em>open</em>, or <em>secure</em>.</dd>
+                    <dd><p>
+                        Whether to create an encrypted server for HTTPS and WSS protocols, an unencrypted server for HTTP and WS protocols, or both.
+                        Accepted values are <em>both</em>, <em>open</em>, or <em>secure</em>.
+                    </p></dd>
                     <dt><em>http</em> (object)</dt>
-                    <dd>File system paths to external utilities for handling the supported HTTP methods: <em>delete</em>, <em>post</em>, and <em>put</em>.  HTTP request bodies are passed into an environmental variable on the respective child process named 'payload'.</dd>
+                    <dd><p>
+                        File system paths to external utilities for handling the supported HTTP methods: <em>delete</em>, <em>post</em>, and <em>put</em>.
+                        HTTP request bodies are passed into an environmental variable on the respective child process named 'payload'.
+                    </p></dd>
                     <dt><em>name</em> (string)</dt>
-                    <dd>The name of this server.</dd>
+                    <dd><p>
+                        The name of this server.
+                    </p></dd>
                     <dt><em>ports</em> (object)</dt>
-                    <dd>The ports on which the server operates.</dd>
+                    <dd><p>
+                        The ports on which the server operates.
+                    </p></dd>
+                    <dt><em>redirect_asset</em> (object)</dt>
+                    <dd><p>
+                        Redirects resource paths of HTTP requests within the given server based upon the hostname in the HTTP request header.
+                        This is useful for dynamic or vanity endpoints on a given server that wish to return something different than a relative file system destination.
+                        Each instance uses the structure of <code>"domain": {"resource location": "new location"}</code> because each server can represent 0 or more domain names.
+                    </p><p>
+                        For example there could be an informational dashboard on some server at address: <em>http://myexample.com/api_services/informational/dashboards/uptime/</em>.
+                        For the sake of simplicity you want to serve that dashboard from an internal vanity domain like: <em>http://api.dashboard/</em>.
+                        You would need a rule to redirect from resource <em>/</em> to actual resource at <em>/api_services/informational/dashboards/uptime</em>, and that rule would look like: <code>"api.dashboard": {"/": "/api_services/informational/dashboards/uptime/"}</code>
+                    </p><p>
+                        Asset redirection supports use of wildcards by specifying an asterisk at the end of asset locations.
+                        For example, redirection of request for <em>/api_services/informational/dashboards/uptime/images/interface/title.png</em> to <em>/api/images/interface/title.png</em> would occur with rule: <code>"api.dashboard": {"/api/*": "/api_services/informational/dashboards/uptime/"}</code>
+                        With wildcards all asset requests matching the address up to the asterisk will be redirected to the specified location.
+                    </p><p>
+                        <strong>Please note the terminal slash in the prior examples.</strong>
+                        Without the terminating slash the redirected address becomes <em>/api_services/informational/dashboards/uptimeimages/interface/title.png</em>.
+                    </p></dd>
                     <dt><em>redirect_domain</em> (object)</dt>
-                    <dd>Redirects traffic to a different location, such as vanity domain that may or may not be served from the same server. Each instance uses the structure of <code>"domain": ["new domain", port_number]</code> because each server can represent 0 or more domain names. If the 'new domain' is an empty string the requested domain will be used. If the port number is not a number or 0 the current server's port number will be used. If TLS connections needs to be directed to a port different than open connections then use the naming convnetion <strong>myDomain.secure</strong>, for example: <code>"jellyfin.x.secure": ["", 3003]</code></dd>
-                    <dt><em>redirect_internal</em> (object)</dt>
-                    <dd>Redirects resource paths within the given server based upon the hostname in the HTTP request header. This is useful for dynamic or vanity endpoints on a given server. Each instance uses the structure of <code>"domain": {"resource location": "new location"}</code> because each server can represent 0 or more domain names.</dd>
+                    <dd><p>
+                        Redirects traffic to a different server location, such as a vanity domain that may or may not be served from the same server.
+                        Each instance uses the structure of <code>"domain": ["new domain", port_number]</code> because each server can represent 0 or more domain names.
+                        If the 'new domain' is an empty string the requested domain will be used.
+                        If the port number is not a number or 0 the current server's port number will be used.
+                    </p><p>
+                        If TLS connections needs to be directed to a port different than open connections then use the naming convnetion <strong>myDomain.secure</strong>, for example: <code>"jellyfin.x.secure": ["", 3003]</code>
+                    </p></dd>
                     <dt><em>temporary</em> (boolean)</dt>
-                    <dd>Providing property <em>temporary</em> with value <em>true</em> will create a server that only accepts a first successful HTTP or WebSocket connection.  All other connections will be ignored and the server will automatically remove itself once that connection completes.</dd>
+                    <dd><p>
+                        Providing property <em>temporary</em> with value <em>true</em> will create a server that only accepts a first successful HTTP or WebSocket connection.
+                        All other connections will be ignored and the server will automatically remove itself once that connection completes.
+                    </p></dd>
                 </dl>
             </div>
             <div class="section">

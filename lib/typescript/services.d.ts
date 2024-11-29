@@ -73,11 +73,11 @@ declare global {
         modification_name?: string;
         name: string;
         ports: server_ports;
+        redirect_asset?: {
+            [key:string]: store_string;
+        };
         redirect_domain?: {
             [key:string]: [string, number];
-        };
-        redirect_internal?: {
-            [key:string]: store_string;
         };
         temporary?: boolean;
     }

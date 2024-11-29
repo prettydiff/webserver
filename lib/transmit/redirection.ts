@@ -9,7 +9,7 @@ const redirection = function transmit_redirection(domain:string, message:Buffer|
         server:services_server = vars.servers[server_name].config;
     if (headerStr.indexOf("HTTP") > 0) {
         const header:string[] = headerStr.split(" "),
-            keys:string[] = Object.keys(server.redirect_internal[domain]);
+            keys:string[] = Object.keys(server.redirect_asset[domain]);
         let index:number = keys.length,
             key:string = "",
             wild:string = "";
@@ -19,7 +19,7 @@ const redirection = function transmit_redirection(domain:string, message:Buffer|
                 index = index - 1;
                 key = keys[index];
                 if (key === header[1] && key.charAt(key.length - 1) !== "*") {
-                    header[1] = server.redirect_internal[domain][key];
+                    header[1] = server.redirect_asset[domain][key];
                     return Buffer.from(str.replace(headerStr, header.join(" ")));
                 }
             } while (index > 0);
@@ -31,8 +31,8 @@ const redirection = function transmit_redirection(domain:string, message:Buffer|
                     index = index - 1;
                     key = keys[index];
                     wild = key.replace(/\*$/, "");
-                    if (key.charAt(key.length - 1) === "*" && header[1].indexOf(wild) === 0 && header[1].indexOf(server.redirect_internal[domain][key]) !== 0) {
-                        header[1] = header[1].replace(wild, server.redirect_internal[domain][key]);
+                    if (key.charAt(key.length - 1) === "*" && header[1].indexOf(wild) === 0 && header[1].indexOf(server.redirect_asset[domain][key]) !== 0) {
+                        header[1] = header[1].replace(wild, server.redirect_asset[domain][key]);
                         return Buffer.from(str.replace(headerStr, header.join(" ")));
                     }
                 } while (index > 0);

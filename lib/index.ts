@@ -21,7 +21,7 @@ startup(function index():void {
                 open: 0,
                 secure: 0
             },
-            redirect_internal: {
+            redirect_asset: {
                 "localhost": {
                     "/lib/assets/*": "/lib/dashboard/*"
                 }

@@ -20,7 +20,7 @@ type type_keys = "ArrowDown" | "ArrowLeft" | "ArrowRight" | "ArrowUp" | "Backspa
 type type_paths = "storage" | "web_root";
 type type_search = "fragment" | "negation" | "regex";
 type type_selector = "class" | "id" | "tag";
-type type_server_property = "block_list" | "domain_local" | "encryption" | "http" | "name" | "ports" | "redirect_domain" | "redirect_internal";
+type type_server_property = "block_list" | "domain_local" | "encryption" | "http" | "name" | "ports" | "redirect_asset" | "redirect_domain";
 
 //   service name            - data type transmitted     - description
 // * dashboard-compose-container - store_string              - Docker compose variables
@@ -32,7 +32,7 @@ type type_service = "dashboard-compose-container" | "dashboard-compose-variables
 type type_socket_data = services_compose | services_dashboard_action | services_dashboard_status | services_dashboard_terminal | services_processKill | services_youtubeDownload | services_youtubeStatus | store_string | transmit_dashboard;
 type type_socket_status = "closed" | "end" | "open" | "pending";
 type type_ui_control = "select" | "text";
-type type_vars = "block_list" | "domain_local" | "ports" | "redirect_domain" | "redirect_internal" | "server_name";
+type type_vars = "block_list" | "domain_local" | "ports" | "redirect_asset" | "redirect_domain" | "server_name";
 type type_youtubeDownload_media = "audio" | "video";
 type type_youtubeDownload = "audio-file" | "audio-playlist" | "video-file" | "video-playlist";
 

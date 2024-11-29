@@ -55,7 +55,7 @@ const server = function transmit_server(data:services_dashboard_action, callback
                                 domain = host.replace(`:${address.local.port}`, "");
                             }
                             // ensures HTTP requests pushed through the proxy are identified as originating from the proxy
-                            if (server.domain_local.includes(domain) === false && Object.keys(server.redirect_domain).includes(domain) === true) {
+                            if (server.domain_local.includes(domain) === false) {
                                 arr[arrIndex] = (socket.encrypted === true)
                                     ? `Host: ${address.local.address}:${server.ports.secure}`
                                     : `Host: ${address.local.address}:${server.ports.open}`;
@@ -89,7 +89,7 @@ const server = function transmit_server(data:services_dashboard_action, callback
                             }
                         },
                         local_service = function transmit_server_connection_handshake_localService():void {
-                            if (server.redirect_internal !== undefined && server.redirect_internal !== null && server.redirect_internal[domain] !== undefined) {
+                            if (server.redirect_asset !== undefined && server.redirect_asset !== null && server.redirect_asset[domain] !== undefined) {
                                 data = redirection(domain, data, server_name) as Buffer;
                                 headerList[0] = data.toString().split("\r\n")[0];
                             }
@@ -203,7 +203,12 @@ const server = function transmit_server(data:services_dashboard_action, callback
                                     socket: socket,
                                     type: "ws"
                                 }),
-                                encrypted:boolean = (socket.encrypted === true && server.redirect_domain !== undefined && server.redirect_domain !== null && server.redirect_domain[`${domain}.secure`] !== undefined),
+                                encrypted:boolean = (
+                                    socket.encrypted === true &&
+                                    server.redirect_domain !== undefined &&
+                                    server.redirect_domain !== null &&
+                                    server.redirect_domain[`${domain}.secure`] !== undefined
+                                ),
                                 pair:[string, number] = (encrypted === true)
                                     ? server.redirect_domain[`${domain}.secure`]
                                     : (server.redirect_domain === undefined || server.redirect_domain === null || server.redirect_domain[domain] === undefined)
@@ -236,7 +241,7 @@ const server = function transmit_server(data:services_dashboard_action, callback
                                         proxy.pipe(socket);
                                         if (server.redirect_domain !== undefined && server.redirect_domain !== null && (server.redirect_domain[domain] !== undefined || (socket.encrypted === true && server.redirect_domain[`${domain}.secure`] !== undefined))) {
                                             socket.pipe(proxy);
-                                            proxy.write(data);
+                                            proxy.write(redirection(domain, data, server_name));
                                         } else {
                                             // internal redirection
                                             socket.on("data", function transmit_server_connection_handshake_createProxy_redirect(message:Buffer):void {

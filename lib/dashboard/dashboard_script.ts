@@ -165,14 +165,14 @@ const dashboard = function dashboard():void {
                                             output.push(`${ind}],`);
                                         }
                                     },
-                                    object = function dashboard_commonDetails_value_object(property:"redirect_domain"|"redirect_internal"):void {
+                                    object = function dashboard_commonDetails_value_object(property:"redirect_asset"|"redirect_domain"):void {
                                         const list:string[] = Object.keys(serverData[property]),
                                             total:number = list.length,
                                             objValue = function dashboard_commonDetails_value_object(input:string):void {
-                                                if (serverData.redirect_internal[input] === null || serverData.redirect_internal[input] === undefined) {
+                                                if (serverData.redirect_asset[input] === null || serverData.redirect_asset[input] === undefined) {
                                                     output.push(`    "${sanitize(input)}": {},`);
                                                 } else {
-                                                    const childList:string[] = Object.keys(serverData.redirect_internal[input]),
+                                                    const childList:string[] = Object.keys(serverData.redirect_asset[input]),
                                                         childTotal:number = childList.length;
                                                     let childIndex:number = 0;
                                                     if (childTotal < 1) {
@@ -180,7 +180,7 @@ const dashboard = function dashboard():void {
                                                     } else {
                                                         output.push(`    "${sanitize(input)}": {`);
                                                         do {
-                                                            output.push(`        "${sanitize(childList[childIndex])}": "${sanitize(serverData.redirect_internal[input][childList[childIndex]])}",`);
+                                                            output.push(`        "${sanitize(childList[childIndex])}": "${sanitize(serverData.redirect_asset[input][childList[childIndex]])}",`);
                                                             childIndex = childIndex + 1;
                                                         } while (childIndex < childTotal);
                                                         output[output.length - 1] = output[output.length - 1].replace(/,$/, "");
@@ -263,8 +263,8 @@ const dashboard = function dashboard():void {
                                 if (serverData.redirect_domain !== undefined && serverData.redirect_domain !== null) {
                                     object("redirect_domain");
                                 }
-                                if (serverData.redirect_internal !== undefined && serverData.redirect_internal !== null) {
-                                    object("redirect_internal");
+                                if (serverData.redirect_asset !== undefined && serverData.redirect_asset !== null) {
+                                    object("redirect_asset");
                                 }
                                 output[output.length - 1] = output[output.length - 1].replace(/,$/, "");
                                 return `${output.join("\n    ")}\n}`;
@@ -1591,14 +1591,14 @@ const dashboard = function dashboard():void {
                                             config.supported.splice(indexSupported, 1);
                                         } else if (config.name === "ports" && ((serverData.encryption === "open" && config.supported[indexSupported] === "secure") || (serverData.encryption === "secure" && config.supported[indexSupported] === "open"))) {
                                             config.supported.splice(indexSupported, 1);
-                                        } else if (config.name === null && keys.includes(config.supported[indexSupported]) === false && (config.supported[indexSupported] === "block_list" || config.supported[indexSupported] === "domain_local" || config.supported[indexSupported] === "http" || config.supported[indexSupported] === "redirect_domain" || config.supported[indexSupported] === "redirect_internal") || config.supported[indexSupported] === "temporary") {
+                                        } else if (config.name === null && keys.includes(config.supported[indexSupported]) === false && (config.supported[indexSupported] === "block_list" || config.supported[indexSupported] === "domain_local" || config.supported[indexSupported] === "http" || config.supported[indexSupported] === "redirect_domain" || config.supported[indexSupported] === "redirect_asset") || config.supported[indexSupported] === "temporary") {
                                             config.supported.splice(indexSupported, 1);
                                         }
                                     } while (indexSupported > 0);
                                 }
                             } while (indexActual > 0);
                         }
-                        if (config.name === "redirect_domain" || config.name === "redirect_internal") {
+                        if (config.name === "redirect_domain" || config.name === "redirect_asset") {
                             if (pass === true) {
                                 populate(true, `${requirement_parent} property '${config.name}' contains values of the proper type.`);
                             }
@@ -1627,7 +1627,7 @@ const dashboard = function dashboard():void {
                             }
                         }
                     },
-                    rootProperties:string[] = ["activate", "block_list", "domain_local", "encryption", "http", "name", "ports", "redirect_domain", "redirect_internal", "temporary"];
+                    rootProperties:string[] = ["activate", "block_list", "domain_local", "encryption", "http", "name", "ports", "redirect_asset", "redirect_domain", "temporary"];
                 let serverData:services_server = null,
                     failures:number = 0;
                 summary.style.display = "block";
@@ -1699,6 +1699,14 @@ const dashboard = function dashboard():void {
                     supported: ["open", "secure"],
                     type: "number"
                 });
+                // redirect_asset
+                keys({
+                    name: "redirect_asset",
+                    required_name: false,
+                    required_property: false,
+                    supported: [],
+                    type: "store"
+                });
                 // redirect_domain
                 keys({
                     name: "redirect_domain",
@@ -1706,14 +1714,6 @@ const dashboard = function dashboard():void {
                     required_property: false,
                     supported: [],
                     type: "array"
-                });
-                // redirect_internal
-                keys({
-                    name: "redirect_internal",
-                    required_name: false,
-                    required_property: false,
-                    supported: [],
-                    type: "store"
                 });
                 // temporary
                 if (typeof serverData.temporary === "boolean") {
