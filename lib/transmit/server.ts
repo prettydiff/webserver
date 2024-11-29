@@ -55,7 +55,7 @@ const server = function transmit_server(data:services_dashboard_action, callback
                                 domain = host.replace(`:${address.local.port}`, "");
                             }
                             // ensures HTTP requests pushed through the proxy are identified as originating from the proxy
-                            if (server.domain_local.includes(domain) === false) {
+                            if (server.domain_local.includes(domain) === false && Object.keys(server.redirect_domain).includes(domain) === true) {
                                 arr[arrIndex] = (socket.encrypted === true)
                                     ? `Host: ${address.local.address}:${server.ports.secure}`
                                     : `Host: ${address.local.address}:${server.ports.open}`;
@@ -203,7 +203,8 @@ const server = function transmit_server(data:services_dashboard_action, callback
                                     socket: socket,
                                     type: "ws"
                                 }),
-                                pair:[string, number] = ((socket.encrypted === true && server.redirect_domain !== undefined && server.redirect_domain !== null && server.redirect_domain[`${domain}.secure`] !== undefined))
+                                encrypted:boolean = (socket.encrypted === true && server.redirect_domain !== undefined && server.redirect_domain !== null && server.redirect_domain[`${domain}.secure`] !== undefined),
+                                pair:[string, number] = (encrypted === true)
                                     ? server.redirect_domain[`${domain}.secure`]
                                     : (server.redirect_domain === undefined || server.redirect_domain === null || server.redirect_domain[domain] === undefined)
                                         ? (socket.encrypted === true)
@@ -218,7 +219,7 @@ const server = function transmit_server(data:services_dashboard_action, callback
                                     : (socket.encrypted === true)
                                         ? server.ports.secure
                                         : server.ports.open,
-                                proxy:websocket_client = (socket.encrypted === true)
+                                proxy:websocket_client = (encrypted === true)
                                     ?  node.tls.connect({
                                         host: host,
                                         port: port,
@@ -233,7 +234,7 @@ const server = function transmit_server(data:services_dashboard_action, callback
                                     count = count + 1;
                                     if (count > 1) {
                                         proxy.pipe(socket);
-                                        if (server.redirect_domain !== undefined && server.redirect_domain !== null && (server.redirect_domain[domain] !== undefined || (socket.encrypted === true && server.redirect_domain[`${domain}.secure`] !== undefined))) {console.log("proxy");
+                                        if (server.redirect_domain !== undefined && server.redirect_domain !== null && (server.redirect_domain[domain] !== undefined || (socket.encrypted === true && server.redirect_domain[`${domain}.secure`] !== undefined))) {
                                             socket.pipe(proxy);
                                             proxy.write(data);
                                         } else {

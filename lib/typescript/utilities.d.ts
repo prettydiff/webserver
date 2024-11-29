@@ -73,7 +73,7 @@ interface hash_output {
 
 interface server {
     config: services_server;
-    sockets: socket_summary[];
+    sockets: services_socket[];
     status: server_ports;
 }
 
@@ -104,15 +104,6 @@ interface server_meta_item {
 interface server_ports {
     open?: number;
     secure?: number;
-}
-
-interface socket_summary {
-    address: transmit_addresses_socket;
-    hash: string;
-    proxy: string;
-    role: "client" | "server";
-    server: string;
-    type: string;
 }
 
 interface store_compose {

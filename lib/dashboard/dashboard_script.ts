@@ -532,7 +532,6 @@ const dashboard = function dashboard():void {
                 } else {
                     compose.nodes.containers_list.appendChild(common.title(config.title, "container"));
                 }
-
             },
             create: function dashboard_composeCreate(event:MouseEvent):void {
                 const button:HTMLButtonElement = event.target as HTMLButtonElement;
@@ -687,8 +686,6 @@ const dashboard = function dashboard():void {
                                 title: newTitle
                             };
                         message.send("add", item, "dashboard-compose-container");
-                        payload.compose.containers[newTitle] = item;
-                        compose.nodes.containers_list.appendChild(common.title(newTitle, "container"));
                     }
                     compose.nodes.containers_new.disabled = false;
                 }
@@ -709,12 +706,11 @@ const dashboard = function dashboard():void {
                     section:HTMLElement = target.getAncestor("edit", "class"),
                     newItem:boolean = (section.parentNode.getAttribute("class") === "section"),
                     textArea:HTMLTextAreaElement = section.getElementsByTagName("textarea")[1],
-                    buttons:HTMLElement = section.getElementsByClassName("buttons")[0] as HTMLElement,
                     summary:HTMLElement = section.getElementsByClassName("summary")[0] as HTMLElement,
                     old:HTMLElement = summary.getElementsByTagName("ul")[0] as HTMLElement,
                     modify:HTMLButtonElement = (newItem === true)
-                        ? buttons.getElementsByClassName("server-add")[0] as HTMLButtonElement
-                        : buttons.getElementsByClassName("server-modify")[0] as HTMLButtonElement,
+                        ? section.getElementsByClassName("server-add")[0] as HTMLButtonElement
+                        : section.getElementsByClassName("server-modify")[0] as HTMLButtonElement,
                     ul:HTMLElement = document.createElement("ul"),
                     reg:RegExp = (/^\s*$/),
                     title:string = compose.getTitle(textArea),
@@ -863,7 +859,7 @@ const dashboard = function dashboard():void {
                         }
                         if (data.status === "error") {
                             if (data.type === "socket") {
-                                const config:socket_summary = data.configuration as socket_summary;
+                                const config:services_socket = data.configuration as services_socket;
                                 socket_destroy(config.hash);
                             }
                         } else {
@@ -1002,7 +998,7 @@ const dashboard = function dashboard():void {
                                 }
                                 ports.internal();
                             } else if (data.type === "socket") {
-                                const config:socket_summary = data.configuration as socket_summary;
+                                const config:services_socket = data.configuration as services_socket;
                                 if (data.action === "add") {
                                     socket_destroy(config.hash);
                                     server.socket_add(config);
@@ -1094,9 +1090,6 @@ const dashboard = function dashboard():void {
                     }
                     return;
                 }
-                // must test
-                // 1. bad command, display language not table
-                // 2. on update then update table if not there
                 let indexServers:number = servers.length,
                     indexPorts:number = input.list.length,
                     indexKeys:number = 0,
@@ -1146,10 +1139,12 @@ const dashboard = function dashboard():void {
                     do {
                         indexServers = indexServers - 1;
                         indexKeys = payload.compose.containers[compose[indexServers]].ports.length;
-                        do {
-                            indexKeys = indexKeys - 1;
-                            loop_ports(payload.compose.containers[compose[indexServers]].ports[indexKeys][0]);
-                        } while (indexKeys > 0);
+                        if (indexKeys > 0 && payload.compose.containers[compose[indexServers]].status[1] === "online") {
+                            do {
+                                indexKeys = indexKeys - 1;
+                                loop_ports(payload.compose.containers[compose[indexServers]].ports[indexKeys][0]);
+                            } while (indexKeys > 0);
+                        }
                     } while (indexServers > 0);
                 }
                 indexPorts = 0;
@@ -1208,10 +1203,12 @@ const dashboard = function dashboard():void {
                     do {
                         indexServers = indexServers - 1;
                         indexPorts = payload.compose.containers[compose[indexServers]].ports.length;
-                        do {
-                            indexPorts = indexPorts - 1;
-                            output.push([payload.compose.containers[compose[indexServers]].ports[indexPorts][0], payload.compose.containers[compose[indexServers]].ports[indexPorts][1], "container", compose[indexServers], "Container port"]);
-                        } while (indexPorts > 0);
+                        if (indexPorts > 0 && payload.compose.containers[compose[indexServers]].status[1] === "online") {
+                            do {
+                                indexPorts = indexPorts - 1;
+                                output.push([payload.compose.containers[compose[indexServers]].ports[indexPorts][0], payload.compose.containers[compose[indexServers]].ports[indexPorts][1], "container", compose[indexServers], "Container port"]);
+                            } while (indexPorts > 0);
+                        }
                     } while (indexServers > 0);
                 }
                 output.sort(function dashboard_portsInternal_sort(a:[number, string, string, string, string], b:[number, string, string, string, string]):-1|1 {
@@ -1365,7 +1362,7 @@ const dashboard = function dashboard():void {
                 server_definitions: document.getElementById("servers").getElementsByClassName("expand")[0] as HTMLElement,
                 server_new: document.getElementById("servers").getElementsByClassName("server-new")[0] as HTMLButtonElement
             },
-            socket_add: function dashboard_serverSocketAdd(config:socket_summary):void {
+            socket_add: function dashboard_serverSocketAdd(config:services_socket):void {
                 const tbody:HTMLElement = document.getElementById("sockets").getElementsByTagName("tbody")[0],
                     tr:HTMLElement = document.createElement("tr");
                 let td:HTMLElement = document.createElement("td");
@@ -1391,6 +1388,10 @@ const dashboard = function dashboard():void {
                 // proxy
                 td = document.createElement("td");
                 td.appendText(config.proxy);
+                tr.appendChild(td);
+                // encrypted
+                td = document.createElement("td");
+                td.appendText((config.encrypted === true) ? "true" : "false");
                 tr.appendChild(td);
                 // local ip
                 td = document.createElement("td");

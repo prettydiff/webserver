@@ -47,11 +47,12 @@ const socket_extension = function transmit_socketExtension(config:config_websock
             encryption:"open"|"secure" = (config.socket.secure === true)
                 ? "secure"
                 : "open",
-            socket_summary:socket_summary = {
+            socket:services_socket = {
                 address: get_address({
                     socket: config.socket,
                     type: "ws"
                 }),
+                encrypted: config.socket.encrypted,
                 hash: config.identifier,
                 proxy: (config.socket.proxy === undefined || config.socket.proxy === null)
                     ? null
@@ -62,13 +63,13 @@ const socket_extension = function transmit_socketExtension(config:config_websock
             },
             log_config:config_log = {
                 action: "add",
-                config: socket_summary,
+                config: socket,
                 message: `Socket ${config.identifier} opened on ${encryption} server ${config.server}.`,
                 status: "success",
                 type: "socket"
             };
         vars.server_meta[config.server].sockets[encryption].push(config.socket);
-        vars.servers[config.server].sockets.push(socket_summary);
+        vars.servers[config.server].sockets.push(socket);
         if (config.proxy === null) {
             config.socket.handler = (config.handler === message_handler.default)
                 ? (message_handler[config.server] === undefined)

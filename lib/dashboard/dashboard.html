@@ -24,10 +24,34 @@
     <h1>Server Management Dashboard</h1>
     <p id="connection-status" class="connection-offline">Dashboard Connection: <strong>Offline</strong></p>
     <nav><ul>
-        <li><button class="nav-focus" data-section="servers">Servers</button></li><li><button data-section="compose">Docker Compose</button></li><li><button data-section="logs">Logs</button></li><li><button data-section="terminal">Terminal</button></li><li><button data-section="ports">Port Summary</button></li><li><button data-section="sockets">Socket Summary</button></li><li><button data-section="help">Help</button></li>
+        <li><button class="nav-focus" data-section="servers">Servers</button></li><li><button data-section="compose">Docker Compose</button></li><li><button data-section="logs">Logs</button></li><li><button data-section="terminal">Terminal</button></li><li><button data-section="ports">Port Summary</button></li><li><button data-section="sockets">Socket Summary</button></li><li><button data-section="help">Help</button></li><li><button data-section="faq">FAQ</button></li>
     </ul></nav>
     <main>
-        <div id="help">
+        <div class="tab" id="faq">
+            <h3>Frequently Asked Questions</h3>
+            <p class="tab-description">Please review these items to help troubleshoot common problems.</p>
+            <div class="section">
+                <h3>Servers - I am trying to redirect traffic to a vanity domain from one server spawned by this application to another server spawned by this application, but it isn't working.</h3>
+                <p>The destination server must have the vanity domain listed in its <em>domain_local</em> list.</p>
+            </div>
+            <div class="section">
+                <h3>Servers - How can I ensure an end-to-end encrypted tunnel between my users and a proxied destination?</h3>
+                <p>First, verify the given server is set to <em>encryption</em> values <strong>both</strong> or <strong>secure</strong>. If the given server does not have a secure TLS instance running it will not be able to proxy to an encrypted TLS destination.</p>
+                <p>Second, ensure there is a <em>redirect_domain</em> entry for the given server named with a <strong>.secure</strong> suffix, such as mybank.com.secure as opposed to just mybank.com. That tells this application to only proxy via TLS on incoming TLS connections.</p>
+            </div>
+            <div class="section">
+                <h3>Servers - On a server entry I specified a <em>redirect_domain</em> entry using <strong>.secure</strong> as a naming suffix to create an end-to-end encrypted connection, but it does not work.</h3>
+                <p>First, verify the given server is set to <em>encryption</em> values <strong>both</strong> or <strong>secure</strong>. If the given server does not have a secure TLS instance running it will not be able to proxy to an encrypted TLS destination.</p>
+                <p>Second, verify the destination is working without using a proxy connection by directly going to the destination address and port in a web browser. If the destination fails via direct request then a proxy connection will also expect to fail.</p>
+                <p>Third, if the destination is failing through direct encrypted access via HTTPS but still works through unencrypted HTTP access you can fall back to partial encryption by deleting the <em>redirect_domain</em> entry with the <strong>.secure</strong> suffix. Partial encryption still encrypts data between the proxy, your server running from this application, and the users. Partial encryption will not encrypt data between the proxy and the destination. Typically partical encryption is good enough for privacy, but should not be trusted with sensitive data like passwords or connections to financial institutions.</p>
+            </div>
+            <div class="section">
+                <h3>Containers - I added a new Docker Container but it's showing offline. I also ran <em>docker ps</em> in the terminal and the new container is not in the list.</h3>
+                <p>Because the Docker Daemon is a service unrelated to this application containers require a separate activation step.</p>
+                <p>After the new container is submitted click on the new container that now displays in the container list. Once expanded there will exist an Edit button under the Docker Compose text area. Click the Edit button and then click the <em>Activate</em> button that appears. This button will run the equivalent of Docker's <strong>up</strong> command and dump the output to the terminal.</p>
+            </div>
+        </div>
+        <div class="tab" id="help">
             <h2>Help</h2>
             <p class="tab-description">Helpful information about this application.</p>
             <div class="section">
@@ -108,7 +132,7 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
                 </ul>
             </div>
         </div>
-        <div id="compose">
+        <div class="tab" id="compose">
             <h2>Docker Compose</h2>
             <p class="tab-description">A list of configured Docker containers and their status. Container status refreshes every ${payload.intervals.compose} seconds. All containers run under the Docker daemon detached from this application.</p>
             <div class="section">
@@ -122,12 +146,12 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
                 <ul class="compose-container-list"></ul>
             </div>
         </div>
-        <div id="logs">
+        <div class="tab" id="logs">
             <h2>Logs</h2>
             <p class="tab-description">At this time logs are not saved outside the application, but do persist for the life of the application runtime.</p>
             <ul></ul>
         </div>
-        <div id="ports">
+        <div class="tab" id="ports">
             <h2>Port Summary</h2>
             <p class="tab-description">A list of ports in active use both from this application and outside this application. External port data refreshes every ${payload.intervals.nmap} seconds.</p>
             <div class="section">
@@ -156,7 +180,7 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
                 </table>
             </div>
         </div>
-        <div id="servers">
+        <div class="tab" id="servers">
             <h2>Servers</h2>
             <p class="tab-description">A list of configured HTTP/WS servers hosted by this application and their respective status.</p>
             <div class="section">
@@ -190,7 +214,7 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
                 <ul class="server-list"></ul>
             </div>
         </div>
-        <div id="sockets">
+        <div class="tab" id="sockets">
             <h2>Socket Summary</h2>
             <p class="tab-description">A list of connected sockets. Sockets not of 'type' http are WebSocket connections. Proxy identifies the id of the paired socket or null if not piped to another socket.</p>
             <table>
@@ -200,6 +224,7 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
                     <th>Type Descriptor</th>
                     <th>Role</th>
                     <th>Proxy</th>
+                    <th>Encrypted</th>
                     <th>Local Server IP</th>
                     <th>Local Server Port</th>
                     <th>Remote IP</th>
@@ -208,9 +233,9 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
                 <tbody></tbody>
             </table>
         </div>
-        <div id="terminal">
+        <div class="tab" id="terminal">
             <h2>Terminal</h2>
-            <p class="tab-description">A command terminal to interact with the local operating system. Expect this terminal to mirror the operating system terminal exactly.</p>
+            <p class="tab-description">A command terminal to interact with the local operating system. Expect this terminal to mirror the operating system terminal exactly. <em>Text selections in the console are automatically copied to the clipboard.</em></p>
             <div class="terminal-output"></div>
         </div>
     </main>

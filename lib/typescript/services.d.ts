@@ -82,6 +82,16 @@ declare global {
         temporary?: boolean;
     }
 
+    interface services_socket {
+        address: transmit_addresses_socket;
+        encrypted: boolean;
+        hash: string;
+        proxy: string;
+        role: "client" | "server";
+        server: string;
+        type: string;
+    }
+
     interface services_terminal_request {
         secure: "open" | "secure";
     }

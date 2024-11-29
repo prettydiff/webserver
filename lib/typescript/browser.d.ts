@@ -98,7 +98,7 @@ declare global {
             server_definitions: HTMLElement;
             server_new: HTMLButtonElement;
         };
-        socket_add: (config:socket_summary) => void;
+        socket_add: (config:services_socket) => void;
         validate: (event:FocusEvent|KeyboardEvent) => void;
     }
 

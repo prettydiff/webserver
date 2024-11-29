@@ -29,7 +29,7 @@ const socket_end = function transmit_socketEnd(socket_input:websocket_client, er
                 status: "error",
                 type: "socket"
             },
-        sockets:socket_summary[] = vars.servers[socket.server].sockets;
+        sockets:services_socket[] = vars.servers[socket.server].sockets;
     index = sockets.length;
     if (index > 0) {
         do {
