@@ -3,12 +3,23 @@ import { IModes } from "@xterm/xterm";
 declare global {
 
     interface services_compose {
-        action: type_dashboard_action;
+        command: string;
         compose: string;
+        createdAt: string;
         description: string;
+        id: string;
+        image: string;
+        labels: string[];
+        localVolumes: number;
+        mounts: string[];
+        names: string;
+        networks: string;
         ports: [number, "tcp"|"udp"][];
-        status: type_activation_status;
-        title: string;
+        runningFor: string;
+        size: string;
+        state: string;
+        status: string;
+        status_type: type_activation_status;
     }
 
     interface services_dashboard {

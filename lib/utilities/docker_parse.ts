@@ -3,116 +3,96 @@ import log from "./log.js";
 import vars from "./vars.js";
 
 const docker_parse = function utilities_dockerParse(stdout:string):void {
-    const lines:string[] = stdout.replace(/\s{3,}/g, "   ").split("\n"),
-        logger = function utilities_dockerParse_logger(action:"activate"|"deactivate", config:services_compose, message:string):void {
+    const lns:string[] = stdout.replace(/\s+$/, "").split("\n"),
+        len:number = lns.length,
+        logger = function utilities_dockerParse_logger(action:"activate"|"deactivate", config:services_compose):void {
             log({
                 action: action,
                 config: config,
-                message: message,
+                message: (action === "activate")
+                    ? `Docker container ${config.names} came online.`
+                    : `Docker container ${config.names} went offline.`,
                 status: "informational",
                 type: "compose-containers"
             });
-        },
-        listed:string[] = [],
-        keys:string[] = Object.keys(vars.compose.containers);
-    let index:number = lines.length,
-        message:string = "",
-        pind:number = 0,
-        portLen:number = 0,
-        items:string[] = null,
-        portItems:string[] = null,
-        ports:[number, "tcp"|"udp"][] = null;
-    if (index > 1) {
-        do {
-            index = index - 1;
-            items = lines[index].split("   ");
-            if (items.length === 6) {
-                items.splice(5, 0, "");
-            }
-            if (vars.compose.containers[items[6]] !== undefined) {
-                listed.push(items[6]);
-                if (items[4].indexOf("Up ") === 0) {
-                    if (vars.compose.containers[items[6]].status[0] === "red") {
-                        message = `Docker container ${items[6]} came online.`;
-                    }
-                    vars.compose.containers[items[6]].status = ["green", "online"];
-                } else {
-                    if (vars.compose.containers[items[6]].status[0] === "green") {
-                        message = `Docker container ${items[6]} went offline.`;
-                    }
-                    vars.compose.containers[items[6]].ports = [];
-                    vars.compose.containers[items[6]].status = ["red", "offline"];
+        };
+    let index:number = 0,
+        compose:services_compose = null,
+        item:store_string = null,
+        action:"activate"|"deactivate" = null;
+    do {
+        item = JSON.parse(lns[index]);
+        compose = {
+            command: item.command,
+            compose: "",
+            createdAt: item.CreatedAt,
+            description: "",
+            id: item.ID,
+            image: item.Image,
+            labels: item.Labels.split(","),
+            localVolumes: Number(item.LocalVolumes),
+            mounts: item.Mounts.split(","),
+            names: item.Names,
+            networks: item.Networks,
+            ports: (function utilities_dockerParse_ports():[number, "tcp"|"udp"][] {
+                if ((/0\.0\.0\.0/).test(item.Ports) === true && (/::\]?:/).test(item.Ports) === true) {
+                    item.Ports = item.Ports.replace(/\[?::\]?:\d+->\d+\/((tcp)|(udp))(, )?/g, "").replace(/,\s+$/, "");
                 }
-                if (items[5] !== "" && vars.compose.containers[items[6]].status[0] === "green") {
-                    if ((/0\.0\.0\.0/).test(items[5]) === true && (/::\]?:/).test(items[5]) === true) {
-                        items[5] = items[5].replace(/\[?::\]?:\d+->\d+\/((tcp)|(udp))(, )?/g, "").replace(/,\s+$/, "");
+                const ports:string[] = item.Ports.split(", "),
+                    output:[number, "tcp"|"udp"][] = [],
+                    portLen:number = output.length;
+                let pind:number = 0;
+                do {
+                    if ((/^\d+\/\w+$/).test(ports[pind]) === true) {
+                        output.push([
+                            Number(ports[pind].split("/")[0]),
+                            ports[pind].split("/")[1] as "tcp"|"udp"
+                        ]);
+                    } else {
+                        output.push([
+                            Number(ports[pind].slice(ports[pind].lastIndexOf(":") + 1, ports[pind].indexOf("-"))),
+                            ports[pind].slice(ports[pind].indexOf("/") + 1) as "tcp"|"udp"
+                        ]);
                     }
-                    ports = [];
-                    portItems = items[5].split(", ");
-                    pind = 0;
-                    portLen = portItems.length;
-                    do {
-                        if ((/^\d+\/\w+$/).test(portItems[pind]) === true) {
-                            ports.push([
-                                Number(portItems[pind].split("/")[0]),
-                                portItems[pind].split("/")[1] as "tcp"
-                            ]);
-                        } else {
-                            ports.push([
-                                Number(portItems[pind].slice(portItems[pind].lastIndexOf(":") + 1, portItems[pind].indexOf("-"))),
-                                portItems[pind].slice(portItems[pind].indexOf("/") + 1) as "tcp"
-                            ]);
-                        }
-                        pind = pind + 1;
-                    } while (pind < portLen);
-                    ports.sort(function services_dockerPS_parse_sort(a:[number, "tcp"|"udp"], b:[number, "tcp"|"udp"]):-1|1 {
-                        if (a[0] < b[0]) {
-                            return -1;
-                        }
-                        if (a[0] === b[0] && a[1] < b[1]) {
-                            return -1;
-                        }
-                        return 1;
-                    });
-                }
-                if (message !== "" || ports.length !== vars.compose.containers[items[6]].ports.length) {
-                    vars.compose.containers[items[6]].ports = ports;
-                    logger((vars.compose.containers[items[6]].status[0] === "green")
-                            ? "activate"
-                            : "deactivate",
-                            vars.compose.containers[items[6]],
-                        message
-                    );
-                } else {
-                    pind = ports.length;
-                    do {
-                        pind = pind - 1;
-                        if (vars.compose.containers[items[6]].ports[pind][0] !== ports[pind][0] || vars.compose.containers[items[6]].ports[pind][1] !== ports[pind][1]) {
-                            vars.compose.containers[items[6]].ports = ports;
-                            logger((vars.compose.containers[items[6]].status[0] === "green")
-                                    ? "activate"
-                                    : "deactivate",
-                                    vars.compose.containers[items[6]],
-                                `Ports changed for container ${items[6]}`
-                            );
-                            break;
-                        }
-                    } while (pind > 0);
-                }
+                    pind = pind + 1;
+                } while (pind < portLen);
+                output.sort(function services_dockerParse_ports_sort(a:[number, "tcp"|"udp"], b:[number, "tcp"|"udp"]):-1|1 {
+                    if (a[0] < b[0]) {
+                        return -1;
+                    }
+                    if (a[0] === b[0] && a[1] < b[1]) {
+                        return -1;
+                    }
+                    return 1;
+                });
+                return output;
+            }()),
+            runningFor: item.RunningFor,
+            size: item.Size,
+            state: item.State,
+            status: item.Status,
+            status_type: [
+                (item.Status.indexOf("Up") === 0)
+                    ? "green"
+                    : "red",
+                (item.Status.indexOf("Up") === 0)
+                    ? "online"
+                    : "offline",
+            ]
+        };
+        if (vars.compose.containers[item.Names] !== undefined) {
+            compose.compose = vars.compose.containers[item.Names].compose;
+            compose.description = vars.compose.containers[item.Names].description;
+            if (compose.status_type[1] === "offline" && vars.compose.containers[item.Names].status_type[1] === "online") {
+                action = "deactivate";
+            } else {
+                action = "activate";
             }
-        } while (index > 1);
-    }
-    index = keys.length;
-    if (index > 0) {
-        do {
-            index = index - 1;
-            if (listed.includes(keys[index]) === false && vars.compose.containers[keys[index]].status[0] === "green") {
-                vars.compose.containers[keys[index]].ports = [];
-                vars.compose.containers[keys[index]].status = ["red", "offline"];
-                logger("deactivate", vars.compose.containers[items[6]], `Docker container ${items[6]} went offline.`);
-            }
-        } while (index > 0);
-    }
+            vars.compose.containers[item.Names] = compose;
+            logger(action, compose);
+        }
+        index = index + 1;
+    } while (index < len);
 };
 
 export default docker_parse;

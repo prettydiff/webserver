@@ -519,24 +519,39 @@ const dashboard = function dashboard():void {
             container: function dashboard_composeContainer(config:services_compose):void {
                 const list:HTMLCollectionOf<HTMLElement> = compose.nodes.containers_list.getElementsByTagName("li");
                 let index:number = list.length;
-                payload.compose.containers[config.title] = config;
+                payload.compose.containers[config.names] = config;
                 if (index > 0) {
                     do {
                         index = index - 1;
-                        if (list[index].getAttribute("data-name") === config.title) {
-                            compose.nodes.containers_list.insertBefore(common.title(config.title, "container"), list[index]);
+                        if (list[index].getAttribute("data-name") === config.names) {
+                            compose.nodes.containers_list.insertBefore(common.title(config.names, "container"), list[index]);
                             compose.nodes.containers_list.removeChild(list[index]);
                             return;
                         }
                     } while (index > 0);
-                } else {
-                    compose.nodes.containers_list.appendChild(common.title(config.title, "container"));
                 }
+                compose.nodes.containers_list.appendChild(common.title(config.names, "container"));
             },
             create: function dashboard_composeCreate(event:MouseEvent):void {
                 const button:HTMLButtonElement = event.target as HTMLButtonElement;
                 button.disabled = true;
                 common.details(event);
+            },
+            destroyContainer: function dashboard_composeDestroyContainer(config:services_compose):void {
+                delete payload.compose.containers[config.names];
+                if (compose.nodes !== null) {
+                    const list:HTMLCollectionOf<HTMLElement> = compose.nodes.containers_list.getElementsByTagName("li");
+                    let index:number = list.length;
+                    if (index > 0) {
+                        do {
+                            index = index - 1;
+                            if (list[index].getAttribute("data-name") === config.names) {
+                                list[index].parentNode.removeChild(list[index]);
+                                break;
+                            }
+                        } while (index > 0);
+                    }
+                }
             },
             editVariables: function dashboard_composeEditVariables():void {
                 const p:HTMLElement = document.createElement("p"),
@@ -630,7 +645,7 @@ const dashboard = function dashboard():void {
                 if (len > 0) {
                     do {
                         if (type === "containers") {
-                            li = common.title(payload.compose.containers[list[index]].title, "container");
+                            li = common.title(payload.compose.containers[list[index]].names, "container");
                             ul.appendChild(li);
                         } else if (type === "variables") {
                             li = document.createElement("li");
@@ -678,14 +693,25 @@ const dashboard = function dashboard():void {
                                 return input.replace(/^\s+/, "").replace(/\s+$/, "");
                             },
                             item:services_compose = {
-                                action: action as type_dashboard_action,
+                                command: "",
                                 compose: trim(yaml),
+                                createdAt: "",
                                 description: trim(value),
+                                id: "",
+                                image: "",
+                                labels: [],
+                                localVolumes: null,
+                                mounts: [],
+                                names: newTitle,
+                                networks: "",
                                 ports: [],
-                                status: ["red", "offline"],
-                                title: newTitle
+                                runningFor: "",
+                                size: "",
+                                state: "",
+                                status: "",
+                                status_type: ["red", "offline"]
                             };
-                        message.send("add", item, "dashboard-compose-container");
+                        message.send(action, item, "dashboard-compose-container");
                     }
                     compose.nodes.containers_new.disabled = false;
                 }
@@ -1009,7 +1035,11 @@ const dashboard = function dashboard():void {
                             } else if (data.type === "port") {
                                 ports.external(data.configuration as external_ports);
                             } else if (data.type === "compose-containers") {
-                                compose.container(data.configuration as services_compose);
+                                if (data.action === "destroy") {
+                                    compose.destroyContainer(data.configuration as services_compose);
+                                } else {
+                                    compose.container(data.configuration as services_compose);
+                                }
                                 ports.internal();
                             } else if (data.type === "compose-variables") {
                                 const store:store_string = data.configuration as store_string;
@@ -1786,6 +1816,12 @@ const dashboard = function dashboard():void {
                 // client-side terminal is ready, so alert the backend to initiate a pseudo-terminal
                 terminal.socket = new WebSocket(`${scheme}://${location.host}`, [id]);
                 terminal.socket.onmessage = terminal.events.firstData;
+                if (typeof ClipboardItem === "undefined") {
+                    const em:HTMLElement = document.getElementById("terminal").getElementsByClassName("tab-description")[0].getElementsByTagName("em")[0] as HTMLElement;
+                    if (em !== undefined) {
+                        em.parentNode.removeChild(em);
+                    }
+                }
             },
             item: null,
             nodes: {

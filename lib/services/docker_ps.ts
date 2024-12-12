@@ -5,11 +5,12 @@ import spawn from "../utilities/spawn.js";
 import vars from "../utilities/vars.js";
 
 const docker_ps = function services_dockerPS(callback:() => void):void {
-    const callbackFirst = function services_dockerPS_callbackFirst(stderr:string, stdout:string, error:node_childProcess_ExecException):void {
+    const args:string[] = ["ps", "--format", "json"],
+        callbackFirst = function services_dockerPS_callbackFirst(stderr:string, stdout:string, error:node_childProcess_ExecException):void {
             if (stderr === "" && error === null) {
                 docker_parse(stdout);
                 spawn({
-                    args: ["ps"],
+                    args: args,
                     callback: callbackRecurse,
                     command: "docker",
                     recurse: vars.intervals.compose
@@ -46,7 +47,7 @@ const docker_ps = function services_dockerPS(callback:() => void):void {
             }
         };
     spawn({
-        args: ["ps"],
+        args: args,
         callback: callbackFirst,
         command: "docker",
         recurse: -1

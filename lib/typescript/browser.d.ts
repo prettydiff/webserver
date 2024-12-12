@@ -62,6 +62,7 @@ declare global {
         cancelVariables: (event:MouseEvent) => void;
         container: (config:services_compose) => void;
         create: (event:MouseEvent) => void;
+        destroyContainer: (config:services_compose) => void;
         editVariables: () => void;
         getTitle: (textArea:HTMLTextAreaElement) => string;
         init: () => void;

@@ -103,6 +103,14 @@
                     This button will run the equivalent of Docker's <strong>up</strong> command and dump the output to the terminal.
                 </p>
             </div>
+            <div class="section">
+                <h3>Containers - Docker wrote files as user root and now I cannot open them.</h3>
+                <p>
+                    This happens because by default Docker executes with elevated privilege.
+                    It is <strong>strongly</strong> recommended to specify in each Docker Compose file environmental properties PUID and PGID with values of 1000.
+                    This allows the container to execute as the OS's default user without elevated privilege access.
+                </p>
+            </div>
         </div>
         <div class="tab" id="help">
             <h2>Help</h2>
