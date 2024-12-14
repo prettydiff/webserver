@@ -5,7 +5,7 @@ import vars from "./vars.js";
 const docker_parse = function utilities_dockerParse(stdout:string):void {
     const lns:string[] = stdout.replace(/\s+$/, "").split("\n"),
         len:number = lns.length,
-        logger = function utilities_dockerParse_logger(action:"activate"|"deactivate", config:services_compose):void {
+        logger = function utilities_dockerParse_logger(action:"activate"|"deactivate", config:services_docker_compose):void {
             log({
                 action: action,
                 config: config,
@@ -17,7 +17,7 @@ const docker_parse = function utilities_dockerParse(stdout:string):void {
             });
         };
     let index:number = 0,
-        compose:services_compose = null,
+        compose:services_docker_psItem = null,
         item:store_string = null,
         action:"activate"|"deactivate" = null;
     do {

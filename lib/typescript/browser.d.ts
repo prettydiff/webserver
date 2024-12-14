@@ -60,9 +60,9 @@ declare global {
     interface module_compose {
         activePorts: (name_server:string) => HTMLElement;
         cancelVariables: (event:MouseEvent) => void;
-        container: (config:services_compose) => void;
+        container: (config:services_docker_compose) => void;
         create: (event:MouseEvent) => void;
-        destroyContainer: (config:services_compose) => void;
+        destroyContainer: (config:services_docker_compose) => void;
         editVariables: () => void;
         getTitle: (textArea:HTMLTextAreaElement) => string;
         init: () => void;
@@ -80,7 +80,7 @@ declare global {
 
     interface module_message {
         receiver: (event:websocket_event) => void;
-        send: (action:type_dashboard_action, config:services_compose|services_server|store_string, service:type_service) => void;
+        send: (action:type_dashboard_action, config:services_docker_compose|services_server|store_string, service:type_service) => void;
     }
 
     interface module_port {

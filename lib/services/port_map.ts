@@ -11,16 +11,20 @@ const port_map = function services_portMap(callback:() => void):void {
         args:string[] = ["--open", "-p-", "127.0.0.1"],
         callbackFirst = function services_portMap_callbackFirst(stderr:string, stdout:string, error:node_childProcess_ExecException):void {
             if (stderr !== "" || error !== null) {
+                const message:string = (error === null)
+                    ? `When gathering port data command '${command} ${args.join(" ")}' failed with an error. Perhaps application NMap is not available or not in the system path.`
+                    : "Exeucting command 'docker ps' returned an error.";
                 log({
                     action: "activate",
                     config: error,
-                    message: (error === null)
-                        ? `When gathering port data command '${command} ${args.join(" ")}' failed with an error. Perhaps application NMap is not available or not in the system path.`
-                        : "Exeucting command 'docker ps' returned an error.",
+                    message: message,
                     status: "error",
                     type: "port"
                 });
-                vars.system_ports = null;
+                vars.system_ports = {
+                    list: [null, [0, message, ""]],
+                    time: Date.now()
+                };
             } else {
                 spawn({
                     args: args,

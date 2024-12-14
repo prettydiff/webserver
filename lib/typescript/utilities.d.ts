@@ -107,7 +107,7 @@ interface server_ports {
 }
 
 interface store_compose {
-    [key:string]: services_compose;
+    [key:string]: services_docker_compose;
 }
 
 interface store_flag {

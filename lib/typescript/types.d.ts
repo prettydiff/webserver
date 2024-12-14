@@ -2,7 +2,7 @@
 type type_activation_status = ["amber" | "green" | "red", "deactivated" | "new" | "offline" | "online" | "partially online"];
 type type_certKey = "ca" | "crt" | "key";
 type type_dashboard_action = type_halt_action | "activate" | "add";
-type type_dashboard_config = config_websocket_create | config_websocket_server | external_ports | node_childProcess_ExecException | node_error | server | services_compose | services_dashboard_activate | services_socket | store_string;
+type type_dashboard_config = config_websocket_create | config_websocket_server | external_ports | node_childProcess_ExecException | node_error | server | services_dashboard_activate | services_docker_compose | services_socket | store_string;
 type type_dashboard_list = "container" | "server";
 type type_dashboard_sections = "compose" | "help" | "log" | "port" | "servers" | "socket" | "terminal";
 type type_dashboard_status = "error" | "informational" | "success";
@@ -29,7 +29,7 @@ type type_server_property = "block_list" | "domain_local" | "encryption" | "http
 // * dashboard-server            - services_dashboard_status - A single server's configuration data plus an action to perform
 // * dashboard-status            - services_dashboard_status - Typically conveys log entries
 type type_service = "dashboard-compose-container" | "dashboard-compose-variables" | "dashboard-payload" | "dashboard-server" | "dashboard-status" | "youtube-download-status";
-type type_socket_data = services_compose | services_dashboard_action | services_dashboard_status | services_dashboard_terminal | services_processKill | services_youtubeDownload | services_youtubeStatus | store_string | transmit_dashboard;
+type type_socket_data = services_dashboard_action | services_dashboard_status | services_dashboard_terminal | services_docker_compose | services_processKill | services_youtubeDownload | services_youtubeStatus | store_string | transmit_dashboard;
 type type_socket_status = "closed" | "end" | "open" | "pending";
 type type_ui_control = "select" | "text";
 type type_vars = "block_list" | "domain_local" | "ports" | "redirect_asset" | "redirect_domain" | "server_name";

@@ -5,7 +5,7 @@ import spawn from "../utilities/spawn.js";
 import vars from "../utilities/vars.js";
 
 const docker_ps = function services_dockerPS(callback:() => void):void {
-    const args:string[] = ["ps", "--format", "json"],
+    const args:string[] = ["compose", "ps", "--format", "json"],
         callbackFirst = function services_dockerPS_callbackFirst(stderr:string, stdout:string, error:node_childProcess_ExecException):void {
             if (stderr === "" && error === null) {
                 docker_parse(stdout);

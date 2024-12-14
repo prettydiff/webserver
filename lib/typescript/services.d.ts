@@ -2,7 +2,7 @@ import { IModes } from "@xterm/xterm";
 
 declare global {
 
-    interface services_compose {
+    interface services_docker_compose {
         command: string;
         compose: string;
         createdAt: string;
@@ -20,6 +20,64 @@ declare global {
         state: string;
         status: string;
         status_type: type_activation_status;
+    }
+
+    interface services_docker_event {
+        Action: string;
+        Actor: {
+            Attributes: {
+                "com.docker.compose.config-hash": string;
+                "com.docker.compose.container-number": string;
+                "com.docker.compose.depends_on": string;
+                "com.docker.compose.image": string;
+                "com.docker.compose.oneoff": string;
+                "com.docker.compose.project": string;
+                "com.docker.compose.project.config_files": string;
+                "com.docker.compose.project.working_dir": string;
+                "com.docker.compose.service": string;
+                "com.docker.compose.version": string;
+                "execID": string;
+                "image": string;
+                "name": string;
+                "org.opencontainers.image.source": string;
+            };
+            ID: string;
+        };
+        from: string;
+        id: string;
+        scope: string;
+        status: string;
+        time: number;
+        timeNano: bigint;
+        Type: string;
+    }
+
+    interface services_docker_psItem {
+        Command: string;
+        CreatedAt: string;
+        ExitCode: number;
+        Health: string;
+        ID: string;
+        Image: string;
+        Labels: string;
+        LocalVolumes: string;
+        Mounts: string;
+        Name: string;
+        Names: string;
+        Networks: string;
+        Ports: string;
+        Project: string;
+        Publishers: {
+            URL: string;
+            TargetPort: number;
+            PublishedPort: number;
+            Protocol: "tcp"|"udp";
+        }[];
+        RunningFor: string;
+        Service: string;
+        Size: number;
+        State: string;
+        Status: string;
     }
 
     interface services_dashboard {

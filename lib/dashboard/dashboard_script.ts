@@ -8,6 +8,7 @@ import Terminal from "@xterm/xterm";
 const dashboard = function dashboard():void {
     let payload:transmit_dashboard = null,
         loaded:boolean = false,
+        ports_external:boolean = false,
         section:type_dashboard_sections = "servers";
     const log = function dashboard_log(item:services_dashboard_status):void {
             const li:HTMLElement = document.createElement("li"),
@@ -516,7 +517,7 @@ const dashboard = function dashboard():void {
                 compose.nodes.variables_list.style.display = "block";
                 compose.nodes.variables_new.disabled = false;
             },
-            container: function dashboard_composeContainer(config:services_compose):void {
+            container: function dashboard_composeContainer(config:services_docker_compose):void {
                 const list:HTMLCollectionOf<HTMLElement> = compose.nodes.containers_list.getElementsByTagName("li");
                 let index:number = list.length;
                 payload.compose.containers[config.names] = config;
@@ -537,7 +538,7 @@ const dashboard = function dashboard():void {
                 button.disabled = true;
                 common.details(event);
             },
-            destroyContainer: function dashboard_composeDestroyContainer(config:services_compose):void {
+            destroyContainer: function dashboard_composeDestroyContainer(config:services_docker_compose):void {
                 delete payload.compose.containers[config.names];
                 if (compose.nodes !== null) {
                     const list:HTMLCollectionOf<HTMLElement> = compose.nodes.containers_list.getElementsByTagName("li");
@@ -692,7 +693,7 @@ const dashboard = function dashboard():void {
                             trim = function dashboard_composeMessage_trim(input:string):string {
                                 return input.replace(/^\s+/, "").replace(/\s+$/, "");
                             },
-                            item:services_compose = {
+                            item:services_docker_compose = {
                                 command: "",
                                 compose: trim(yaml),
                                 createdAt: "",
@@ -1036,9 +1037,9 @@ const dashboard = function dashboard():void {
                                 ports.external(data.configuration as external_ports);
                             } else if (data.type === "compose-containers") {
                                 if (data.action === "destroy") {
-                                    compose.destroyContainer(data.configuration as services_compose);
+                                    compose.destroyContainer(data.configuration as services_docker_compose);
                                 } else {
-                                    compose.container(data.configuration as services_compose);
+                                    compose.container(data.configuration as services_docker_compose);
                                 }
                                 ports.internal();
                             } else if (data.type === "compose-variables") {
@@ -1050,7 +1051,7 @@ const dashboard = function dashboard():void {
                     }
                 }
             },
-            send: function dashboard_messageSend(action:type_dashboard_action, config:services_compose|services_server|store_string, service:type_service):void {
+            send: function dashboard_messageSend(action:type_dashboard_action, config:services_docker_compose|services_server|store_string, service:type_service):void {
                 let message:socket_data = null;
                 if (service === "dashboard-server") {
                     const payload:services_dashboard_action = {
@@ -1072,6 +1073,9 @@ const dashboard = function dashboard():void {
         },
         ports:module_port = {
             external: function dashboard_portsExternal(input:external_ports):void {
+                if (ports_external === true) {
+                    return;
+                }
                 const servers:string[] = Object.keys(payload.servers),
                     compose:string[] = (payload.compose === null)
                         ? null
@@ -1091,32 +1095,41 @@ const dashboard = function dashboard():void {
                     updated:HTMLElement = portElement.getElementsByClassName("updated")[0] as HTMLElement,
                     tbody_old:HTMLElement = portElement.getElementsByTagName("tbody")[0],
                     tbody_new:HTMLElement = document.createElement("tbody");
-                if (payload.ports === null) {
+                if (input.list[0] === null) {
                     if (updated.style.display !== "none") {
-                        const ul:HTMLElement = document.createElement("ul"),
+                        const ulNew:HTMLElement = document.createElement("ul"),
                             section:HTMLElement = portElement.getElementsByClassName("section")[0] as HTMLElement,
+                            ulOld:HTMLElement = section.getElementsByTagName("ul")[0],
                             p:HTMLElement = section.getElementsByTagName("p")[0],
                             em:HTMLElement = document.createElement("em"),
                             text:string[] = input.list[1][1].split("'");
                         let li:HTMLElement = document.createElement("li"),
-                            code:HTMLElement = document.createElement("code");
+                            code:HTMLElement = document.createElement("code"),
+                            para:HTMLElement = document.createElement("p");
+                        if (ulOld !== undefined) {
+                            ulOld.parentNode.removeChild(ulOld);
+                        }
                         p.textContent = text[0];
                         em.textContent = text[1];
                         p.appendChild(em);
                         p.appendText(`${text[2]} Download and install NMap with these commands:`);
-                        li.appendText("Windows ");
+                        para.appendText("Windows ");
                         code.appendText("winget install -e --id Insecure.Nmap");
-                        li.appendChild(code);
-                        ul.appendChild(li);
+                        para.appendChild(code);
+                        li.appendChild(para);
+                        ulNew.appendChild(li);
                         li = document.createElement("li");
                         code = document.createElement("code");
-                        li.appendText("Debian Linux ");
+                        para = document.createElement("p");
+                        para.appendText("Debian Linux ");
                         code.appendText("sudo apt-get install nmap");
-                        li.appendChild(code);
-                        ul.appendChild(li);
-                        p.parentNode.insertBefore(ul, p.nextSibling);
+                        para.appendChild(code);
+                        li.appendChild(para);
+                        ulNew.appendChild(li);
+                        p.parentNode.insertBefore(ulNew, p.nextSibling);
                         tbody_old.parentNode.style.display = "none";
                         updated.style.display = "none";
+                        ports_external = true;
                     }
                     return;
                 }

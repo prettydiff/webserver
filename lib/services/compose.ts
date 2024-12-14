@@ -7,7 +7,7 @@ import vars from "../utilities/vars.js";
 
 const compose = function services_compose(socket_data:socket_data):void {
     const service:services_dashboard_status = socket_data.data as services_dashboard_status,
-        data:services_compose = service.configuration as services_compose;
+        data:services_docker_compose = service.configuration as services_docker_compose;
     if (socket_data.service === "dashboard-compose-variables" || service.action === "add" || service.action === "modify") {
         const flags:store_flag = {
                 compose: false,
@@ -97,7 +97,7 @@ const compose = function services_compose(socket_data:socket_data):void {
             ? "up"
             : "down";
         spawn({
-            args: ["compose", "-f", `${vars.path.compose + name}.yml`, direction],
+            args: ["compose", "-f", `${vars.path.compose + name}.yml`, direction, "--no-healthcheck"],
             callback: function services_compose_activate(stderr:string, stdout:string, error:node_childProcess_ExecException):void {
                 if (stderr === "" && error === null) {
                     docker_parse(stdout);
