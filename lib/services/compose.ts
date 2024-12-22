@@ -1,5 +1,4 @@
 
-import docker_parse from "../utilities/docker_parse.js";
 import file from "../utilities/file.js";
 import log from "../utilities/log.js";
 import spawn from "../utilities/spawn.js";
@@ -18,7 +17,7 @@ const compose = function services_compose(socket_data:socket_data):void {
                 if (flags.compose === true && flags.file === true) {
                     const service:"dashboard-compose-container"|"dashboard-compose-variables" = socket_data.service as "dashboard-compose-container"|"dashboard-compose-variables",
                         message:string = (service === "dashboard-compose-container")
-                            ? `Compose container ${data.names} updated.`
+                            ? `Compose container ${data.name} updated.`
                             : "Compose environmental variables updated.";
                     log({
                         action: "modify",
@@ -31,49 +30,31 @@ const compose = function services_compose(socket_data:socket_data):void {
                     });
                 }
             },
-            stat = function services_compose_stat(contents:string, location:string, type:"containers"|"variables"):void {
-                const writeContents = function services_compose_stat_writeContents():void {
-                    file.write({
-                        callback: function services_compose_stat_wwriteContents_compose():void {
-                            complete("compose", type, data.names);
-                        },
-                        contents: JSON.stringify(vars.compose),
-                        error_terminate: (type === "containers")
-                            ? vars.compose.containers[data.names]
-                            : vars.compose.variables,
-                        location: `${vars.path.project}compose.json`
-                    });
-                    file.write({
-                        callback: function services_compose_variables_writeContents_file():void {
-                            complete("file", type, data.names);
-                        },
-                        contents: contents,
-                        error_terminate: (type === "containers")
-                            ? vars.compose.containers[data.names]
-                            : vars.compose.variables,
-                        location: location
-                    });
-                };
-                file.stat({
-                    callback: writeContents,
+            write = function services_compose_write(contents:string, location:string, type:"containers"|"variables"):void {
+                file.write({
+                    callback: function services_compose_write_compose():void {
+                        complete("compose", type, data.name);
+                    },
+                    contents: JSON.stringify(vars.compose),
                     error_terminate: (type === "containers")
-                        ? vars.compose.containers[data.names]
+                        ? vars.compose.containers[data.name]
                         : vars.compose.variables,
-                    location: vars.path.compose,
-                    no_file: function services_compose_createDirectory():void {
-                        file.mkdir({
-                            callback: writeContents,
-                            error_terminate: (type === "containers")
-                                ? vars.compose.containers[data.names]
-                                : vars.compose.variables,
-                            location: vars.path.compose
-                        });
-                    }
+                    location: `${vars.path.project}compose.json`
+                });
+                file.write({
+                    callback: function services_compose_write_file():void {
+                        complete("file", type, data.name);
+                    },
+                    contents: contents,
+                    error_terminate: (type === "containers")
+                        ? vars.compose.containers[data.name]
+                        : vars.compose.variables,
+                    location: location
                 });
             };
         if (socket_data.service === "dashboard-compose-container") {
-            vars.compose.containers[data.names] = data;
-            stat(data.compose, `${vars.path.compose + data.names}.yml`, "containers");
+            vars.compose.containers[data.name] = data;
+            write(data.compose, `${vars.path.compose + data.name}.yml`, "containers");
         } else if (socket_data.service === "dashboard-compose-variables") {
             const data:store_string = socket_data.data as store_string,
                 output:string = (function services_compose_variables():string {
@@ -90,56 +71,30 @@ const compose = function services_compose(socket_data:socket_data):void {
                     return outputString.join("\n");
                 }());
             vars.compose.variables = data;
-            stat(output, `${vars.path.compose}.env`, "variables");
+            write(output, `${vars.path.compose}.env`, "variables");
         }
-    } else if (service.action === "activate" || service.action === "deactivate") {
-        const direction:string = (service.action === "activate")
-            ? "up"
-            : "down";
-        spawn({
-            args: ["compose", "-f", `${vars.path.compose + name}.yml`, direction, "--no-healthcheck"],
-            callback: function services_compose_activate(stderr:string, stdout:string, error:node_childProcess_ExecException):void {
-                if (stderr === "" && error === null) {
-                    docker_parse(stdout);
-                } else {
-                    log({
-                        action: service.action,
-                        config: (error === null)
-                            ? {
-                                message: stderr
-                            }
-                            : error,
-                        message: `Error on ${service.action} of container ${data.names}.`,
-                        status: "error",
-                        type: "compose-containers"
-                    });
-                }
-            },
-            command: "docker",
-            recurse: 0
-        });
     } else if (service.action === "destroy") {
         spawn({
-            args: ["kill", data.names],
+            args: ["kill", data.name],
             callback: function services_compose_kill():void {
                 spawn({
-                    args: ["rm", data.names],
+                    args: ["rm", data.name],
                     callback: function services_compose_kill_container():void {
-                        const lines:string[] = vars.compose.containers[data.names].compose.split("\n"),
+                        const lines:string[] = vars.compose.containers[data.name].compose.split("\n"),
                             write = function services_compose_kill_container_write():void {
-                                delete vars.compose.containers[data.names];
+                                delete vars.compose.containers[data.name];
                                 file.write({
                                     callback: function services_compose_stat_wwriteContents_compose():void {
                                         log({
                                             action: "destroy",
                                             config: data,
-                                            message: `Destroyed container ${data.names}`,
+                                            message: `Destroyed container ${data.name}`,
                                             status: "success",
                                             type: "compose-containers"
                                         });
                                     },
                                     contents: JSON.stringify(vars.compose),
-                                    error_terminate: vars.compose.containers[data.names],
+                                    error_terminate: vars.compose.containers[data.name],
                                     location: `${vars.path.project}compose.json`
                                 });
                             };

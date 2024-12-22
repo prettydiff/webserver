@@ -28,6 +28,9 @@ const dashboard = function dashboard():void {
             } else {
                 li.appendText(item.message);
             }
+            if (ul.childNodes.length > 100) {
+                ul.removeChild(ul.firstChild);
+            }
             ul.appendChild(li);
         },
         baseline = function dashboard_baseline():void {
@@ -94,7 +97,7 @@ const dashboard = function dashboard():void {
                     return [null, "new"];
                 }
                 if (type === "container") {
-                    if (payload.compose.containers[name_server].status[1] === "online") {
+                    if (payload.compose.containers[name_server].state === "running") {
                         return ["green", "online"];
                     }
                     return ["red", "offline"];
@@ -430,7 +433,7 @@ const dashboard = function dashboard():void {
                 } else if (dashboard === false) {
                     note.textContent = (section === "compose")
                         ? `Changing the container name of an existing container will create a new container. Ensure the compose file mentions PUID and PGID with values ${payload.user.uid} and ${payload.user.gid} to prevent writing files as root.`
-                        : "Destroying a server will delete all associated file system artifacts. Back up your data first.`";
+                        : "Destroying a server will delete all associated file system artifacts. Back up your data first.";
                     note.setAttribute("class", "note");
                     p.parentNode.appendChild(note);
                 }
@@ -485,14 +488,14 @@ const dashboard = function dashboard():void {
                 const div:HTMLElement = document.createElement("div"),
                     h5:HTMLElement = document.createElement("h5"),
                     portList:HTMLElement = document.createElement("ul"),
-                    ports:[number, "tcp"|"udp"][] = payload.compose.containers[name_server].ports;
+                    ports:services_docker_compose_publishers[] = payload.compose.containers[name_server].publishers;
                 let portItem:HTMLElement = null,
                     index:number = ports.length;
                 if (index < 1) {
                     return div;
                 }
-                ports.sort(function dashboard_composeActivePorts_sort(a:[number, "tcp"|"udp"],b:[number, "tcp"|"udp"]):-1|1 {
-                    if (a[0] < b[0]) {
+                ports.sort(function dashboard_composeActivePorts_sort(a:services_docker_compose_publishers,b:services_docker_compose_publishers):-1|1 {
+                    if (a.PublishedPort < b.PublishedPort) {
                         return 1;
                     }
                     return -1;
@@ -503,8 +506,12 @@ const dashboard = function dashboard():void {
                 do {
                     index = index - 1;
                     portItem = document.createElement("li");
-                    portItem.appendText(`${ports[index][0]} (${ports[index][1].toUpperCase()})`);
+                    portItem.appendText(`${ports[index].PublishedPort} (${ports[index].Protocol.toUpperCase()})`);
                     portList.appendChild(portItem);
+                    // prevent redudant output in the case of reporting for both IPv4 and IPv6
+                    if (index > 0 && ports[index - 1].PublishedPort === ports[index].PublishedPort) {
+                        index = index - 1;
+                    }
                 } while (index > 0);
                 div.appendChild(portList);
                 return div;
@@ -520,18 +527,18 @@ const dashboard = function dashboard():void {
             container: function dashboard_composeContainer(config:services_docker_compose):void {
                 const list:HTMLCollectionOf<HTMLElement> = compose.nodes.containers_list.getElementsByTagName("li");
                 let index:number = list.length;
-                payload.compose.containers[config.names] = config;
+                payload.compose.containers[config.name] = config;
                 if (index > 0) {
                     do {
                         index = index - 1;
-                        if (list[index].getAttribute("data-name") === config.names) {
-                            compose.nodes.containers_list.insertBefore(common.title(config.names, "container"), list[index]);
+                        if (list[index].getAttribute("data-name") === config.name) {
+                            compose.nodes.containers_list.insertBefore(common.title(config.name, "container"), list[index]);
                             compose.nodes.containers_list.removeChild(list[index]);
                             return;
                         }
                     } while (index > 0);
                 }
-                compose.nodes.containers_list.appendChild(common.title(config.names, "container"));
+                compose.nodes.containers_list.appendChild(common.title(config.name, "container"));
             },
             create: function dashboard_composeCreate(event:MouseEvent):void {
                 const button:HTMLButtonElement = event.target as HTMLButtonElement;
@@ -539,14 +546,14 @@ const dashboard = function dashboard():void {
                 common.details(event);
             },
             destroyContainer: function dashboard_composeDestroyContainer(config:services_docker_compose):void {
-                delete payload.compose.containers[config.names];
+                delete payload.compose.containers[config.name];
                 if (compose.nodes !== null) {
                     const list:HTMLCollectionOf<HTMLElement> = compose.nodes.containers_list.getElementsByTagName("li");
                     let index:number = list.length;
                     if (index > 0) {
                         do {
                             index = index - 1;
-                            if (list[index].getAttribute("data-name") === config.names) {
+                            if (list[index].getAttribute("data-name") === config.name) {
                                 list[index].parentNode.removeChild(list[index]);
                                 break;
                             }
@@ -646,7 +653,7 @@ const dashboard = function dashboard():void {
                 if (len > 0) {
                     do {
                         if (type === "containers") {
-                            li = common.title(payload.compose.containers[list[index]].names, "container");
+                            li = common.title(payload.compose.containers[list[index]].name, "container");
                             ul.appendChild(li);
                         } else if (type === "variables") {
                             li = document.createElement("li");
@@ -693,25 +700,35 @@ const dashboard = function dashboard():void {
                             trim = function dashboard_composeMessage_trim(input:string):string {
                                 return input.replace(/^\s+/, "").replace(/\s+$/, "");
                             },
-                            item:services_docker_compose = {
-                                command: "",
-                                compose: trim(yaml),
-                                createdAt: "",
-                                description: trim(value),
-                                id: "",
-                                image: "",
-                                labels: [],
-                                localVolumes: null,
-                                mounts: [],
-                                names: newTitle,
-                                networks: "",
-                                ports: [],
-                                runningFor: "",
-                                size: "",
-                                state: "",
-                                status: "",
-                                status_type: ["red", "offline"]
-                            };
+                            item:services_docker_compose = (payload.compose.containers[newTitle] === undefined)
+                                ? {
+                                    command: "",
+                                    compose: "",
+                                    createdAt: "",
+                                    description: "",
+                                    exitCode: 0,
+                                    health: "",
+                                    id: "",
+                                    image: "",
+                                    labels: [],
+                                    localVolumes: null,
+                                    mounts: [],
+                                    name: newTitle,
+                                    names: [newTitle],
+                                    networks: [],
+                                    ports: [],
+                                    project: "",
+                                    publishers: [],
+                                    runningFor: "",
+                                    service: "",
+                                    size: null,
+                                    state: "dead",
+                                    status: ""
+                                }
+                                : payload.compose.containers[newTitle];
+                        item.compose = trim(yaml);
+                        item.description = trim(value);
+                        payload.compose.containers[newTitle] = item;
                         message.send(action, item, "dashboard-compose-container");
                     }
                     compose.nodes.containers_new.disabled = false;
@@ -1052,22 +1069,14 @@ const dashboard = function dashboard():void {
                 }
             },
             send: function dashboard_messageSend(action:type_dashboard_action, config:services_docker_compose|services_server|store_string, service:type_service):void {
-                let message:socket_data = null;
-                if (service === "dashboard-server") {
-                    const payload:services_dashboard_action = {
+                const payload:services_dashboard_action = {
                         action: action,
                         configuration: config as services_server
-                    };
+                    },
                     message = {
                         data: payload,
                         service: service
                     };
-                } else if (service === "dashboard-compose-container" || service === "dashboard-compose-variables") {
-                    message = {
-                        data: config as store_string,
-                        service: service
-                    };
-                }
                 socket.queue(JSON.stringify(message));
             }
         },
@@ -1185,7 +1194,7 @@ const dashboard = function dashboard():void {
                         if (indexKeys > 0 && payload.compose.containers[compose[indexServers]].status[1] === "online") {
                             do {
                                 indexKeys = indexKeys - 1;
-                                loop_ports(payload.compose.containers[compose[indexServers]].ports[indexKeys][0]);
+                                loop_ports(payload.compose.containers[compose[indexServers]].publishers[indexKeys].PublishedPort);
                             } while (indexKeys > 0);
                         }
                     } while (indexServers > 0);
@@ -1249,7 +1258,7 @@ const dashboard = function dashboard():void {
                         if (indexPorts > 0 && payload.compose.containers[compose[indexServers]].status[1] === "online") {
                             do {
                                 indexPorts = indexPorts - 1;
-                                output.push([payload.compose.containers[compose[indexServers]].ports[indexPorts][0], payload.compose.containers[compose[indexServers]].ports[indexPorts][1], "container", compose[indexServers], "Container port"]);
+                                output.push([payload.compose.containers[compose[indexServers]].publishers[indexPorts].PublishedPort, payload.compose.containers[compose[indexServers]].ports[indexPorts][1], "container", compose[indexServers], "Container port"]);
                             } while (indexPorts > 0);
                         }
                     } while (indexServers > 0);

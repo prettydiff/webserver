@@ -9,6 +9,7 @@ type type_dashboard_status = "error" | "informational" | "success";
 type type_dashboard_type = "compose-containers" | "compose-variables" | "log" | "port" | "server" | "socket" | "terminal";
 type type_directory_item = [string, type_file, string, number, number, directory_data, string];
 type type_directory_mode = "array" | "hash" | "list" | "read" | "search" | "type";
+type type_docker_state = "created" | "dead" | "exited" | "paused" | "removing" | "restarting" | "running";
 type type_encryption = "both" | "open" | "secure";
 type type_external_port = [number, string, string];
 type type_file = "block_device" | "character_device" | "directory" | "fifo_pipe" | "file" | "socket" | "symbolic_link";

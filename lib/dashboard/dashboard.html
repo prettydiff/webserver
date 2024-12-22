@@ -28,88 +28,101 @@
     </ul></nav>
     <main>
         <div class="tab" id="faq">
-            <h3>Frequently Asked Questions</h3>
+            <h2>Frequently Asked Questions</h2>
             <p class="tab-description">Please review these items to help troubleshoot common problems.</p>
             <div class="section">
-                <h3>Servers - On Windows I can create servers using ports 80 and 443, but it keeps resulting in an error on Linux.</h3>
-                <p>
-                    Linux, by policy, restricts normal users from running services on ports below 1025.
-                    This can be circumvented by running this application with elevated privilege, as an OS service, or using the package <a href="https://archlinux.org/packages/core/x86_64/libcap/">libcap</a>.
-                    My preference is to run the application as an OS service using systemd.
-                </p>
+                <h3>Servers</h3>
+                <div class="section">
+                    <h4>On Windows I can create servers using ports 80 and 443, but it keeps resulting in an error on Linux.</h4>
+                    <p>
+                        Linux, by policy, restricts normal users from running services on ports below 1025.
+                        This can be circumvented by running this application with elevated privilege, as an OS service, or using the package <a href="https://archlinux.org/packages/core/x86_64/libcap/">libcap</a>.
+                        My preference is to run the application as an OS service using systemd.
+                    </p>
+                </div>
+                <div class="section">
+                    <h4>I created a redirect_asset rule for an absolute path, but it doesn't work.</h4>
+                    <p>
+                        For security reasons server paths are absolute to the server's asset location on the machine file system and not the root of the file system.
+                        If redirection should occur for assets outside the server's asset tree I recommend creating a symbolic link in the server's asset location.
+                        In Linux this is accomplished with <code>ln -s /desired/path link_name</code> where the first path is where the files actually are and the second is where the link will be in the file system.
+                    </p>
+                </div>
+                <div class="section">
+                    <h4>I am trying to redirect traffic to a vanity domain from one server spawned by this application to another server spawned by this application, but it isn't working.</h4>
+                    <p>
+                        The destination server must have the vanity domain listed in its <em>domain_local</em> list.
+                        For increased security servers will only accept connections to known addresses, which includes IP address and wildcards already supported on local machine interfaces.
+                    </p>
+                </div>
+                <div class="section">
+                    <h4>How can I ensure an end-to-end encrypted tunnel between my users and a proxied destination?</h4>
+                    <p>
+                        First, verify the given server is set to <em>encryption</em> values <strong>both</strong> or <strong>secure</strong>.
+                        If the given server does not have a secure TLS instance running it will not be able to proxy to an encrypted TLS destination.
+                    </p>
+                    <p>
+                        Second, ensure there is a <em>redirect_domain</em> entry for the given server named with a <strong>.secure</strong> suffix, such as mybank.com.secure as opposed to just mybank.com.
+                        That tells this application to only proxy via TLS on incoming TLS connections.
+                    </p>
+                </div>
+                <div class="section">
+                    <h4>On a server entry I specified a <em>redirect_domain</em> entry using <strong>.secure</strong> as a naming suffix to create an end-to-end encrypted connection, but it does not work.</h4>
+                    <p>
+                        First, verify the given server is set to <em>encryption</em> values <strong>both</strong> or <strong>secure</strong>.
+                        If the given server does not have a secure TLS instance running it will not be able to proxy to an encrypted TLS destination.
+                    </p>
+                    <p>
+                        Second, verify the destination is working without using a proxy connection by directly going to the destination address and port in a web browser.
+                        If the destination fails via direct request then a proxy connection will also expect to fail.
+                    </p>
+                    <p>
+                        Third, if the destination is failing through direct encrypted access via HTTPS but still works through unencrypted HTTP access you can fall back to partial encryption by deleting the <em>redirect_domain</em> entry with the <strong>.secure</strong> suffix.
+                        Partial encryption still encrypts data between the proxy, your server running from this application, and the users.
+                        Partial encryption will not encrypt data between the proxy and the destination.
+                        Typically partical encryption is good enough for privacy, but should not be trusted with sensitive data like passwords or connections to financial institutions.
+                    </p>
+                </div>
             </div>
             <div class="section">
-                <h3>Servers - I created a redirect_asset rule for an absolute path, but it doesn't work.</h3>
-                <p>
-                    For security reasons server paths are absolute to the server's asset location on the machine file system and not the root of the file system.
-                    If redirection should occur for assets outside the server's asset tree I recommend creating a symbolic link in the server's asset location.
-                    In Linux this is accomplished with <code>ln -s /desired/path link_name</code> where the first path is where the files actually are and the second is where the link will be in the file system.
-                </p>
-            </div>
-            <div class="section">
-                <h3>Servers - I am trying to redirect traffic to a vanity domain from one server spawned by this application to another server spawned by this application, but it isn't working.</h3>
-                <p>
-                    The destination server must have the vanity domain listed in its <em>domain_local</em> list.
-                    For increased security servers will only accept connections to known addresses, which includes IP address and wildcards already supported on local machine interfaces.
-                </p>
-            </div>
-            <div class="section">
-                <h3>Servers - How can I ensure an end-to-end encrypted tunnel between my users and a proxied destination?</h3>
-                <p>
-                    First, verify the given server is set to <em>encryption</em> values <strong>both</strong> or <strong>secure</strong>.
-                    If the given server does not have a secure TLS instance running it will not be able to proxy to an encrypted TLS destination.
-                </p>
-                <p>
-                    Second, ensure there is a <em>redirect_domain</em> entry for the given server named with a <strong>.secure</strong> suffix, such as mybank.com.secure as opposed to just mybank.com.
-                    That tells this application to only proxy via TLS on incoming TLS connections.
-                </p>
-            </div>
-            <div class="section">
-                <h3>Servers - On a server entry I specified a <em>redirect_domain</em> entry using <strong>.secure</strong> as a naming suffix to create an end-to-end encrypted connection, but it does not work.</h3>
-                <p>
-                    First, verify the given server is set to <em>encryption</em> values <strong>both</strong> or <strong>secure</strong>.
-                    If the given server does not have a secure TLS instance running it will not be able to proxy to an encrypted TLS destination.
-                </p>
-                <p>
-                    Second, verify the destination is working without using a proxy connection by directly going to the destination address and port in a web browser.
-                    If the destination fails via direct request then a proxy connection will also expect to fail.
-                </p>
-                <p>
-                    Third, if the destination is failing through direct encrypted access via HTTPS but still works through unencrypted HTTP access you can fall back to partial encryption by deleting the <em>redirect_domain</em> entry with the <strong>.secure</strong> suffix.
-                    Partial encryption still encrypts data between the proxy, your server running from this application, and the users.
-                    Partial encryption will not encrypt data between the proxy and the destination.
-                    Typically partical encryption is good enough for privacy, but should not be trusted with sensitive data like passwords or connections to financial institutions.
-                </p>
-            </div>
-            <div class="section">
-                <h3>Containers - None of the Docker commands seem to work, as though they aren't even there. I verified Docker and Docker Compose are installed.</h3>
-                <p>
-                    Most of the docker commands require elevated privilege to run and otherwise pretend to not exist.
-                    Docker does provide a <a href="https://docs.docker.com/engine/install/linux-postinstall/">guide</a> to run docker commands as a regular user on Linux, but it seems many people (myself included) cannot get this to work.
-                </p>
-                <p>
-                    For security reasons I strongly recommend not executing docker commands directly with sudo unless you have no other choice.
-                    Instead I recommend running docker commands via some interface that is already running as a service.
-                    My personal solution is to run this application via systemd on Linux and then run Docker command via the terminal provided by the browser dashboard.
-                </p>
-            </div>
-            <div class="section">
-                <h3>Containers - I added a new Docker Container but it's showing offline. I also ran <em>docker ps</em> in the terminal and the new container is not in the list.</h3>
-                <p>Because the Docker Daemon is a service unrelated to this application containers require a separate activation step.</p>
-                <p>
-                    After the new container is submitted click on the new container that now displays in the container list.
-                    Once expanded there will exist an Edit button under the Docker Compose text area.
-                    Click the Edit button and then click the <em>Activate</em> button that appears.
-                    This button will run the equivalent of Docker's <strong>up</strong> command and dump the output to the terminal.
-                </p>
-            </div>
-            <div class="section">
-                <h3>Containers - Docker wrote files as user root and now I cannot open them.</h3>
-                <p>
-                    This happens because by default Docker executes with elevated privilege.
-                    It is <strong>strongly</strong> recommended to specify in each Docker Compose file environmental properties PUID and PGID with values of 1000.
-                    This allows the container to execute as the OS's default user without elevated privilege access.
-                </p>
+                <h3>Containers</h3>
+                <div class="section">
+                    <h4>None of the Docker commands seem to work, as though they aren't even there. I verified Docker and Docker Compose are installed.</h4>
+                    <p>
+                        Most of the docker commands require elevated privilege to run and otherwise pretend to not exist.
+                        Docker does provide a <a href="https://docs.docker.com/engine/install/linux-postinstall/">guide</a> to run docker commands as a regular user on Linux, but it seems many people (myself included) cannot get this to work.
+                    </p>
+                    <p>
+                        For security reasons I strongly recommend not executing docker commands directly with sudo unless you have no other choice.
+                        Instead I recommend running docker commands via some interface that is already running as a service.
+                        My personal solution is to run this application via systemd on Linux and then run Docker command via the terminal provided by the browser dashboard.
+                    </p>
+                </div>
+                <div class="section">
+                    <h4>I added a new Docker Container but it's showing offline. I also ran <em>docker ps</em> in the terminal and the new container is not in the list.</h4>
+                    <p>Because the Docker Daemon is a service unrelated to this application containers require a separate activation step.</p>
+                    <p>
+                        After the new container is submitted click on the new container that now displays in the container list.
+                        Once expanded there will exist an Edit button under the Docker Compose text area.
+                        Click the Edit button and then click the <em>Activate</em> button that appears.
+                        This button will run the equivalent of Docker's <strong>up</strong> command and dump the output to the terminal.
+                    </p>
+                </div>
+                <div class="section">
+                    <h4>Docker wrote files as user root and now I cannot open them.</h4>
+                    <p>
+                        This happens because by default Docker executes with elevated privilege.
+                        It is <strong>strongly</strong> recommended to specify in each Docker Compose file environmental properties PUID and PGID with values of 1000.
+                        This allows the container to execute as the OS's default user without elevated privilege access.
+                    </p>
+                </div>
+                <div class="section">
+                    <h4>On regular intervals my container appears to flicker between up and down.  Upon further investigation I found the container issues 3 events: <em>exec-create</em>, <em>exec-start</em>, <em>exec-die</em>.</h4>
+                    <p>This is how containers execute healthchecks. To stop a service from issuing a health check add the following property to the concerned service in the respective Docker Compose file: <code>
+    healthcheck:
+      disable: true
+                    </code></p>
+                </div>
             </div>
         </div>
         <div class="tab" id="help">

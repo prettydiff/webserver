@@ -3,4 +3,5 @@
 /servers.json
 /js
 /servers
-/compose
+/compose/**
+!/compose/empty.yml

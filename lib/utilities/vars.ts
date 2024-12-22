@@ -18,7 +18,7 @@ const gid:number = process.getgid(),
             "[::1]"
         ],
         intervals: {
-            compose: 20000,
+            compose: 0,
             nmap: 60000
         },
         logs: [],
