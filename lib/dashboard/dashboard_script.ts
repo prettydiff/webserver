@@ -1208,7 +1208,7 @@ const dashboard = function dashboard():void {
                         td.appendText(input.list[indexPorts][0].toString());
                         tr.appendChild(td);
                         td = document.createElement("td");
-                        td.appendText(input.list[indexPorts][1]);
+                        td.appendText(input.list[indexPorts][1].toUpperCase());
                         tr.appendChild(td);
                         td = document.createElement("td");
                         td.appendText(input.list[indexPorts][2]);
@@ -1239,10 +1239,10 @@ const dashboard = function dashboard():void {
                     do {
                         indexServers = indexServers - 1;
                         if (typeof payload.servers[servers[indexServers]].status.open === "number" && payload.servers[servers[indexServers]].status.open > 0) {
-                            output.push([payload.servers[servers[indexServers]].status.open, "tcp", "server", servers[indexServers], "Open server port"]);
+                            output.push([payload.servers[servers[indexServers]].status.open, "TCP", "server", servers[indexServers], "Open server port"]);
                         }
                         if (typeof payload.servers[servers[indexServers]].status.secure === "number" && payload.servers[servers[indexServers]].status.secure > 0) {
-                            output.push([payload.servers[servers[indexServers]].status.secure, "tcp", "server", servers[indexServers], "Secure server port"]);
+                            output.push([payload.servers[servers[indexServers]].status.secure, "TCP", "server", servers[indexServers], "Secure server port"]);
                         }
                     } while (indexServers > 0);
                 }
@@ -1258,7 +1258,7 @@ const dashboard = function dashboard():void {
                         if (indexPorts > 0 && payload.compose.containers[compose[indexServers]].status.indexOf("Up ") === 0) {
                             do {
                                 indexPorts = indexPorts - 1;
-                                output.push([payload.compose.containers[compose[indexServers]].publishers[indexPorts].PublishedPort, payload.compose.containers[compose[indexServers]].ports[indexPorts][1], "container", compose[indexServers], "Container port"]);
+                                output.push([payload.compose.containers[compose[indexServers]].publishers[indexPorts].PublishedPort, payload.compose.containers[compose[indexServers]].publishers[indexPorts].Protocol.toUpperCase(), "container", compose[indexServers], "Container port"]);
                             } while (indexPorts > 0);
                         }
                     } while (indexServers > 0);
