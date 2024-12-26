@@ -1191,7 +1191,7 @@ const dashboard = function dashboard():void {
                     do {
                         indexServers = indexServers - 1;
                         indexKeys = payload.compose.containers[compose[indexServers]].ports.length;
-                        if (indexKeys > 0 && payload.compose.containers[compose[indexServers]].status[1] === "online") {
+                        if (indexKeys > 0 && payload.compose.containers[compose[indexServers]].status.indexOf("Up ") === 0) {
                             do {
                                 indexKeys = indexKeys - 1;
                                 loop_ports(payload.compose.containers[compose[indexServers]].publishers[indexKeys].PublishedPort);
@@ -1255,7 +1255,7 @@ const dashboard = function dashboard():void {
                     do {
                         indexServers = indexServers - 1;
                         indexPorts = payload.compose.containers[compose[indexServers]].ports.length;
-                        if (indexPorts > 0 && payload.compose.containers[compose[indexServers]].status[1] === "online") {
+                        if (indexPorts > 0 && payload.compose.containers[compose[indexServers]].status.indexOf("Up ") === 0) {
                             do {
                                 indexPorts = indexPorts - 1;
                                 output.push([payload.compose.containers[compose[indexServers]].publishers[indexPorts].PublishedPort, payload.compose.containers[compose[indexServers]].ports[indexPorts][1], "container", compose[indexServers], "Container port"]);
