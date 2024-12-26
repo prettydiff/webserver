@@ -858,7 +858,7 @@ const dashboard = function dashboard():void {
                     if (message_item.service === "dashboard-payload" && loaded === false) {
                         payload = message_item.data as transmit_dashboard;
                         // populate log data
-                        payload.logs.forEach(function dashboard_logsEach(item:services_dashboard_status):void {
+                        payload.logs.forEach(function dashboard_messageReceiver_logsEach(item:services_dashboard_status):void {
                             log(item);
                         });
                         if (loaded === false) {
@@ -1812,36 +1812,40 @@ const dashboard = function dashboard():void {
             id: null,
             info: null,
             init: function dashboard_terminalItem():void {
-                const encryption:type_encryption = (location.protocol === "https")
-                        ? "secure"
-                        : "open",
-                    scheme:"ws"|"wss" = (encryption === "open")
-                        ? "ws"
-                        : "wss",
-                    id:string = `dashboard-terminal-${Math.random() + Date.now()}`;
-                terminal.id = id;
-                terminal.item = new Terminal({
-                    cols: payload.terminal.cols,
-                    cursorBlink: true,
-                    cursorStyle: "underline",
-                    disableStdin: false,
-                    rows: payload.terminal.rows,
-                    theme: {
-                        background: "#222",
-                        selectionBackground: "#444"
-                    }
-                });
-                terminal.item.open(terminal.nodes.output);
-                terminal.item.onKey(terminal.events.input);
-                terminal.item.write("Terminal emulator pending connection...\r\n");
-                terminal.item.onSelectionChange(terminal.events.selection);
-                // client-side terminal is ready, so alert the backend to initiate a pseudo-terminal
-                terminal.socket = new WebSocket(`${scheme}://${location.host}`, [id]);
-                terminal.socket.onmessage = terminal.events.firstData;
-                if (typeof ClipboardItem === "undefined") {
-                    const em:HTMLElement = document.getElementById("terminal").getElementsByClassName("tab-description")[0].getElementsByTagName("em")[0] as HTMLElement;
-                    if (em !== undefined) {
-                        em.parentNode.removeChild(em);
+                if (typeof Terminal === "undefined") {
+                    setTimeout(dashboard_terminalItem, 100);
+                } else {
+                    const encryption:type_encryption = (location.protocol === "https")
+                            ? "secure"
+                            : "open",
+                        scheme:"ws"|"wss" = (encryption === "open")
+                            ? "ws"
+                            : "wss",
+                        id:string = `dashboard-terminal-${Math.random() + Date.now()}`;
+                    terminal.id = id;
+                    terminal.item = new Terminal({
+                        cols: payload.terminal.cols,
+                        cursorBlink: true,
+                        cursorStyle: "underline",
+                        disableStdin: false,
+                        rows: payload.terminal.rows,
+                        theme: {
+                            background: "#222",
+                            selectionBackground: "#444"
+                        }
+                    });
+                    terminal.item.open(terminal.nodes.output);
+                    terminal.item.onKey(terminal.events.input);
+                    terminal.item.write("Terminal emulator pending connection...\r\n");
+                    terminal.item.onSelectionChange(terminal.events.selection);
+                    // client-side terminal is ready, so alert the backend to initiate a pseudo-terminal
+                    terminal.socket = new WebSocket(`${scheme}://${location.host}`, [id]);
+                    terminal.socket.onmessage = terminal.events.firstData;
+                    if (typeof ClipboardItem === "undefined") {
+                        const em:HTMLElement = document.getElementById("terminal").getElementsByClassName("tab-description")[0].getElementsByTagName("em")[0] as HTMLElement;
+                        if (em !== undefined) {
+                            em.parentNode.removeChild(em);
+                        }
                     }
                 }
             },
