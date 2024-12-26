@@ -1,9 +1,10 @@
 
-const dateString =  function utilities_dateString(input:number):string {
-    const date:Date = new Date(input),
-        month:number = date.getMonth(),
+const dateTime =  function utilities_dateTime(date:boolean):string {
+    // eslint-disable-next-line no-restricted-syntax
+    const dateItem:Date = new Date(this),
+        month:number = dateItem.getMonth(),
         output:string[] = [],
-        pad = function utilities_dateString_pad(input:number, milliseconds:boolean):string {
+        pad = function utilities_dateTime_pad(input:number, milliseconds:boolean):string {
             const str:string = String(input);
             if (milliseconds === true) {
                 if (str.length === 1) {
@@ -17,11 +18,11 @@ const dateString =  function utilities_dateString(input:number):string {
             }
             return str;
         },
-        hours:string = pad(date.getHours(), false),
-        minutes:string = pad(date.getMinutes(), false),
-        seconds:string = pad(date.getSeconds(), false),
-        milliseconds:string = pad(date.getMilliseconds(), true);
-    output.push(pad(date.getDate(), false));
+        hours:string = pad(dateItem.getHours(), false),
+        minutes:string = pad(dateItem.getMinutes(), false),
+        seconds:string = pad(dateItem.getSeconds(), false),
+        milliseconds:string = pad(dateItem.getMilliseconds(), true);
+    output.push(pad(dateItem.getDate(), false));
     if (month === 0) {
         output.push("JAN");
     } else if (month === 1) {
@@ -47,10 +48,13 @@ const dateString =  function utilities_dateString(input:number):string {
     } else if (month === 11) {
         output.push("DEC");
     }
-    output.push(`${date.getUTCFullYear()},`);
+    if (date === false) {
+        return `${hours}:${minutes}:${seconds}.${milliseconds}`;
+    }
+    output.push(`${dateItem.getUTCFullYear()},`);
     output.push(`${hours}:${minutes}:${seconds}.${milliseconds}`);
     return output.join(" ");
 
 };
 
-export default dateString;
+export default dateTime;

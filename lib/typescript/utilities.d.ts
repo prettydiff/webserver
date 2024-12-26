@@ -1,4 +1,9 @@
 
+interface configuration_compose {
+    containers: store_compose;
+    variables: store_string;
+}
+
 interface directory_data {
     atimeMs: number;
     ctimeMs: number;
@@ -14,18 +19,95 @@ interface directory_list extends Array<type_directory_item> {
     failures?: string[];
 }
 
+interface external_ports {
+    list: type_external_port[];
+    time: number;
+}
+
+interface file {
+    mkdir: (config:file_mkdir) => void;
+    read: (config:file_read) => void;
+    remove: (config:file_remove) => void;
+    stat: (config:file_stat) => void;
+    write: (config:file_write) => void;
+}
+
+interface file_mkdir {
+    callback: () => void;
+    error_terminate: type_dashboard_config;
+    location: string;
+}
+
+interface file_read {
+    callback: (file:Buffer) => void;
+    error_terminate: type_dashboard_config;
+    location: string;
+    no_file: () => void;
+}
+
+interface file_remove {
+    callback: () => void;
+    error_terminate: type_dashboard_config;
+    exclusions: string[];
+    location: string;
+}
+
+interface file_stat {
+    callback: (stats:node_fs_BigIntStats) => void;
+    error_terminate: type_dashboard_config;
+    location: string;
+    no_file: () => void;
+}
+
+interface file_write {
+    callback: () => void;
+    contents: Buffer | string;
+    error_terminate: type_dashboard_config;
+    location: string;
+}
+
 interface hash_output {
     filePath: string;
     hash: string;
 }
 
-interface project_config {
-    [key:string]: server;
+interface server {
+    config: services_server;
+    sockets: services_socket[];
+    status: server_ports;
 }
 
-interface project_ports {
-    open: number;
-    secure: number;
+interface server_content {
+    [key:string]: (property:type_server_property, parent:HTMLElement) => void;
+}
+
+interface server_instance extends node_net_Server {
+    name?: string;
+    secure?: boolean;
+}
+
+interface server_meta {
+    [key:string]: server_meta_item;
+}
+
+interface server_meta_item {
+    server: {
+        open: server_instance;
+        secure: server_instance;
+    };
+    sockets: {
+        open: websocket_client[];
+        secure: websocket_client[];
+    };
+}
+
+interface server_ports {
+    open?: number;
+    secure?: number;
+}
+
+interface store_compose {
+    [key:string]: services_docker_compose;
 }
 
 interface store_flag {
@@ -37,56 +119,54 @@ interface store_number {
 }
 
 interface store_ports {
-    [key:string]: project_ports;
+    [key:string]: server_ports;
+}
+
+interface store_server_config {
+    [key:string]: services_server;
+}
+
+interface store_servers {
+    [key:string]: server;
+}
+
+interface store_sockets {
+    [key:string]: websocket_client[];
 }
 
 interface store_string {
     [key:string]: string;
 }
 
-interface server {
-    block_list?: {
-        host: string[];
-        ip: string[];
-        referrer: string[];
-    };
-    domain_local?: string[];
-    http?: {
-        delete?: string;
-        post?: string;
-        put?: string;
-    };
-    path: {
-        storage: string;
-        web_root?: string;
-    };
-    ports: project_ports;
-    redirect_domain?: {
-        [key:string]: [string, number];
-    };
-    redirect_internal?: {
-        [key:string]: store_string;
-    };
-    server_name: string;
+interface terminal_size {
+    cols: number;
+    rows: number;
 }
 
 interface vars {
+    compose: configuration_compose;
+    dashboard: string;
+    interfaces: string[];
+    intervals: store_number;
+    logs: services_dashboard_status[];
     path: {
-        conf: string;
+        compose: string;
         project: string;
+        servers: string;
     };
-    port_conflict: type_port_conflict[];
     processes: {
         [key:string]: node_childProcess_ChildProcess;
     };
     sep: string;
-    servers: project_config;
-    sockets: {
-        [key:string]: websocket_client[];
-    };
-    store_server: {
-        [key:string]: server_instance;
-    };
+    server_meta: server_meta;
+    servers: store_servers;
+    shell: string;
+    start_time: bigint;
+    system_ports: external_ports;
+    terminal: terminal_size;
     text: store_string;
-    verbose: boolean;
+    user: {
+        gid: number;
+        uid: number;
+    };
 }

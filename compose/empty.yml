@@ -1,0 +1,8 @@
+services:
+  empty:
+    container_name: empty
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    image: none

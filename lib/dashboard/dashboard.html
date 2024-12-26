@@ -1,0 +1,363 @@
+
+<!doctype html>
+<html lang="en">
+    <!-- cspell: words buildx, containerd, dpkg, IRSSI, keyrings, lydell, nmap, winget -->
+<head>
+<meta charset="utf-8"/>
+<title>Server Management Dashboard</title>
+<meta content="text/html;charset=UTF-8" http-equiv="Content-Type"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="noindex, nofollow" name="robots"/>
+<meta content="#fff" name="theme-color"/>
+<meta content="Global" name="distribution"/>
+<meta content="en" http-equiv="Content-Language"/>
+<meta content="blendTrans(Duration=0)" http-equiv="Page-Enter"/>
+<meta content="blendTrans(Duration=0)" http-equiv="Page-Exit"/>
+<meta content="text/css" http-equiv="content-style-type"/>
+<meta content="application/javascript" http-equiv="content-script-type"/>
+<meta content="#bbbbff" name="msapplication-TileColor"/>
+<link href="/styles.css" media="all" rel="stylesheet" type="text/css"/>
+<link href="node_modules/@xterm/xterm/css/xterm.css" rel="stylesheet" type="text/css"/>
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgo="/>
+</head>
+<body id="dashboard">
+    <h1>Server Management Dashboard</h1>
+    <p id="connection-status" class="connection-offline">Dashboard Connection: <strong>Offline</strong></p>
+    <nav><ul>
+        <li><button class="nav-focus" data-section="servers">Servers</button></li><li><button data-section="compose">Docker Compose</button></li><li><button data-section="logs">Logs</button></li><li><button data-section="terminal">Terminal</button></li><li><button data-section="ports">Port Summary</button></li><li><button data-section="sockets">Socket Summary</button></li><li><button data-section="help">Help</button></li><li><button data-section="faq">FAQ</button></li>
+    </ul></nav>
+    <main>
+        <div class="tab" id="faq">
+            <h2>Frequently Asked Questions</h2>
+            <p class="tab-description">Please review these items to help troubleshoot common problems.</p>
+            <div class="section">
+                <h3>Servers</h3>
+                <div class="section">
+                    <h4>On Windows I can create servers using ports 80 and 443, but it keeps resulting in an error on Linux.</h4>
+                    <p>
+                        Linux, by policy, restricts normal users from running services on ports below 1025.
+                        This can be circumvented by running this application with elevated privilege, as an OS service, or using the package <a href="https://archlinux.org/packages/core/x86_64/libcap/">libcap</a>.
+                        My preference is to run the application as an OS service using systemd.
+                    </p>
+                </div>
+                <div class="section">
+                    <h4>I created a redirect_asset rule for an absolute path, but it doesn't work.</h4>
+                    <p>
+                        For security reasons server paths are absolute to the server's asset location on the machine file system and not the root of the file system.
+                        If redirection should occur for assets outside the server's asset tree I recommend creating a symbolic link in the server's asset location.
+                        In Linux this is accomplished with <code>ln -s /desired/path link_name</code> where the first path is where the files actually are and the second is where the link will be in the file system.
+                    </p>
+                </div>
+                <div class="section">
+                    <h4>I am trying to redirect traffic to a vanity domain from one server spawned by this application to another server spawned by this application, but it isn't working.</h4>
+                    <p>
+                        The destination server must have the vanity domain listed in its <em>domain_local</em> list.
+                        For increased security servers will only accept connections to known addresses, which includes IP address and wildcards already supported on local machine interfaces.
+                    </p>
+                </div>
+                <div class="section">
+                    <h4>How can I ensure an end-to-end encrypted tunnel between my users and a proxied destination?</h4>
+                    <p>
+                        First, verify the given server is set to <em>encryption</em> values <strong>both</strong> or <strong>secure</strong>.
+                        If the given server does not have a secure TLS instance running it will not be able to proxy to an encrypted TLS destination.
+                    </p>
+                    <p>
+                        Second, ensure there is a <em>redirect_domain</em> entry for the given server named with a <strong>.secure</strong> suffix, such as mybank.com.secure as opposed to just mybank.com.
+                        That tells this application to only proxy via TLS on incoming TLS connections.
+                    </p>
+                </div>
+                <div class="section">
+                    <h4>On a server entry I specified a <em>redirect_domain</em> entry using <strong>.secure</strong> as a naming suffix to create an end-to-end encrypted connection, but it does not work.</h4>
+                    <p>
+                        First, verify the given server is set to <em>encryption</em> values <strong>both</strong> or <strong>secure</strong>.
+                        If the given server does not have a secure TLS instance running it will not be able to proxy to an encrypted TLS destination.
+                    </p>
+                    <p>
+                        Second, verify the destination is working without using a proxy connection by directly going to the destination address and port in a web browser.
+                        If the destination fails via direct request then a proxy connection will also expect to fail.
+                    </p>
+                    <p>
+                        Third, if the destination is failing through direct encrypted access via HTTPS but still works through unencrypted HTTP access you can fall back to partial encryption by deleting the <em>redirect_domain</em> entry with the <strong>.secure</strong> suffix.
+                        Partial encryption still encrypts data between the proxy, your server running from this application, and the users.
+                        Partial encryption will not encrypt data between the proxy and the destination.
+                        Typically partical encryption is good enough for privacy, but should not be trusted with sensitive data like passwords or connections to financial institutions.
+                    </p>
+                </div>
+            </div>
+            <div class="section">
+                <h3>Containers</h3>
+                <div class="section">
+                    <h4>None of the Docker commands seem to work, as though they aren't even there. I verified Docker and Docker Compose are installed.</h4>
+                    <p>
+                        Most of the docker commands require elevated privilege to run and otherwise pretend to not exist.
+                        Docker does provide a <a href="https://docs.docker.com/engine/install/linux-postinstall/">guide</a> to run docker commands as a regular user on Linux, but it seems many people (myself included) cannot get this to work.
+                    </p>
+                    <p>
+                        For security reasons I strongly recommend not executing docker commands directly with sudo unless you have no other choice.
+                        Instead I recommend running docker commands via some interface that is already running as a service.
+                        My personal solution is to run this application via systemd on Linux and then run Docker command via the terminal provided by the browser dashboard.
+                    </p>
+                </div>
+                <div class="section">
+                    <h4>I added a new Docker Container but it's showing offline. I also ran <em>docker ps</em> in the terminal and the new container is not in the list.</h4>
+                    <p>Because the Docker Daemon is a service unrelated to this application containers require a separate activation step.</p>
+                    <p>
+                        After the new container is submitted click on the new container that now displays in the container list.
+                        Once expanded there will exist an Edit button under the Docker Compose text area.
+                        Click the Edit button and then click the <em>Activate</em> button that appears.
+                        This button will run the equivalent of Docker's <strong>up</strong> command and dump the output to the terminal.
+                    </p>
+                </div>
+                <div class="section">
+                    <h4>Docker wrote files as user root and now I cannot open them.</h4>
+                    <p>
+                        This happens because by default Docker executes with elevated privilege.
+                        It is <strong>strongly</strong> recommended to specify in each Docker Compose file environmental properties PUID and PGID with values of 1000.
+                        This allows the container to execute as the OS's default user without elevated privilege access.
+                    </p>
+                </div>
+                <div class="section">
+                    <h4>On regular intervals my container appears to flicker between up and down.  Upon further investigation I found the container issues 3 events: <em>exec-create</em>, <em>exec-start</em>, <em>exec-die</em>.</h4>
+                    <p>This is how containers execute healthchecks. To stop a service from issuing a health check add the following property to the concerned service in the respective Docker Compose file: <code>
+    healthcheck:
+      disable: true
+                    </code></p>
+                </div>
+                <div class="section">
+                    <h4>Docker isn't working after computer restart.</h4>
+                    <p>See if the problem is solved by restarting service <em>containerd</em> first and then service <em>docker</em> second. Then review service logs to determine if service <em>docker</em> started without error.</p>
+                </div>
+            </div>
+        </div>
+        <div class="tab" id="help">
+            <h2>Help</h2>
+            <p class="tab-description">Helpful information about this application.</p>
+            <div class="section">
+                <h3>Conventions</h3>
+                <div class="section">
+                    <h4>General</h4>
+                    <p>From the command line build the application code with <code>npm run build</code> and execute the application with <code>npm run server</code></p>
+                    <p>By default the application assigns random ports for the dashboard. I recommend changing these to a port of your preference, such as 3000.  Then the dashboard can be accessed by http://localhost:3000.</p>
+                    <p>If extending the application code checks can be performed using <code>npm run tsc</code> and <code>npm run lint</code></p>
+                </div>
+                <div class="section">
+                    <h4>Servers</h4>
+                    <h5>Proxies</h5>
+                    <p>The servers feature fully capable, though optional, support for proxies. The proxy support is divided between redirection to resources outside the given server and resources within the given server.  See the 'Definitions of Server Object Properties' on the Servers tab for more information.</p>
+                    <p>The servers also feature full support for WebSockets and partial support for HTTP.  HTTP is served over WebSockets which allows both protocols to coexist on the same port. All HTTP and WebSocket traffic receives full and equivalent proxy support.</p>
+                    <h5>HTTP Methods</h5>
+                    <p>HTTP methods <em>DELETE</em>, <em>POST</em>, and <em>PUT</em> are supported by this application but are not handled by this application. If these HTTP methods are to be used a given server must specify a file system path to corresponding libraries executed as child processes. Simply populate the respective properties on a new server's configuration object.</p>
+                    <h5>Custom WebSocket Message Handling</h5>
+                    <p>Custom WebSocket messaging handling is supported by supplying a custom function to library <em>/lib/transmit/messageHandler.ts</em>. Simply add a new property to the library object where the key name is the same as the name of the respective server and then rebuild the application.  For example:
+<code>const message_handler:transmit_socket_messageHandler = {
+    default: function transmit_messageHandler(bufferData:Buffer):void {
+        // default message handling
+    },
+    "my_server_name": function (data:Buffer) {
+        // custom message handling
+    }
+}</code></p>
+                    <h5>Deletion</h5>
+                    <p>Deleting a server will remove the associate file system tree. <strong>Back up files you may wish to preserver before deleting a server.</strong></p>
+                </div>
+                <div class="section">
+                    <h4>Logs</h4>
+                    <p>Logging is fully customizable.  Simply call the <em>lib/utilities/log.ts</em> passing an object matching interface <em>config_log</em>. The front-end currently does not display configuration details and error objects, but that support is there awaiting display support from the front-end.</p>
+                </div>
+                <div class="section">
+                    <h4>Terminal</h4>
+                    <p>The terminal makes use of NPM modules <em>@xterm/xterm</em> and <em>@lydell/node-pty</em>. These packages expose a shell to the browser front-end with full support for SSH, VIM, IRSSI, and more. The default supported shells are PowerShell in Windows and /bin/sh elsewhere. To customize that to a different shell, such as Bash, simply modify the appropriate one line of code at <em>/lib/services/terminal.ts</em> and then rebuild the application.</p>
+                    <p>Please see this guide for <a href="https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797">ANSI Escape Codes</a> to extend and modify output to the terminal.</p>
+                </div>
+            </div>
+            <div class="section">
+                <h3>Dependencies</h3>
+                <h4>NMap</h4>
+                <p>NMap is the port scanner used to generate the list of ports consumed by the local machine but not related to this application instance.</p>
+                <ul>
+                    <li><p>Windows: <a href="https://nmap.org/download.html">download the binary</a> or install command line <code>winget install -e --id Insecure.Nmap</code> Be sure to install for all users, not for administrators only, otherwise it will prompt for Administrative privilege each time it runs.</p></li>
+                    <li><p>Debian
+<code>sudo apt-get update
+apt-get upgrade
+apt-get install nmap</code></p></li>
+                </ul>
+                <h4>Docker Compose</h4>
+                <p>Docker Compose is a more convenient way to launch Docker containers by using a tiny YAML file to reference a prebuilt image and map resources from the container to the host machine.</p>
+                <ul>
+                    <li><p>Windows - (Administrative Terminal)
+<code>winget install --id=Docker.DockerCLI -e
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+mkdir 'C:\Program Files\Docker'
+Start-BitsTransfer `
+    -Source "https://github.com/docker/compose/releases/download/v2.30.1/docker-compose-windows-x86_64.exe" `
+    -Destination $Env:ProgramFiles\Docker\docker-compose.exe</code></p></li>
+                    <li><p>Debian
+<code># Add Docker's official GPG key:
+sudo apt-get update
+sudo apt-get install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+# Add the repository to Apt sources:
+echo "deb \
+    [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] \
+    https://download.docker.com/linux/debian \
+    $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+    sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin</code></p></li>
+                </ul>
+            </div>
+        </div>
+        <div class="tab" id="compose">
+            <h2>Docker Compose</h2>
+            <p class="tab-description">A list of configured Docker containers and their status. Container status refreshes every ${payload.intervals.compose} seconds. All containers run under the Docker daemon detached from this application.</p>
+            <div class="section">
+                <h3>Environmental Variables</h3>
+                <p class="buttons"><button class="compose-variable-new">Edit Variables</button></p>
+                <ul class="compose-variable-list"></ul>
+            </div>
+            <div class="section">
+                <h3>Containers</h3>
+                <p class="buttons"><button class="compose-container-new">New Container</button></p>
+                <ul class="compose-container-list"></ul>
+            </div>
+        </div>
+        <div class="tab" id="logs">
+            <h2>Logs</h2>
+            <p class="tab-description">At this time logs are not saved outside the application, but do persist for the life of the application runtime.</p>
+            <ul></ul>
+        </div>
+        <div class="tab" id="ports">
+            <h2>Port Summary</h2>
+            <p class="tab-description">A list of ports in active use both from this application and outside this application. External port data refreshes every ${payload.intervals.nmap} seconds.</p>
+            <div class="section">
+                <h3>System Ports Outside This Application</h3>
+                <table class="ports-external">
+                    <thead><tr>
+                        <th>Port</th>
+                        <th>Protocol</th>
+                        <th>Utility</th>
+                    </tr></thead>
+                    <tbody></tbody>
+                </table>
+                <p class="updated">Last Updated: <em></em></p>
+            </div>
+            <div class="section">
+                <h3>Internal Application Ports</h3>
+                <table>
+                    <thead><tr>
+                        <th>Port</th>
+                        <th>Protocol</th>
+                        <th>Type</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                    </tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="tab" id="servers">
+            <h2>Servers</h2>
+            <p class="tab-description">A list of configured HTTP/WS servers hosted by this application and their respective status.</p>
+            <div class="section">
+                <h3>Definitions of Server Object Properties <button class="expand">Expand</button></h3>
+                <dl>
+                    <dt><em>activate</em> (string)</dt>
+                    <dd><p>
+                        Instructs the application to bring the server online automatically at application start and server creation.
+                    </p></dd>
+                    <dt><em>block_list</em> (string array)</dt>
+                    <dd><p>
+                        The block list contains three optional string arrays of criteria to determine if matching sockets should be instantly destroyed.
+                        At this time wildcards, CIDR notation, and ranges are not supported.
+                    </p></dd>
+                    <dt><em>domain_local</em> (string array)</dt>
+                    <dd><p>
+                        Sockets featuring HTTP request host names in this list will be served from this server.
+                        Sockets featuring HTTP request host names not in this list or in the redirect_domain list will be destroyed.
+                    </p></dd>
+                    <dt><em>encryption</em> (string)</dt>
+                    <dd><p>
+                        Whether to create an encrypted server for HTTPS and WSS protocols, an unencrypted server for HTTP and WS protocols, or both.
+                        Accepted values are <em>both</em>, <em>open</em>, or <em>secure</em>.
+                    </p></dd>
+                    <dt><em>http</em> (object)</dt>
+                    <dd><p>
+                        File system paths to external utilities for handling the supported HTTP methods: <em>delete</em>, <em>post</em>, and <em>put</em>.
+                        HTTP request bodies are passed into an environmental variable on the respective child process named 'payload'.
+                    </p></dd>
+                    <dt><em>name</em> (string)</dt>
+                    <dd><p>
+                        The name of this server.
+                    </p></dd>
+                    <dt><em>ports</em> (object)</dt>
+                    <dd><p>
+                        The ports on which the server operates.
+                    </p></dd>
+                    <dt><em>redirect_asset</em> (object)</dt>
+                    <dd><p>
+                        Redirects resource paths of HTTP requests within the given server based upon the hostname in the HTTP request header.
+                        This is useful for dynamic or vanity endpoints on a given server that wish to return something different than a relative file system destination.
+                        Each instance uses the structure of <code>"domain": {"resource location": "new location"}</code> because each server can represent 0 or more domain names.
+                    </p><p>
+                        For example there could be an informational dashboard on some server at address: <em>http://myexample.com/api_services/informational/dashboards/uptime/</em>.
+                        For the sake of simplicity you want to serve that dashboard from an internal vanity domain like: <em>http://api.dashboard/</em>.
+                        You would need a rule to redirect from resource <em>/</em> to actual resource at <em>/api_services/informational/dashboards/uptime</em>, and that rule would look like: <code>"api.dashboard": {"/": "/api_services/informational/dashboards/uptime/"}</code>
+                    </p><p>
+                        Asset redirection supports use of wildcards by specifying an asterisk at the end of asset locations.
+                        For example, redirection of request for <em>/api_services/informational/dashboards/uptime/images/interface/title.png</em> to <em>/api/images/interface/title.png</em> would occur with rule: <code>"api.dashboard": {"/api/*": "/api_services/informational/dashboards/uptime/"}</code>
+                        With wildcards all asset requests matching the address up to the asterisk will be redirected to the specified location.
+                    </p><p>
+                        <strong>Please note the terminal slash in the prior examples.</strong>
+                        Without the terminating slash the redirected address becomes <em>/api_services/informational/dashboards/uptimeimages/interface/title.png</em>.
+                    </p></dd>
+                    <dt><em>redirect_domain</em> (object)</dt>
+                    <dd><p>
+                        Redirects traffic to a different server location, such as a vanity domain that may or may not be served from the same server.
+                        Each instance uses the structure of <code>"domain": ["new domain", port_number]</code> because each server can represent 0 or more domain names.
+                        If the 'new domain' is an empty string the requested domain will be used.
+                        If the port number is not a number or 0 the current server's port number will be used.
+                    </p><p>
+                        If TLS connections needs to be directed to a port different than open connections then use the naming convnetion <strong>myDomain.secure</strong>, for example: <code>"jellyfin.x.secure": ["", 3003]</code>
+                    </p></dd>
+                    <dt><em>temporary</em> (boolean)</dt>
+                    <dd><p>
+                        Providing property <em>temporary</em> with value <em>true</em> will create a server that only accepts a first successful HTTP or WebSocket connection.
+                        All other connections will be ignored and the server will automatically remove itself once that connection completes.
+                    </p></dd>
+                </dl>
+            </div>
+            <div class="section">
+                <h3>Server List</h3>
+                <p class="buttons"><button class="server-new">Create Server</button></p>
+                <ul class="server-list"></ul>
+            </div>
+        </div>
+        <div class="tab" id="sockets">
+            <h2>Socket Summary</h2>
+            <p class="tab-description">A list of connected sockets. Sockets not of 'type' http are WebSocket connections. Proxy identifies the id of the paired socket or null if not piped to another socket.</p>
+            <table>
+                <thead><tr>
+                    <th>Server</th>
+                    <th>ID</th>
+                    <th>Type Descriptor</th>
+                    <th>Role</th>
+                    <th>Proxy</th>
+                    <th>Encrypted</th>
+                    <th>Local Server IP</th>
+                    <th>Local Server Port</th>
+                    <th>Remote IP</th>
+                    <th>Remote Port</th>
+                </tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="tab" id="terminal">
+            <h2>Terminal</h2>
+            <p class="tab-description">A command terminal to interact with the local operating system. Expect this terminal to mirror the operating system terminal exactly. <em>Text selections in the console are automatically copied to the clipboard.</em></p>
+            <div class="terminal-output"></div>
+        </div>
+    </main>
+<script src="node_modules/@xterm/xterm/lib/xterm.js"></script><script type="application/javascript">replace_javascript</script></body></html>

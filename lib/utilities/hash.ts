@@ -1,5 +1,5 @@
 
-import error from "./error.js";
+import log from "./log.js";
 import node from "./node.js";
 
 const hash = function utilities_hash(config:config_hash):void {
@@ -21,7 +21,13 @@ const hash = function utilities_hash(config:config_hash):void {
                 hashStream.pipe(hash);
                 hashStream.on("close", hashBack);
             } else {
-                error(["Hash source is either not a file or resulted in an error."], ers, false);
+                log({
+                    action: "add",
+                    config: null,
+                    message: "Hash source is either not a file or resulted in an error.",
+                    status: "error",
+                    type: "socket"
+                });
             }
         });
     } else {

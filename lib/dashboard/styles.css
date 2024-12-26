@@ -1,0 +1,205 @@
+/* cspell: words ytdownload, ytstatus */
+
+:root{
+    --black:#000;
+
+    --background:#333;
+    --background_button:#444;
+    --background_dark:#111;
+    --background_fieldset:#181818;
+    --background_textarea:#222;
+    --border_color:#999;
+    --border_input:#666;
+    --border_soft:#555;
+    --fail_bright:#f66;
+    --fail_dark:#911;
+    --status_amber:#443;
+    --status_green:#131;
+    --status_red:#422;
+    --text:#ccc;
+    --text_input:#eee;
+    --text_cyan:#39f;
+    --text_green:#090;
+    --text_row_odd:#383838;
+    --text_table_header:#282828;
+    --text_yellow:#ca3;
+    --textarea_border:#676767;
+
+    --font-size:1.2em;
+}
+
+html{font-size:10px}
+body{background:var(--background);color:var(--text);font-family:sans-serif;max-width:180em}
+div.section{border-color:var(--border_color);border-style:solid;border-width:0.1em;margin:2em;padding:2em}
+h1{font-size:3em}
+h2{font-size:2.4em}
+h3{font-size:2em}
+h4{font-size:1.8em}
+h5{font-size:1.4em}
+h1,h2,h3,h4,h5,h6{margin:0 0 1em}
+p,li,dd,dt,td,th,textarea{font-size:var(--font-size)}
+li li{font-size:1em}
+label input{display:block}
+dt em{color:var(--text_input);font-size:1.4em;font-style:normal;font-weight:bold;text-decoration:underline}
+dt{font-size:1.4em}
+dd{margin:0 0 1em 2.5em}
+dd p{font-size:1em}
+li{margin:1em 0 0}
+code{display:block;font-family:monospace;font-size:0.9em;white-space:pre}
+fieldset{background:var(--background_fieldset);border-color:var(--border_color);border-style:solid;border-width:0.1em;margin:0 0 0 -2.8em;max-width:48.25em;padding:0 1em 1em;overflow:scroll}
+a{color:var(--fail_bright)}
+button{background:var(--background_button);border-color:var(--border_input);border-radius:0.75em;border-style:revert;border-width:0.1em;box-shadow:0.1em 0.1em 0.25em var(--black);color:var(--text_input);cursor:pointer;padding:0.25em 0.5em}
+button:hover{background:var(--background)}
+button:active{border-style:inset;box-shadow:-0.1em -0.1em 0.25em var(--background_dark)}
+th{min-width:10em}
+strong,
+em{color:var(--text_yellow)}
+#terminal .xterm,
+textarea{background:var(--background_textarea);border-style:solid;border-width:0.065em;color:var(--text)}
+#terminal .xterm{border-color:var(--border_input);overflow:hidden}
+#terminal .xterm-viewport{overflow:hidden}
+textarea{border-color:var(--textarea_border);box-shadow:0 0 0.1em var(--black)}
+.clear{background:transparent;border-style:none;display:block;clear:both;float:none}
+
+.delay{height:50%;width:50%}
+.delay svg{stroke:var(--text)}
+.ytDownload input{display:block;width:100%}
+.fail{color:var(--fail_bright);font-weight:bold}
+.success{color:var(--text_green);font-weight:bold}
+.yt strong{color:var(--text_yellow);font-weight:bold}
+.ytStatus{background:var(--background_textarea);border-color:var(--border_input);border-style:solid;border-radius:var(--font-size);border-width:0.065em;box-shadow:0.1em 0.1em 0.5em var(--black);font-family:monospace;height:50em;overflow:scroll;padding:0 0.5em;white-space:nowrap;width:100%}
+.ytStatus h2{margin:0 0 1em}
+.buttons span,
+label.radio{display:inline-block;width:45%}
+.buttons span.clear{display:block}
+.buttons button,
+label.radio{cursor:pointer}
+label.radio input{display:inline}
+input{background:var(--background_textarea);border-color:var(--border_input);border-style:solid;border-width:0.065em;color:var(--text_input);font-family:monospace;margin:0.5em 0 0;padding:0.5em}
+input[type="radio"]{visibility:hidden}
+th button{float:right;margin:0 1em}
+.controls p{margin:2em 0}
+.controls button{font-size:2em}
+label span{border-radius:50%;background:var(--border_color);border-color:var(--border_color);border-style:solid;border-width:0.065em;display:inline-block;height:0.8em;margin:0 0.5em 0 0;width:0.8em}
+label span.checked{background:var(--background_dark)}
+.linux-link{display:none;font-size:4em;font-weight:bold}
+.linux-options{margin:0;overflow:hidden}
+.linux-options select{display:block;width:20em}
+.linux-options legend{font-size:2em;font-weight:bold}
+
+table.data-table{margin:0 0 2em;min-width:120em}
+table.data-table td,
+table.data-table th{border:0.1em solid var(--black)}
+table.data-table th{background:var(--text_table_header);padding:0.5em}
+
+.odd{background:var(--text_row_odd)}
+.even{background:var(--background)}
+table{border-collapse:collapse}
+td{background:var(--background);font-family:monospace;padding:0.5em}
+td .icon{display:inline-block;width:1.5em}
+
+#connection-status{border-color:var(--border_color);border-style:solid;border-width:0.1em;padding:0.2em}
+#dashboard button{background:var(--background_button);border-color:var(--border_color);border-style:solid;border-radius:0;border-width:0.065em;font-size:1em;font-weight:bold;text-shadow:0.05em 0.05em var(--background_dark);width:10em}
+#dashboard button:hover{background:var(--border_input)}
+#dashboard button:hover:disabled{background:var(--background_button);color:var(--border_input);cursor:auto}
+#dashboard .buttons button:disabled{color:var(--border_input)}
+#dashboard code {background:var(--background_textarea);border-color:var(--border_color);border-style:solid;border-width:0.1em;margin:0.5em 2em;padding:0.5em}
+#dashboard nav ul{border-color:var(--border_color);border-style:none none solid;border-width:0.1em;margin:0 0 4em;padding:0 0 1em}
+#dashboard nav li{border-color:var(--border_color);border-style:none solid none none;border-width:0.1em;display:inline-block;padding:0 0.5em}
+#dashboard nav button{background:transparent;border-style:none;box-shadow:none;color:var(--text)}
+#dashboard nav .nav-focus{background:var(--background_dark);color:var(--text_input)}
+#dashboard nav button:hover{color:var(--text)}
+#dashboard .tab-description{border-color:var(--border_soft);border-style:none none solid;border-width:0.1em;margin:0 0 2em;padding:0 0 0.5em}
+#dashboard h1,
+#servers .detail_item p{margin:0 0 0.5em}
+#dashboard .compose-container-list,
+#dashboard .server-list{padding:0}
+#servers p,
+#dashboard h2,
+#dashboard .compose-container-list h4,
+#dashboard .server-list h4{cursor:pointer;margin:0 0 0.42em}
+#dashboard .compose-container-list h4:hover,
+#dashboard .server-list h4:hover{background:rgba(0,0,0,0.25)}
+#dashboard .compose-container-list .amber,
+#dashboard .server-list .amber{background:var(--status_amber)}
+#connection-status.connection-online,
+#dashboard .compose-container-list .green,
+#dashboard .server-list .green{background:var(--status_green)}
+#connection-status.connection-offline,
+#dashboard .compose-container-list .red,
+#dashboard .server-list .red{background:var(--status_red)}
+#dashboard .edit .summary h5{font-size:1em;margin:0}
+#dashboard div.edit{font-size:var(--font-size)}
+#dashboard div > .edit{border-color:var(--border_input);border-style:solid;border-width:0.1em;padding:1em}
+#dashboard div.edit p{font-size:1em}
+#servers .section dl{display:none}
+#dashboard .section > .buttons{margin:0 0 2em}
+#dashboard .compose-container-list h4 button,
+#dashboard .server-list h4 button{background:none;border-style:none;box-shadow:none;display:block;font-size:1em;padding:0;text-align:left;width:100%}
+#dashboard h3 .expand,
+#dashboard h4 .expand{display:block;float:right;font-size:0.6em}
+#dashboard .edit .summary ul{font-size:1em;margin:1em 0 0;padding:0}
+#dashboard main li{border-color:var(--border_color);border-style:solid;border-width:0.1em;font-size:1em;list-style:none;padding:1em 1em 0}
+#help ul{padding:0}
+#compose li,
+#servers li{list-style:none}
+#compose .compose-variable-list li{background:var(--background_textarea);padding:1em}
+#compose .compose-variable-list span,
+#compose .compose-variable-list strong{font-size:var(--font-size)}
+#compose .compose-variable-list strong{border-color:var(--text);border-style:none solid none none;border-width:0 0.065em 0 0;display:inline-block;margin:0 1.5em 0 0;width:10em}
+#servers label{display:flex;width:100%}
+#servers label span.details-redundant,
+#dashboard label span.text{background:transparent;border-style:none;display:inline-block;font-size:1em;font-weight:bold;line-height:2.5;width:auto}
+#servers label span.details-redundant{text-indent:-2000em}
+#dashboard button.server-activate,
+#dashboard button.server-add,
+#dashboard button.server-deactivate,
+#dashboard button.server-cancel,
+#dashboard button.server-modify,
+#dashboard button.server-destroy{margin:1em 3em}
+#dashboard button.server-add,
+#dashboard button.server-modify,
+#dashboard button.server-activate{float:right}
+#dashboard button.server-deactivate,
+#dashboard button.server-destroy{float:left}
+#dashboard .pass-true,
+#logs li.log-success,
+#dashboard button.server-modify,
+#dashboard button.server-add{color:var(--text_green)}
+#dashboard button.server-edit{display:block;margin:1em auto}
+#dashboard button.server-edit,
+#dashboard .pass-warn,
+#dashboard button.server-activate,
+#dashboard button.server-deactivate,
+#dashboard button.server-cancel{color:var(--text_yellow)}
+#dashboard button.server-destroy{color:var(--fail_dark)}
+#dashboard input,
+#dashboard textarea{box-sizing:border-box;display:block;font-size:1em;margin:0 0 1em;width:100%}
+#dashboard textarea{height:35em;overflow:scroll}
+#dashboard .active-ports h5{font-size:1.2em}
+#dashboard .active-ports,
+#dashboard .edit .summary{background:var(--background);border-color:var(--border_input);border-style:solid;border-width:0.1em;margin:0 0 1em;padding:1em 0.5em}
+#dashboard .edit .summary{display:none}
+#dashboard .edit label,
+#dashboard .edit label span{display:block}
+#dashboard .edit label span{height:2em}
+#dashboard .edit h4{font-size:1.2em}
+#dashboard .edit li{border-style:none;list-style-type:disc;margin:0.5em 0 0 1em;padding:0}
+#dashboard .edit dt,
+#dashboard .edit dd{font-size:1em}
+#dashboard #servers .note{clear:both;font-size:1.2em}
+#dashboard .pass-false{color:var(--fail_bright)}
+#logs > ul{background:var(--background_textarea);border-color:var(--textarea_border);border-style:solid;border-width:0.1em;padding:0.5em}
+#dashboard .tab{display:none}
+#dashboard #servers{display:block}
+#logs ul{height:83.9em;overflow:scroll}
+#dashboard #logs li{border-style:none;font-size:var(--font-size);font-family:monospace;list-style:none;margin:0.5em 0 0;padding:0;white-space:pre}
+#logs li.log-error{color:var(--fail_bright)}
+#logs time{color:var(--text_cyan);display:inline-block;margin:0 1em 0 0}
+#logs code{color:var(--fail_bright)}
+#dashboard table{border-collapse:collapse;margin:0 0 4em}
+#dashboard td,
+#dashboard th{border-color:var(--border_input);border-style:solid;border-width:0.1em;padding:0.2em;text-align:left}
+#dashboard th{background:var(--background_textarea)}
+#dashboard #compose textarea.compose-variables-edit{height:10em}
+#dashboard textarea.short{height:6em}

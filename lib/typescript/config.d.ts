@@ -3,7 +3,15 @@ interface config_certificate {
     callback: () => void;
     days: number;
     domain_default: string;
+    name: string;
     selfSign: boolean;
+}
+
+interface config_core {
+    close?: (event:Event) => void;
+    message: (event:websocket_event) => void;
+    open?: (event:Event) => void;
+    type: string;
 }
 
 interface config_directory {
@@ -28,10 +36,34 @@ interface config_hash {
 interface config_html {
     content: Buffer|string[];
     content_type: string;
+    core: boolean;
     page_title: string;
-    script: string;
+    script: () => void;
     status: number;
     template: boolean;
+}
+
+interface config_log {
+    action: type_dashboard_action;
+    config: type_dashboard_config;
+    message: string;
+    status: type_dashboard_status;
+    type: type_dashboard_type;
+}
+
+interface config_spawn {
+    args: string[];
+    callback: (stderr:string, stdout:string, error:node_childProcess_ExecException) => void;
+    command: string;
+    recurse: number;
+}
+
+interface config_validate_serverKeys {
+    name: "block_list" | "http" | "ports" | "redirect_asset" | "redirect_domain";
+    required_name: boolean;
+    required_property: boolean;
+    supported: string[];
+    type: "array" | "number" | "path" | "store" | "string";
 }
 
 interface config_websocket_create {
@@ -44,6 +76,8 @@ interface config_websocket_create {
     proxy: websocket_client;
     resource: string;
     secure: boolean;
+    server: string;
+    type: string;
 }
 
 interface config_websocket_extensions {
@@ -54,10 +88,12 @@ interface config_websocket_extensions {
     role: "client"|"server";
     server: string;
     socket: websocket_client;
+    temporary: boolean;
+    type: string;
 }
 
 interface config_websocket_server {
-    callback: (name:string, addressInfo:node_net_AddressInfo) => void;
+    callback: (name:string, secure:"open"|"secure") => void;
     name: string;
     options: transmit_tlsOptions;
 }

@@ -1,120 +1,193 @@
 
-import error from "./error.js";
+import core from "../browser/core.js";
+import dashboard_script from "../dashboard/dashboard_script.js";
+import dateTime from "./dateTime.js";
+import docker_ps from "../services/docker_ps.js";
+import file from "./file.js";
 import node from "./node.js";
+import port_map from "../services/port_map.js";
 import vars from "./vars.js";
 
-// cspell: words bestaudio, keyid, multistreams, pathlen
+// cspell: words bestaudio, keyid, multistreams, nmap, pathlen
 
 const startup = function utilities_startup(callback:() => void):void {
-    const read = function utilities_startup_read(erp:node_error, fileContents:Buffer):void {
-        if (erp === null) {
-            const instructions = function utilities_startup_read_instructions():void {
-                const config:project_config = JSON.parse(fileContents.toString()) as project_config,
-                    errorList:string[] = [
-                        "Errors on server configurations from the config.json file.",
-                        ""
-                    ],
+    const flags:store_flag = {
+            compose: false,
+            config: false,
+            docker: false,
+            html: false,
+            ports: false
+        },
+        readComplete = function utilities_startup_readComplete(flag:"config"|"docker"|"html"):void {
+            flags[flag] = true;
+            if (flags.config === true && flags.docker === true && flags.html === true) {
+                callback();
+            }
+        },
+        readCompose = function utilities_startup_readCompose(fileContents:Buffer):void {
+            if (fileContents === null) {
+                vars.compose = {
+                    containers: {},
+                    variables: {}
+                };
+            } else {
+                vars.compose = JSON.parse(fileContents.toString());
+            }
+            flags.compose = true;
+            commandsCallback();
+        },
+        readConfig = function utilities_startup_readConfig(fileContents:Buffer):void {
+            if (fileContents === null) {
+                vars.servers = {};
+            } else {
+                const configStr:string = fileContents.toString(),
+                    config:store_server_config = (configStr === "" || (/^\s*\{/).test(configStr) === false || (/\}\s*$/).test(configStr) === false)
+                        ? null
+                        : JSON.parse(configStr) as store_server_config,
                     includes = function utilities_startup_read_instructions_includes(input:string):void {
-                        if (server.domain_local.includes(input) === false && input.toLowerCase().indexOf("fe80") !== 0) {
-                            server.domain_local.push(input);
-                        }
-                    },
-                    paths = function utilities_startup_read_instructions_paths(input:type_paths):void {
-                        if (server.path === undefined || server.path === null || typeof server.path[input] !== "string" || server.path[input] === "") {
-                            server.path[input] = `${vars.path.project}lib/assets/${keys_srv[index_srv]}/`;
+                        if (vars.interfaces.includes(input) === false && input.toLowerCase().indexOf("fe80") !== 0) {
+                            vars.interfaces.push(input);
                         }
                     },
                     interfaces:{ [index: string]: node_os_NetworkInterfaceInfo[]; } = node.os.networkInterfaces(),
                     keys_int:string[] = Object.keys(interfaces),
-                    keys_srv:string[] = Object.keys(config);
+                    keys_srv:string[] = (config === null)
+                        ? null
+                        : Object.keys(config);
                 let index_int:number = keys_int.length,
-                    index_srv:number = keys_srv.length,
+                    index_srv:number = (config === null)
+                        ? 0
+                        : keys_srv.length,
                     server:server = null,
                     sub:number = 0;
-                vars.servers = config;
                 if (index_srv > 0) {
                     do {
                         index_srv = index_srv - 1;
                         index_int = keys_int.length;
-                        server = vars.servers[keys_srv[index_srv]];
-                        if (server.ports === null || server.ports === undefined) {
-                            errorList.push(`${vars.text.angry}*${vars.text.none} Server ${vars.text.cyan + keys_srv[index_srv] + vars.text.none} is missing a ${vars.text.angry}ports${vars.text.none} object.`);
+                        server = {
+                            config: config[keys_srv[index_srv]],
+                            sockets: [],
+                            status: {
+                                open: 0,
+                                secure: 0
+                            }
+                        };
+                        if (server.config.ports === null || server.config.ports === undefined) {
+                            server.config.ports = {
+                                open: 0,
+                                secure: 0
+                            };
                         } else {
-                            if (typeof server.ports.open !== "number") {
-                                errorList.push(`${vars.text.angry}*${vars.text.none} Server ${vars.text.cyan + keys_srv[index_srv] + vars.text.none} is missing a numeric value for ${vars.text.angry}ports.open${vars.text.none} property.`);
+                            if (typeof server.config.ports.open !== "number") {
+                                server.config.ports.open = 0;
                             }
-                            if (typeof server.ports.secure !== "number") {
-                                errorList.push(`${vars.text.angry}*${vars.text.none} Server ${vars.text.cyan + keys_srv[index_srv] + vars.text.none} is missing a numeric value for ${vars.text.angry}ports.secure${vars.text.none} property.`);
+                            if (typeof server.config.ports.secure !== "number") {
+                                server.config.ports.secure = 0;
                             }
                         }
-                        if (typeof server.server_name !== "string" || server.server_name === "") {
-                            errorList.push(`${vars.text.angry}*${vars.text.none} Server ${vars.text.cyan + keys_srv[index_srv] + vars.text.none} is missing a numeric value for ${vars.text.angry}server_name${vars.text.none} property.`);
-                        }
-                        if (server.block_list === undefined || server.block_list === null) {
-                            server.block_list = {
+                        if (server.config.block_list === undefined || server.config.block_list === null) {
+                            server.config.block_list = {
                                 host: [],
                                 ip: [],
                                 referrer: []
                             };
                         }
-                        paths("storage");
-                        paths("web_root");
-                        includes("127.0.0.1");
-                        includes("::1");
-                        includes("[::1]");
-                        do {
-                            index_int = index_int - 1;
-                            sub = interfaces[keys_int[index_int]].length;
-                            do {
-                                sub = sub - 1;
-                                includes(interfaces[keys_int[index_int]][sub].address);
-                            } while (sub > 0);
-                        } while (index_int > 0);
+                        if (Array.isArray(server.config.domain_local) === false) {
+                            server.config.domain_local = [];
+                        }
+                        vars.servers[server.config.name] = server;
                     } while (index_srv > 0);
+                    do {
+                        index_int = index_int - 1;
+                        sub = interfaces[keys_int[index_int]].length;
+                        do {
+                            sub = sub - 1;
+                            includes(interfaces[keys_int[index_int]][sub].address);
+                        } while (sub > 0);
+                    } while (index_int > 0);
                 }
-                if (errorList.length > 2) {
-                    error(errorList, null, true);
-                } else {
-                    callback();
+            }
+            readComplete("config");
+        },
+        readHTML = function utilities_startup_readHTML(fileContents:Buffer):void {
+            vars.dashboard = fileContents.toString()
+                .replace("${payload.intervals.nmap}", (vars.intervals.nmap / 1000).toString())
+                .replace("${payload.intervals.compose}", (vars.intervals.compose / 1000).toString())
+                .replace("replace_javascript", `(${dashboard_script.toString().replace(/\(\s*\)/, "(core)")}(${core.toString()}));`);
+            readComplete("html");
+        },
+        options = function utilities_startup_options(key:"no_color"|"verbose", iterate:string):void {
+            const argv:number = process.argv.indexOf(key);
+            if (argv > -1) {
+                process.argv.splice(argv, 1);
+                if (iterate !== null) {
+                    const store:store_string = vars[iterate as "text"],
+                        keys:string[] = Object.keys(store);
+                    let index:number = keys.length;
+                    do {
+                        index = index - 1;
+                        if (iterate === "text") {
+                            store[keys[index]] = "";
+                        }
+                    } while (index > 0);
                 }
-            };
-            node.fs.stat(vars.path.conf, function utilities_startup_read_stat(ers:node_error):void {
-                if (ers === null) {
-                    instructions();
-                } else {
-                    if (ers.code === "ENOENT") {
-                        node.fs.mkdir(vars.path.conf, function utilities_startup_read_stat_mkdir(erm:node_error):void {
-                            if (erm === null) {
-                                instructions();
-                            } else {
-                                error([`Error creating directory ${vars.path.conf}.`], erm, true);
-                            }
-                        });
-                    } else {
-                        error([`Error reading directory ${vars.path.conf}.`], ers, true);
-                    }
-                }
-            });
-        } else {
-            error(["Error reading config.json file from project root."], erp, true);
-        }
-    },
-    stat = function utilities_startup_stat(ers:node_error):void {
-        if (ers === null) {
-            node.fs.readFile(`${vars.path.project}config.json`, read);
-        } else if (ers.code === "ENOENT") {
-            error([
-                `File ${vars.text.angry + vars.path.project}config.json${vars.text.none} does not exist.`,
-                "See the readme.md file for an example."
-            ], null, false);
-        } else {
-            error(["Error reading config.json file from project root."], ers, true);
-        }
-    };
+            }
+        },
+        capitalize = function utilities_startup_capitalize():string {
+            // eslint-disable-next-line no-restricted-syntax
+            return this.charAt(0).toUpperCase() + this.slice(1);
+        },
+        commandsCallback = function utilities_startup_commandsCallback():void {
+            if (flags.compose === true && flags.ports === true) {
+                docker_ps(dockerCallback);
+                file.read({
+                    callback: readConfig,
+                    error_terminate: null,
+                    location: `${vars.path.project}servers.json`,
+                    no_file: null
+                });
+                file.read({
+                    callback: readHTML,
+                    error_terminate: null,
+                    location: `${vars.path.project}lib${vars.sep}dashboard${vars.sep}dashboard.html`,
+                    no_file: null
+                });
+            }
+        },
+        portCallback = function utilities_startup_portCallback():void {
+            flags.ports = true;
+            commandsCallback();
+        },
+        dockerCallback = function utilities_startup_dockerCallback():void {
+            readComplete("docker");
+        };
 
+    String.prototype.capitalize = capitalize;
+    Number.prototype.dateTime = dateTime;
+
+    options("no_color", "text");
     vars.path.project = process.argv[1].slice(0, process.argv[1].indexOf(`${vars.sep}js${vars.sep}`)) + vars.sep;
-    vars.path.conf = `${vars.path.project}lib${vars.sep}conf${vars.sep}`;
-    node.fs.stat(`${vars.path.project}config.json`, stat);
+    vars.path.compose = `${vars.path.project}compose${vars.sep}`;
+    vars.path.servers = `${vars.path.project}servers${vars.sep}`;
+    port_map(portCallback);
+    file.read({
+        callback: readCompose,
+        error_terminate: null,
+        location: `${vars.path.project}compose.json`,
+        no_file: null
+    });
+    if (process.platform !== "win32") {
+        file.stat({
+            callback: function utilities_startup_bash(stat:node_fs_BigIntStats):void {
+                if (stat !== null) {
+                    vars.shell = "/bin/bash";
+                }
+            },
+            error_terminate: null,
+            location: "/bin/bash",
+            no_file: null
+        });
+    }
 };
 
 export default startup;

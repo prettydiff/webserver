@@ -1,39 +1,141 @@
 
-interface Document {
-    activeElement: HTMLElement;
-    getElementsByAttribute: (name:string, value:string) => HTMLElement[];
-    getElementsByText: (textValue:string, caseSensitive?:boolean) => HTMLElement[];
-    getNodesByType: (typeValue:number | string) => Node[];
-    highlight: (element:HTMLElement) => void;
-    removeHighlight: (element:HTMLElement) => void;
-}
+import { Terminal } from "@xterm/xterm";
 
-/**
- * Extends the DOM's Element interface to include custom methods.
- */
-interface Element {
-    addClass: (className:string) => void;
-    appendText: (text:string, empty?:boolean) => void;
-    getAncestor: (identifier:string, selector:type_selector) => HTMLElement;
-    getElementsByAttribute: (name:string, value:string) => HTMLElement[];
-    getElementsByText: (textValue:string, caseSensitive?:boolean) => HTMLElement[];
-    getNodesByType: (typeValue:number | string) => Node[];
-    highlight: () => void;
-    lowName: () => string;
-    parentNode: HTMLElement;
-    removeClass: (className:string) => void;
-    removeHighlight: () => void;
-}
+declare global {
+    interface Document {
+        activeElement: HTMLElement;
+        getElementsByAttribute: (name:string, value:string) => HTMLElement[];
+        getElementsByText: (textValue:string, caseSensitive?:boolean) => HTMLElement[];
+        getNodesByType: (typeValue:number | string) => Node[];
+        highlight: (element:HTMLElement) => void;
+        removeHighlight: (element:HTMLElement) => void;
+    }
 
-interface FocusEvent {
-    target: HTMLElement;
-}
-interface KeyboardEvent {
-    target: HTMLElement;
-}
-interface MouseEvent {
-    target: HTMLElement;
-}
-interface TouchEvent {
-    target: HTMLElement;
+    /**
+     * Extends the DOM's Element interface to include custom methods.
+     */
+    interface Element {
+        addClass: (className:string) => void;
+        appendText: (text:string, empty?:boolean) => void;
+        getAncestor: (identifier:string, selector:type_selector) => HTMLElement;
+        getElementsByAttribute: (name:string, value:string) => HTMLElement[];
+        getElementsByText: (textValue:string, caseSensitive?:boolean) => HTMLElement[];
+        getNodesByType: (typeValue:number | string) => Node[];
+        highlight: () => void;
+        lowName: () => string;
+        parentNode: HTMLElement;
+        removeClass: (className:string) => void;
+        removeHighlight: () => void;
+    }
+
+    interface String {
+        capitalize: () => string;
+    }
+
+    interface Number {
+        dateTime: (date:boolean) => string;
+    }
+
+    interface FocusEvent {
+        target: HTMLElement;
+    }
+    interface KeyboardEvent {
+        target: HTMLElement;
+    }
+    interface MouseEvent {
+        target: HTMLElement;
+    }
+    interface TouchEvent {
+        target: HTMLElement;
+    }
+
+    interface module_common {
+        cancel: (event:MouseEvent) => void;
+        color: (name_server:string, type:type_dashboard_list) => type_activation_status;
+        details: (event:MouseEvent) => void;
+        edit: (event:MouseEvent) => void;
+        title: (name_server:string, type:type_dashboard_list) => HTMLElement;
+    }
+
+    interface module_compose {
+        activePorts: (name_server:string) => HTMLElement;
+        cancelVariables: (event:MouseEvent) => void;
+        container: (config:services_docker_compose) => void;
+        create: (event:MouseEvent) => void;
+        destroyContainer: (config:services_docker_compose) => void;
+        editVariables: () => void;
+        getTitle: (textArea:HTMLTextAreaElement) => string;
+        init: () => void;
+        list: (type:"containers"|"variables") => void;
+        message: (event:MouseEvent) => void;
+        nodes: {
+            containers_list: HTMLElement;
+            containers_new: HTMLButtonElement;
+            variables_list: HTMLElement;
+            variables_new: HTMLButtonElement;
+        };
+        validateContainer: (event:FocusEvent|KeyboardEvent) => void;
+        validateVariables: (event:FocusEvent|KeyboardEvent) => void;
+    }
+
+    interface module_message {
+        receiver: (event:websocket_event) => void;
+        send: (action:type_dashboard_action, config:services_docker_compose|services_server|store_string, service:type_service) => void;
+    }
+
+    interface module_port {
+        external: (input:external_ports) => void;
+        internal: () => void;
+    }
+
+    interface module_server {
+        activePorts: (name_server:string) => HTMLElement;
+        create: (event:MouseEvent) => void;
+        definitions: (event:MouseEvent) => void;
+        list: () => void;
+        message: (event:MouseEvent) => void;
+        nodes: {
+            list: HTMLElement;
+            server_definitions: HTMLElement;
+            server_new: HTMLButtonElement;
+        };
+        socket_add: (config:services_socket) => void;
+        validate: (event:FocusEvent|KeyboardEvent) => void;
+    }
+
+    interface module_terminal {
+        events: {
+            data: (event:websocket_event) => void;
+            firstData: (event:websocket_event) => void;
+            input: (input:terminal_input) => void;
+            selection: () => void;
+        };
+        id: string;
+        info: terminal_identifiers;
+        init: () => void;
+        item: Terminal;
+        nodes: {
+            output: HTMLElement;
+        };
+        socket: WebSocket;
+    }
+
+    interface socket_object {
+        invoke: () => void;
+        queue: (message:string) => void;
+        queueStore: string[];
+        socket: WebSocket;
+    }
+
+    interface terminal_identifiers {
+        pid: number;
+        port_browser: number;
+        port_terminal: number;
+        server_name: string;
+    }
+
+    interface terminal_input {
+        domEvent:KeyboardEvent;
+        key:string;
+    }
 }

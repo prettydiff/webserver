@@ -1,7 +1,7 @@
 
 import create_socket from "../transmit/createSocket.js";
 
-const http_connect:http_action = function http_connect(headerList:string[], socket:websocket_client, server_name:string):void {
+const http_connect:http_action = function http_connect(headerList:string[], socket:websocket_client):void {
     const destination:string = headerList[0].replace(/\s+/g, " ").split(" ")[1],
         index_colon:number = destination.lastIndexOf(":"),
         index_brace:number = destination.lastIndexOf("]"),
@@ -24,7 +24,7 @@ const http_connect:http_action = function http_connect(headerList:string[], sock
     create_socket({
         callback: callback,
         handler: null,
-        hash: `${server_name}-connect-${process.hrtime.bigint().toString()}`,
+        hash: `${socket.server}-connect-${process.hrtime.bigint().toString()}`,
         ip: ip,
         port: (isNaN(Number(portString)) === true)
             ? (socket.encrypted === true)
@@ -34,7 +34,9 @@ const http_connect:http_action = function http_connect(headerList:string[], sock
         headers: [],
         proxy: socket,
         resource: null,
-        secure: (socket.encrypted === true)
+        secure: (socket.encrypted === true),
+        server: socket.server,
+        type: "http-proxy"
     });
 };
 

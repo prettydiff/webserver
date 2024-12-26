@@ -1,9 +1,4 @@
 
-interface server_instance extends node_net_Server {
-    name?: string;
-    secure?: boolean;
-}
-
 interface socket_data {
     data: type_socket_data;
     service: type_service;
@@ -29,8 +24,32 @@ interface transmit_addresses_socket {
     };
 }
 
+interface transmit_dashboard {
+    compose: configuration_compose;
+    logs: services_dashboard_status[];
+    path: {
+        compose: string;
+        project: string;
+        servers: string;
+    };
+    ports: {
+        list: type_external_port[];
+        time: number;
+    };
+    servers: store_servers;
+    terminal: terminal_size;
+    user: {
+        gid: number;
+        uid: number;
+    };
+}
+
 interface transmit_receiver {
     [key:string]: receiver;
+}
+
+interface transmit_socket_messageHandler {
+    [key:string]: (data:Buffer) => void;
 }
 
 interface transmit_tlsOptions {
@@ -67,6 +86,7 @@ interface websocket_client extends node_tls_TLSSocket {
     secure: boolean;
     server: string;
     status: type_socket_status;
+    type: string;
 }
 
 interface websocket_event extends Event {

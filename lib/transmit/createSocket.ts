@@ -1,9 +1,8 @@
 
-import error from "../utilities/error.js";
 import hash from "../utilities/hash.js";
+import log from "../utilities/log.js";
 import node from "../utilities/node.js";
 import socket_extension from "./socketExtension.js";
-import vars from "../utilities/vars.js";
 
 const create_socket = function transmit_createSocket(config:config_websocket_create):void {
     if (config.ip === "") {
@@ -36,12 +35,19 @@ const create_socket = function transmit_createSocket(config:config_websocket_cre
                     "Upgrade: websocket",
                     "Connection: Upgrade",
                     "Sec-WebSocket-Version: 13",
-                    `Sec-WebSocket-Key: ${hashOutput.hash}`
+                    `Sec-WebSocket-Key: ${hashOutput.hash}`,
+                    `Sec-WebSocket-Protocol: ${config.type}`
                 ],
                 callbackError = function transmit_createSocket_hash_error(errorMessage:node_error):void {
-                    if (vars.verbose === true) {
-                        error(["Error attempting websocket connect from client side."], errorMessage, false);
-                    }
+                    log({
+                        action: "add",
+                        config: errorMessage,
+                        message: `Error attempting websocket connect from client side on server. ${(config.proxy === null)
+                            ? "Socket is not a proxy."
+                            : `Socket is a proxy to ${config.proxy.hash} on server ${config.proxy.server}.`}`,
+                        status: "error",
+                        type: "socket"
+                    });
                 },
                 callbackReady = function transmit_createSocket_hash_ready():void {
                     header.push("");
@@ -54,8 +60,10 @@ const create_socket = function transmit_createSocket(config:config_websocket_cre
                             identifier: config.hash,
                             proxy: config.proxy,
                             role: "client",
-                            server: "client",
-                            socket: client
+                            server: config.server,
+                            socket: client,
+                            temporary: false,
+                            type: config.type
                         });
                     });
                 };

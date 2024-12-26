@@ -1,31 +1,43 @@
 
-import error from "../utilities/error.js";
+import file from "../utilities/file.js";
 import get_address from "../utilities/getAddress.js";
 import hash from "../utilities/hash.js";
 import http from "../http/index.js";
+import log from "../utilities/log.js";
 import message_handler from "./messageHandler.js";
 import node from "../utilities/node.js";
+import read_certs from "../utilities/read_certs.js";
 import redirection from "./redirection.js";
+import send from "./send.js";
+import server_halt from "../services/server_halt.js";
 import socket_extension from "./socketExtension.js";
+import terminal from "../services/terminal.js";
 import vars from "../utilities/vars.js";
 
-const server = function transmit_server(config:config_websocket_server):node_net_Server {
+// cspell: words untrapped
+
+const server = function transmit_server(data:services_dashboard_action, callback:(name:string) => void):void {
+    let count:number = 0;
     const connection = function transmit_server_connection(TLS_socket:node_tls_TLSSocket):void {
-            // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, no-restricted-syntax
+            // eslint-disable-next-line no-restricted-syntax
             const server_name:string = this.name,
-                server:server = vars.servers[server_name],
-                socket:websocket_client = TLS_socket as websocket_client,
+                server:services_server = vars.servers[server_name].config,
                 handshake = function transmit_server_connection_handshake(data:Buffer):void {
                     let nonceHeader:string = null,
                         domain:string = "",
                         key:string = "",
-                        referer:boolean = null;
-                    const dataString:string = data.toString(),
+                        referer:boolean = null,
+                        type:string = "";
+                    // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
+                    const socket:websocket_client = this,
+                        dataString:string = data.toString("utf-8"),
                         headerIndex:number = dataString.indexOf("\r\n\r\n"),
-                        headerList:string[] = (headerIndex > 0)
-                            ? dataString.slice(0, headerIndex).split("\r\n")
-                            : dataString.split("\r\n"),
-                        testNonce:RegExp = (/^Sec-WebSocket-Protocol:\s*\w+-/),
+                        headerString:string = (headerIndex > 0)
+                            ? dataString.slice(0, headerIndex)
+                            : dataString,
+                        headerList:string[] = headerString.split("\r\n"),
+                        testNonce:RegExp = (/^Sec-WebSocket-Protocol:\s*/),
+                        temporary:boolean = (server.temporary === true),
                         address:transmit_addresses_socket = get_address({
                             socket: socket,
                             type: "ws"
@@ -51,7 +63,9 @@ const server = function transmit_server(config:config_websocket_server):node_net
                         },
                         get_referer = function transmit_server_connection_handshake_getReferer(header:string):void {
                             const refererName:string = header.toLowerCase().replace(/referer:\s*/, "");
-                            let index:number = server.block_list.referrer.length;
+                            let index:number = (server.block_list === null || server.block_list === undefined)
+                                ? 0
+                                : server.block_list.referrer.length;
                             if (index > 0) {
                                 do {
                                     index = index - 1;
@@ -71,61 +85,107 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                 get_referer(header);
                             } else if (testNonce.test(header) === true) {
                                 nonceHeader = header;
+                                type = header.replace(testNonce, "");
                             }
                         },
                         local_service = function transmit_server_connection_handshake_localService():void {
-                            if (server.redirect_internal[domain] !== undefined) {
+                            if (server.redirect_asset !== undefined && server.redirect_asset !== null && server.redirect_asset[domain] !== undefined) {
                                 data = redirection(domain, data, server_name) as Buffer;
                                 headerList[0] = data.toString().split("\r\n")[0];
                             }
                             if (key === "") {
-                                const http_action = function transmit_server_connection_handshake_httpAction():void {
+                                const http_action = function transmit_server_connection_handshake_localService_httpAction():void {
                                     const method:type_http_method = headerList[0].slice(0, headerList[0].indexOf(" ")).toLowerCase() as type_http_method;
                                     if (http[method] !== undefined) {
-                                        http[method](headerList, socket, server_name);
-                                    } else if (headerList[0].indexOf("CONNECT") === 0) {
-                                        http.connect(headerList, socket, server_name);
+                                        http[method](headerList, socket, headerIndex < 1
+                                            ? null
+                                            : data.subarray(Buffer.byteLength(headerString))
+                                        );
+                                        if (server.temporary === true) {
+                                            const terminate = function transmit_server_connection_handshake_localService_httpAction_terminate():void {
+                                                // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
+                                                const this_socket:websocket_client = this;
+                                                server_halt({
+                                                    action: "destroy",
+                                                    configuration: vars.servers[this_socket.server].config
+                                                }, null);
+                                            };
+                                            socket.on("close", terminate);
+                                            socket.on("end", terminate);
+                                            socket.on("error", terminate);
+                                        }
                                     } else {
-                                        // at this time the local domain only supports HTTP GET method as everything else should use WebSockets
+                                        // unsupported HTTP methods result in socket destruction
                                         socket.destroy();
                                     }
                                 };
                                 socket_extension({
                                     callback: http_action,
-                                    handler: message_handler,
+                                    handler: message_handler.default,
                                     identifier: `http-${process.hrtime.bigint().toString()}`,
                                     proxy: null,
                                     role: "server",
-                                    server: wsServer.name,
-                                    socket: socket
+                                    server: server_name,
+                                    socket: socket,
+                                    temporary: temporary,
+                                    type: "http"
                                 });
                             } else {
                                 // local domain websocket support
                                 const callback = function transmit_server_connection_handshake_hash(hashOutput:hash_output):void {
                                     const client_respond = function transmit_server_connection_handshake_hash_clientRespond():void {
-                                        const headers:string[] = [
-                                                "HTTP/1.1 101 Switching Protocols",
-                                                "Upgrade: websocket",
-                                                "Connection: Upgrade",
-                                                `Sec-WebSocket-Accept: ${hashOutput.hash}`,
-                                                "Access-Control-Allow-Origin: *",
-                                                "Server: webserver"
-                                            ];
-                                        if (nonceHeader !== null) {
-                                            headers.push(nonceHeader);
-                                        }
-                                        headers.push("");
-                                        headers.push("");
-                                        socket.write(headers.join("\r\n"));
-                                    };
+                                            const headers:string[] = [
+                                                    "HTTP/1.1 101 Switching Protocols",
+                                                    "Upgrade: websocket",
+                                                    "Connection: Upgrade",
+                                                    `Sec-WebSocket-Accept: ${hashOutput.hash}`,
+                                                    "Access-Control-Allow-Origin: *",
+                                                    "Server: webserver"
+                                                ];
+                                            if (nonceHeader !== null) {
+                                                headers.push(nonceHeader);
+                                            }
+                                            headers.push("");
+                                            headers.push("");
+                                            socket.write(headers.join("\r\n"));
+                                            if (server.temporary === true) {
+                                                const security:"open"|"secure" = (socket.secure === true)
+                                                    ? "secure"
+                                                    : "open";
+                                                vars.server_meta[server_name].server[security].removeAllListeners();
+                                            }
+                                            if (terminalFlag === true) {
+                                                terminal(socket);
+                                            } else if (server_name === "dashboard") {
+                                                const browser:transmit_dashboard = {
+                                                    compose: vars.compose,
+                                                    logs: vars.logs,
+                                                    path: vars.path,
+                                                    ports: vars.system_ports,
+                                                    servers: vars.servers,
+                                                    terminal: vars.terminal,
+                                                    user: vars.user
+                                                };
+                                                send({
+                                                    data: browser,
+                                                    service: "dashboard-payload"
+                                                }, socket, 1);
+                                            }
+                                        },
+                                        terminalFlag:boolean = (server_name === "dashboard" && type.indexOf("dashboard-terminal-") === 0),
+                                        identifier:string = (terminalFlag === true)
+                                            ? server_name
+                                            : `browserSocket-${hashOutput.hash}`;
                                     socket_extension({
                                         callback: client_respond,
-                                        handler: message_handler,
-                                        identifier: `browserSocket-${hashOutput.hash}`,
+                                        handler: message_handler.default,
+                                        identifier: identifier,
                                         proxy: null,
                                         role: "server",
-                                        server: wsServer.name,
-                                        socket: socket
+                                        server: server_name,
+                                        socket: socket,
+                                        temporary: temporary,
+                                        type: type
                                     });
                                 };
                                 hash({
@@ -143,9 +203,15 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                     socket: socket,
                                     type: "ws"
                                 }),
-                                pair:[string, number] = ((socket.encrypted === true && server.redirect_domain[`${domain}.secure`] !== undefined))
+                                encrypted:boolean = (
+                                    socket.encrypted === true &&
+                                    server.redirect_domain !== undefined &&
+                                    server.redirect_domain !== null &&
+                                    server.redirect_domain[`${domain}.secure`] !== undefined
+                                ),
+                                pair:[string, number] = (encrypted === true)
                                     ? server.redirect_domain[`${domain}.secure`]
-                                    : (server.redirect_domain[domain] === undefined)
+                                    : (server.redirect_domain === undefined || server.redirect_domain === null || server.redirect_domain[domain] === undefined)
                                         ? (socket.encrypted === true)
                                             ? [address.local.address, server.ports.secure]
                                             : [address.local.address, server.ports.open]
@@ -158,7 +224,7 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                     : (socket.encrypted === true)
                                         ? server.ports.secure
                                         : server.ports.open,
-                                proxy:websocket_client = (socket.encrypted === true)
+                                proxy:websocket_client = (encrypted === true)
                                     ?  node.tls.connect({
                                         host: host,
                                         port: port,
@@ -173,11 +239,11 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                     count = count + 1;
                                     if (count > 1) {
                                         proxy.pipe(socket);
-                                        if (server.redirect_internal[domain] === undefined) {
+                                        if (server.redirect_domain !== undefined && server.redirect_domain !== null && (server.redirect_domain[domain] !== undefined || (socket.encrypted === true && server.redirect_domain[`${domain}.secure`] !== undefined))) {
                                             socket.pipe(proxy);
-                                            proxy.write(data);
+                                            proxy.write(redirection(domain, data, server_name));
                                         } else {
-                                            // HTTP redirection support
+                                            // internal redirection
                                             socket.on("data", function transmit_server_connection_handshake_createProxy_redirect(message:Buffer):void {
                                                 proxy.write(redirection(domain, message, server_name));
                                             });
@@ -192,8 +258,10 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                 identifier: `${domain}-${now}`,
                                 proxy: proxy,
                                 role: "server",
-                                server: wsServer.name,
-                                socket: socket
+                                server: server_name,
+                                socket: socket,
+                                temporary: false,
+                                type: type
                             });
                             // proxy socket
                             socket_extension({
@@ -202,115 +270,166 @@ const server = function transmit_server(config:config_websocket_server):node_net
                                 identifier: `${domain}-${now}-proxy`,
                                 proxy: socket,
                                 role: "client",
-                                server: wsServer.name,
-                                socket: proxy
+                                server: server_name,
+                                socket: proxy,
+                                temporary: false,
+                                type: type
                             });
                         };
                     headerList.forEach(headerEach);
-
                     if (
                         referer === true ||
-                        server.block_list.host.includes(domain) === true ||
-                        server.block_list.ip.includes(address.remote.address) === true ||
-                        (server.redirect_domain[domain] === undefined && server.domain_local.includes(domain) === false)
+                        (server.block_list !== null && server.block_list !== undefined && server.block_list.host.includes(domain) === true) ||
+                        (server.block_list !== null && server.block_list !== undefined && server.block_list.ip.includes(address.remote.address) === true) ||
+                        ((server.redirect_domain === undefined || server.redirect_domain === null || server.redirect_domain[domain] === undefined) && server.domain_local.concat(vars.interfaces).includes(domain) === false)
                     ) {
                         socket.destroy();
                     } else {
-                        // do not proxy primary domain
-                        if (server.domain_local.includes(domain) === true) {
+                        // do not proxy primary domain -> endless loop
+                        if (server.domain_local.includes(domain) === true || vars.interfaces.includes(domain) === true) {
                             local_service();
                         } else {
                             create_proxy();
                         }
                     }
                 };
-            socket.on("error", function transmit_server_connection_handshake_socketError():void {
-                // this worthless error trapping prevents an "unhandled error" escalation that breaks the process
+            // untrapped errors on sockets are fatal and will crash the application
+            // errors on sockets resulting from stream collisions internal to node must be trapped immediately
+            // trapping the error event on a socket any later will still result in a fatal application crash, as of Node 23.1.0, if the error is the result of an internal Node stream collision
+            TLS_socket.on("error", function transmit_server_connection_handshake_error():void{
                 return null;
             });
-            socket.once("data", handshake);
+            TLS_socket.once("data", handshake);
         },
-        server_error = function transmit_server_serverError(ser:node_error):void {
-            // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
-            const server:server_instance = this;
-            if (ser.code === "EADDRINUSE") {
-                port_conflict(server.name, server.secure, true);
+        start = function transmit_server_start(options:transmit_tlsOptions):void {
+            const wsServer:server_instance = (options === null)
+                    // options are of type TlsOptions
+                    ? node.net.createServer()
+                    : node.tls.createServer({
+                        ca: options.options.ca,
+                        cert: options.options.cert,
+                        key: options.options.key
+                    }, connection),
+                secureType:"open"|"secure" = (options === null)
+                    ? "open"
+                    : "secure",
+                complete = function transmit_server_start_complete(server_name:string):void {
+                    count = count + 1;
+                    if (callback !== null && ((vars.servers[server_name].config.encryption === "both" && count > 1) || vars.servers[server_name].config.encryption !== "both")) {
+                        callback(server_name);
+                    }
+                },
+                listenerCallback = function transmit_server_start_listenerCallback():void {
+                    // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
+                    const serverItem:server_instance = this,
+                        address:node_net_AddressInfo = serverItem.address() as node_net_AddressInfo,
+                        secure:"open"|"secure" = (serverItem.secure === true)
+                            ? "secure"
+                            : "open";
+                    vars.server_meta[serverItem.name].server[secure] = serverItem;
+                    vars.servers[serverItem.name].status[secure] = address.port;
+                    log({
+                        action: "activate",
+                        config: {
+                            name: serverItem.name,
+                            ports: vars.servers[serverItem.name].status
+                        },
+                        message: `${secure.capitalize()} server ${serverItem.name} came online.`,
+                        status: "informational",
+                        type: "server"
+                    });
+                    complete(serverItem.name);
+                },
+                server_error = function transmit_server_start_serverError(ser:node_error):void {
+                    // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
+                    const serverItem:server_instance = this;
+                    if (ser.code === "EADDRINUSE") {
+                        const secure:"open"|"secure" = (serverItem.secure === true)
+                            ? "secure"
+                            : "open";
+                        log({
+                            action: "activate",
+                            config: vars.servers[serverItem.name],
+                            message: `Port conflict on port ${vars.servers[serverItem.name].config.ports[secure]} of ${secure} server named ${serverItem.name}.`,
+                            status: "error",
+                            type: "server"
+                        });
+                    } else {
+                        log({
+                            action: "activate",
+                            config: ser,
+                            message: `Error activating ${(serverItem.secure === true) ? "secure" : "open"} server ${serverItem.name}.`,
+                            status: "error",
+                            type: "server"
+                        });
+                    }
+                    complete(serverItem.name);
+                };
+            // type identification assignment
+            wsServer.secure = (options === null)
+                ? false
+                : true;
+            wsServer.name = data.configuration.name;
+            wsServer.on("error", server_error);
+
+            // insecure connection listener
+            if (options === null) {
+                wsServer.on("connection", connection);
             }
-        },
-        wsServer:server_instance = (config.options === null)
-            // options are of type TlsOptions
-            ? node.net.createServer()
-            : node.tls.createServer({
-                ca: config.options.options.ca,
-                cert: config.options.options.cert,
-                key: config.options.options.key
-            }, connection),
-        listenerCallback = function transmit_server_listenerCallback():void {
-            // eslint-disable-next-line @typescript-eslint/no-this-alias, @typescript-eslint/no-unsafe-assignment, no-restricted-syntax
-            const server:server_instance = this;
-            port_conflict(server.name, server.secure, false);
-            config.callback(server.name, wsServer.address() as node_net_AddressInfo);
-        },
-        // error messaging for port conflicts
-        port_conflict = function transmit_server_portConflict(name:string, secure:boolean, input:boolean):void {
-            vars.port_conflict.push([name, secure, input]);
-            const total:number = vars.port_conflict.length;
-            let index:number = 0,
-                test:boolean = false;
-            if (total === Object.keys(vars.servers).length * 2) {
-                const errorText:string[] = ["Port conflict on the following ports:"];
-                vars.port_conflict.sort(function transmit_server_portConflict_sort(a:type_port_conflict, b:type_port_conflict):-1|1 {
-                    if (vars.servers[a[0]].ports[(a[1] === true) ? "secure" : "open"] < vars.servers[b[0]].ports[(b[1] === true) ? "secure" : "open"]) {
-                        return -1;
-                    }
-                    return 1;
-                });
 
-                // validate there are port conflicts
-                do {
-                    if (vars.port_conflict[index][2] === true) {
-                        test = true;
-                        break;
-                    }
-                    index = index + 1;
-                } while (index < total);
-                if (test === false) {
-                    return;
-                }
-
-                // write the messaging
-                index = 0;
-                do {
-                    if (vars.port_conflict[index][2] === true) {
-                        errorText.push(`${vars.text.angry}*${vars.text.none} Port ${vars.text.angry + vars.servers[vars.port_conflict[index][0]].ports[(vars.port_conflict[index][1] === true) ? "secure" : "open"].toString() + vars.text.none} for server ${vars.text.cyan + vars.port_conflict[index][0]}, ${((vars.port_conflict[index][1]) === true ? "secure" : "open") + vars.text.none}.`);
-                    }
-                    index = index + 1;
-                } while (index < total);
-                error(errorText, null, true);
-            }
-        },
-        secureType:"open"|"secure" = (config.options === null)
-            ? "open"
-            : "secure";
-
-    // type identification assignment
-    wsServer.secure = (config.options === null)
-        ? false
-        : true;
-    wsServer.name = config.name;
-    wsServer.on("error", server_error);
-    vars.store_server[config.name] = wsServer;
-
-    // insecure connection listener
-    if (config.options === null) {
-        wsServer.on("connection", connection);
+            // secure connection listener
+            wsServer.listen({
+                port: vars.servers[data.configuration.name].config.ports[secureType]
+            }, listenerCallback);
+        };
+    if (Array.isArray(data.configuration.domain_local) === false) {
+        data.configuration.domain_local = [];
     }
-
-    // secure connection listener
-    wsServer.listen({
-        port: vars.servers[config.name].ports[secureType]
-    }, listenerCallback);
-    return wsServer;
+    if (vars.server_meta[data.configuration.name] === undefined) {
+        vars.server_meta[data.configuration.name] = {
+            server: {
+                open: null,
+                secure: null
+            },
+            sockets: {
+                open: [],
+                secure: []
+            }
+        };
+    }
+    if (vars.servers[data.configuration.name].config.encryption === "open") {
+        if (vars.servers[data.configuration.name].config.temporary === true) {
+            file.remove({
+                callback: function transmit_server_readCerts_starterOpen():void {
+                    start(null);
+                },
+                error_terminate: null,
+                exclusions: null,
+                location: vars.path.servers + data.configuration.name
+            });
+        } else {
+            start(null);
+        }
+    } else {
+        read_certs(data.configuration.name, function transmit_server_readCerts(server_name:string, options:transmit_tlsOptions):void {
+            const starter = function transmit_server_readCerts_starterSecure():void {
+                if (vars.servers[server_name].config.encryption === "both") {
+                    start(null);
+                }
+                start(options);
+            };
+            if (vars.servers[server_name].config.temporary === true) {
+                file.remove({
+                    callback: starter,
+                    error_terminate: null,
+                    exclusions: null,
+                    location: vars.path.servers + server_name
+                });
+            } else {
+                starter();
+            }
+        });
+    }
 };
 
 export default server;

@@ -6,15 +6,22 @@
     },
     "command": "share",
     "description": "WebSocket first web server, HTTP over WebSockets.",
+    "dependencies": {
+        "@lydell/node-pty": "1.0.2",
+        "@xterm/xterm": "^5.5.0"
+    },
     "devDependencies": {
+        "@eslint/eslintrc": "^3.1.0",
+        "@eslint/js": "^9.9.1",
+        "@stylistic/eslint-plugin-ts": "^2.7.2",
         "@swc/cli": "^0.4.0",
         "@swc/core": "^1.6.13",
         "@types/node": "^20.14.10",
-        "@typescript-eslint/eslint-plugin": "^7.16.0",
-        "@typescript-eslint/parser": "^7.16.0",
-        "eslint": "^8.56.0",
+        "eslint": "^9.9.1",
         "eslint-plugin-eslint-comments": "^3.2.0",
-        "typescript": "^5.5.3"
+        "globals": "^15.9.0",
+        "typescript": "^5.5.3",
+        "typescript-eslint": "^8.4.0"
     },
     "directories": {
         "bin": "./bin",
@@ -29,12 +36,10 @@
         "url": "git+https://github.com/prettydiff/webserver.git"
     },
     "scripts": {
-        "build": "npx swc ./lib -d ./js --ignore ./lib/assets/cheney/files",
-        "certificate": "node js/lib/index.js certificate",
-        "lint": "npx eslint ./ --ext ts",
-        "server": "node js/lib/index.js",
-        "tsc": "npx tsc --pretty",
-        "yt_config": "node js/lib/index.js yt_config"
+        "build":  "npx swc ./lib -d ./js --ignore servers, compose",
+        "lint":   "node --disable-warning=ExperimentalWarning node_modules/eslint/bin/eslint.js ./",
+        "server": "node --disable-warning=ExperimentalWarning js/lib/index.js",
+        "tsc":    "node --disable-warning=ExperimentalWarning node_modules/typescript/bin/tsc --pretty"
     },
     "types": "/lib/typescript",
     "type": "module",

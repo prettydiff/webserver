@@ -1,82 +1,98 @@
 
-import certificate from "./commands/certificate.js";
-import create_config from "./commands/create_config.js";
-import error from "./utilities/error.js";
-import readCerts from "./utilities/readCerts.js";
 import server from "./transmit/server.js";
+import server_create from "./services/server_create.js";
 import startup from "./utilities/startup.js";
 import vars from "./utilities/vars.js";
-import yt_config from "./commands/yt_config.js";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, no-console
-const log:(...data:any[]) => void = console.log;
-let count:number = 0;
+// cspell: words nmap
 
 startup(function index():void {
-    const servers:string[] = Object.keys(vars.servers);
-    if (servers.length < 1) {
-        error([
-            `${vars.text.angry}No servers initiated.${vars.text.none}`,
-            `Ensure the ${vars.text.cyan}config.json${vars.text.none} file is properly populated with at least one server.`
-        ], null, true);
-    } else {
-        // certificate command
-        if (process.argv.includes("certificate") === true) {
-
-            certificate({
-                callback: function index_certificate():void {
-                    log("Certificates create.");
-                },
-                days: 65535,
-                domain_default: vars.servers[servers[0]].domain_local[0],
-                selfSign: false
-            });
-        // create_config command
-        } else if (process.argv.includes("create_config") === true) {
-            create_config();
-        // yt_config command
-        } else if (process.argv.includes("yt_config") === true) {
-            const name:string = process.argv[3];
-            if (vars.servers[name] === undefined) {
-                error([
-                    `Server ${name} does not exist in the config.json file.`
-                ], null, true);
-                return;
+    const default_server = function index_defaultServer(name:string):services_server {
+        return {
+            activate: true,
+            domain_local: [
+                "localhost",
+                "127.0.0.1",
+                "::1"
+            ],
+            encryption: "both",
+            name: name,
+            ports: {
+                open: 0,
+                secure: 0
+            },
+            redirect_asset: {
+                "localhost": {
+                    "/lib/assets/*": "/lib/dashboard/*"
+                }
             }
-            yt_config(process.argv[3], function index_ytConfig():void {
-                log("yt-dlp scripts written.");
-            });
-        // service, default behavior
-        } else {
-            readCerts(function index_readCerts(tlsOptions:transmit_tlsOptions):void {
-                const total:number = servers.length,
-                    portList:store_ports = {},
-                    config:config_websocket_server = {
-                        callback: function index_serverCallback(name:string, addressInfo:node_net_AddressInfo):void {
-                            count = count + 1;
-                            portList[name] = vars.servers[name].ports;
-                            if (count === total) {
-                                log({
-                                    address: addressInfo.address,
-                                    family: addressInfo.family,
-                                    port: portList
-                                });
+        };
+    },
+    start = function index_start():void {
+        const servers:string[] = Object.keys(vars.servers),
+            total:number = servers.length,
+            callback = function index_start_serverCallback():void {
+                count = count + 1;
+                if (count === total) {
+                    const logs:string[] = [
+                            "Web Servers started.",
+                            "",
+                            "Ports:",
+                        ],
+                        logItem = function index_start_serverCallback_logItem(name:string, encryption:"open"|"secure"):void {
+                            const conflict:boolean = (vars.servers[name].status[encryption] === 0),
+                                portNumber:number = (conflict === true)
+                                    ? vars.servers[name].config.ports[encryption]
+                                    : vars.servers[name].status[encryption],
+                                portDisplay:string = (conflict === true)
+                                    ? vars.text.angry + portNumber + vars.text.none
+                                    : portNumber.toString(),
+                                str:string = `${vars.text.angry}*${vars.text.none} ${name} - ${portDisplay}, ${encryption}`;
+                            if (conflict === true) {
+                                if (portNumber < 1025) {
+                                    logs.push(`${str} (Server offline, typically due to insufficient access for reserved port or port conflict.)`);
+                                } else {
+                                    logs.push(`${str} (Server offline, typically due to port conflict.)`);
+                                }
+                            } else {
+                                logs.push(str);
                             }
-                        },
-                        name: "",
-                        options: null
-                    };
-                let index:number = servers.length;
-                do {
-                    index = index - 1;
-                    config.options = tlsOptions;
-                    config.name = servers[index];
-                    server(config);
-                    config.options = null;
-                    config.name = servers[index];
-                    server(config);
-                } while (index > 0);
-            });
-        }
+                        };
+                    servers.sort();
+                    let items:number = 0;
+                    do {
+                        if (vars.servers[servers[items]].config.encryption === "both") {
+                            logItem(servers[items], "open");
+                            logItem(servers[items], "secure");
+                        } else if (vars.servers[servers[items]].config.encryption === "open") {
+                            logItem(servers[items], "open");
+                        } else if (vars.servers[servers[items]].config.encryption === "secure") {
+                            logItem(servers[items], "secure");
+                        }
+                        items = items + 1;
+                    } while (items < servers.length);
+                    // eslint-disable-next-line no-console
+                    console.log(logs.join("\n"));
+                }
+            };
+        let count:number = 0,
+            index:number = 0;
+        do {
+            server({
+                action: "activate",
+                configuration: vars.servers[servers[index]].config
+            }, callback);
+            index = index + 1;
+        } while (index < total);
+    };
+    if (vars.servers.dashboard === undefined) {
+        server_create({
+            action: "add",
+            configuration: default_server("dashboard")
+        }, function index_startDashboard():void {
+            start();
+        });
+    } else {
+        start();
     }
 });
