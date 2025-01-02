@@ -85,7 +85,9 @@ declare global {
 
     interface module_port {
         external: (input:external_ports) => void;
+        init: (port_list:external_ports) => void;
         internal: () => void;
+        table: (tbody:HTMLElement, list:type_external_port[]) => void;
     }
 
     interface module_server {

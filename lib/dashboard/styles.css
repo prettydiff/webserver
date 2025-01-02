@@ -203,3 +203,4 @@ td .icon{display:inline-block;width:1.5em}
 #dashboard th{background:var(--background_textarea)}
 #dashboard #compose textarea.compose-variables-edit{height:10em}
 #dashboard textarea.short{height:6em}
+#dashboard thead button{background:transparent;border-style:none;margin:0;padding:0.5em 1em;text-align:left;width:100%}

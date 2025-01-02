@@ -876,10 +876,8 @@ const dashboard = function dashboard():void {
                         compose.init();
                         // populate server list
                         server.list();
-                        // port data from nmap
-                        ports.external(payload.ports);
-                        // port data from application
-                        ports.internal();
+                        // populate port data
+                        ports.init(payload.ports);
                         // start the terminal
                         terminal.init();
                     } else if (message_item.service === "dashboard-status") {
@@ -1073,7 +1071,7 @@ const dashboard = function dashboard():void {
                         action: action,
                         configuration: config as services_server
                     },
-                    message = {
+                    message:socket_data = {
                         data: payload,
                         service: service
                     };
@@ -1089,12 +1087,12 @@ const dashboard = function dashboard():void {
                     compose:string[] = (payload.compose === null)
                         ? null
                         : Object.keys(payload.compose.containers),
-                    loop_ports = function dashboard_portsExternal(number:number):void {
+                    loop_ports = function dashboard_portsExternal(number:number, protocol:"tcp"|"udp"):void {
                         let indexPorts:number = input.list.length;
                         if (indexPorts > 0) {
                             do {
                                 indexPorts = indexPorts - 1;
-                                if (number === input.list[indexPorts][0]) {
+                                if (number === input.list[indexPorts][0] && protocol === input.list[indexPorts][1]) {
                                     input.list.splice(indexPorts, 1);
                                 }
                             } while (indexPorts > 0);
@@ -1102,8 +1100,7 @@ const dashboard = function dashboard():void {
                     },
                     portElement:HTMLElement = document.getElementById("ports"),
                     updated:HTMLElement = portElement.getElementsByClassName("updated")[0] as HTMLElement,
-                    tbody_old:HTMLElement = portElement.getElementsByTagName("tbody")[0],
-                    tbody_new:HTMLElement = document.createElement("tbody");
+                    tbody:HTMLElement = portElement.getElementsByTagName("tbody")[0];
                 if (input.list[0] === null) {
                     if (updated.style.display !== "none") {
                         const ulNew:HTMLElement = document.createElement("ul"),
@@ -1136,7 +1133,7 @@ const dashboard = function dashboard():void {
                         li.appendChild(para);
                         ulNew.appendChild(li);
                         p.parentNode.insertBefore(ulNew, p.nextSibling);
-                        tbody_old.parentNode.style.display = "none";
+                        tbody.parentNode.style.display = "none";
                         updated.style.display = "none";
                         ports_external = true;
                     }
@@ -1145,9 +1142,7 @@ const dashboard = function dashboard():void {
                 let indexServers:number = servers.length,
                     indexPorts:number = input.list.length,
                     indexKeys:number = 0,
-                    keys:string[] = null,
-                    tr:HTMLElement = null,
-                    td:HTMLElement = null;
+                    keys:string[] = null;
                 if (indexPorts < 1) {
                     return;
                 }
@@ -1161,8 +1156,8 @@ const dashboard = function dashboard():void {
                         }
                         indexServers = indexServers - 1;
                         // per port, per server
-                        loop_ports(payload.servers[servers[indexServers]].status.open);
-                        loop_ports(payload.servers[servers[indexServers]].status.secure);
+                        loop_ports(payload.servers[servers[indexServers]].status.open, "tcp");
+                        loop_ports(payload.servers[servers[indexServers]].status.secure, "tcp");
                         keys = (payload.servers[servers[indexServers]].config.redirect_domain === null || payload.servers[servers[indexServers]].config.redirect_domain === undefined)
                             ? null
                             : Object.keys(payload.servers[servers[indexServers]].config.redirect_domain);
@@ -1177,7 +1172,7 @@ const dashboard = function dashboard():void {
                                     typeof payload.servers[servers[indexServers]].config.redirect_domain[keys[indexKeys]][0] === "string" &&
                                     payload.servers[servers[indexServers]].config.redirect_domain[keys[indexKeys]][0] !== ""
                                 ) {
-                                    loop_ports(payload.servers[servers[indexServers]].config.redirect_domain[keys[indexKeys]][1]);
+                                    loop_ports(payload.servers[servers[indexServers]].config.redirect_domain[keys[indexKeys]][1], "tcp");
                                 }
                             } while (indexKeys > 0);
                         }
@@ -1194,55 +1189,103 @@ const dashboard = function dashboard():void {
                         if (indexKeys > 0 && payload.compose.containers[compose[indexServers]].status.indexOf("Up ") === 0) {
                             do {
                                 indexKeys = indexKeys - 1;
-                                loop_ports(payload.compose.containers[compose[indexServers]].publishers[indexKeys].PublishedPort);
+                                loop_ports(payload.compose.containers[compose[indexServers]].publishers[indexKeys].PublishedPort, payload.compose.containers[compose[indexServers]].publishers[indexKeys].Protocol);
                             } while (indexKeys > 0);
                         }
                     } while (indexServers > 0);
                 }
-                indexPorts = 0;
-                indexKeys = input.list.length;
-                if (indexKeys > 0) {
-                    do {
-                        tr = document.createElement("tr");
-                        td = document.createElement("td");
-                        td.appendText(input.list[indexPorts][0].toString());
-                        tr.appendChild(td);
-                        td = document.createElement("td");
-                        td.appendText(input.list[indexPorts][1].toUpperCase());
-                        tr.appendChild(td);
-                        td = document.createElement("td");
-                        td.appendText(input.list[indexPorts][2]);
-                        tr.appendChild(td);
-                        tbody_new.appendChild(tr);
-                        indexPorts = indexPorts + 1;
-                    } while (indexPorts < indexKeys);
-                    tbody_old.parentNode.appendChild(tbody_new);
-                    tbody_old.parentNode.removeChild(tbody_old);
-                }
+                ports.table(tbody, input.list);
                 updated.getElementsByTagName("em")[0].textContent = input.time.dateTime(true);
             },
+            init: function dashboard_portsInit(port_list:external_ports):void {
+                const headings:HTMLCollectionOf<HTMLElement> = document.getElementById("ports").getElementsByTagName("thead"),
+                    assign = function dashboard_portsInit_assign(thead:HTMLElement):void {
+                        const buttons:HTMLCollectionOf<HTMLButtonElement> = thead.getElementsByTagName("button");
+                        let index:number = buttons.length;
+                        do {
+                            index = index - 1;
+                            buttons[index].onclick = sort;
+                        } while (index > 0);
+                    },
+                    sort = function dashboard_portsInit_sort(event:MouseEvent):void {
+                        const target:HTMLElement = event.target,
+                            tbody:HTMLElement = target.getAncestor("table", "tag").getElementsByTagName("tbody")[0],
+                            records:HTMLCollectionOf<HTMLElement> = tbody.getElementsByTagName("tr"),
+                            tr_length:number = records.length;
+                        let index_tr:number = 0;
+                        if (tr_length > 0) {
+                            const direction:string = target.dataset.dir,
+                                th:HTMLElement = target.parentNode,
+                                tr_head:HTMLElement = th.parentNode,
+                                ths:HTMLCollectionOf<HTMLElement> = tr_head.getElementsByTagName("th"),
+                                cells_length:number = ths.length,
+                                table:type_external_port[] = [];
+                            let index_th:number = cells_length,
+                                index_td:number = 0,
+                                tr:HTMLElement = null,
+                                tds:HTMLCollectionOf<HTMLElement> = null,
+                                record:type_external_port = null;
+
+                            // find which column to sort by
+                            do {
+                                index_th = index_th - 1;
+                                if (ths[index_th] === th) {
+                                    break;
+                                }
+                            } while (index_th > 0);
+
+                            // build a table of data
+                            do {
+                                record = [0, "", "", ""];
+                                tr = tbody.getElementsByTagName("tr")[index_tr];
+                                tds = tr.getElementsByTagName("td");
+                                index_td = 0;
+                                do {
+                                    if (index_td === 0) {
+                                        record[0] = Number(tds[0].textContent);
+                                    } else {
+                                        record[index_td] = tds[index_td].textContent;
+                                    }
+                                    index_td = index_td + 1;
+                                } while (index_td < cells_length);
+                                table.push(record);
+                                index_tr = index_tr + 1;
+                            } while (index_tr < tr_length);
+
+                            // modify the html
+                            tbody.setAttribute("data-column", String(index_th));
+                            if (direction === "-1") {
+                                target.setAttribute("data-dir", "1");
+                            } else {
+                                target.setAttribute("data-dir", "-1");
+                            }
+                            ports.table(tbody, table);
+                        }
+                    };
+                ports.external(port_list);
+                ports.internal();
+                assign(headings[0]);
+                assign(headings[1]);
+            },
             internal: function dashboard_portsInternal():void {
-                const output:[number, string, string, string, string][] = [],
-                    tbody_old:HTMLElement = document.getElementById("ports").getElementsByTagName("tbody")[1],
-                    tbody_new:HTMLElement = document.createElement("tbody"),
+                const output:type_external_port[] = [],
+                    tbody:HTMLElement = document.getElementById("ports").getElementsByTagName("tbody")[1],
                     servers:string[] = Object.keys(payload.servers),
                     compose:string[] = (payload.compose === null)
                         ? null
                         : Object.keys(payload.compose.containers);
                 let indexServers:number = servers.length,
-                    indexPorts:number = 0,
-                    tr:HTMLElement = null,
-                    td:HTMLElement = null;
+                    indexPorts:number = 0;
                 // per server
                 ports.external(payload.ports);
                 if (indexServers > 0) {
                     do {
                         indexServers = indexServers - 1;
                         if (typeof payload.servers[servers[indexServers]].status.open === "number" && payload.servers[servers[indexServers]].status.open > 0) {
-                            output.push([payload.servers[servers[indexServers]].status.open, "TCP", "server", servers[indexServers], "Open server port"]);
+                            output.push([payload.servers[servers[indexServers]].status.open, "TCP", "server", `${servers[indexServers]} (open)`]);
                         }
                         if (typeof payload.servers[servers[indexServers]].status.secure === "number" && payload.servers[servers[indexServers]].status.secure > 0) {
-                            output.push([payload.servers[servers[indexServers]].status.secure, "TCP", "server", servers[indexServers], "Secure server port"]);
+                            output.push([payload.servers[servers[indexServers]].status.secure, "TCP", "server", `${servers[indexServers]} (secure)`]);
                         }
                     } while (indexServers > 0);
                 }
@@ -1256,43 +1299,74 @@ const dashboard = function dashboard():void {
                         indexServers = indexServers - 1;
                         indexPorts = payload.compose.containers[compose[indexServers]].ports.length;
                         if (indexPorts > 0 && payload.compose.containers[compose[indexServers]].status.indexOf("Up ") === 0) {
+                            payload.compose.containers[compose[indexServers]].publishers.sort(function dashboard_portsInternal_sort(a:services_docker_compose_publishers, b:services_docker_compose_publishers):-1|1 {
+                                if (a.URL < b.URL) {
+                                    return -1;
+                                }
+                                return 1;
+                            });
                             do {
                                 indexPorts = indexPorts - 1;
-                                output.push([payload.compose.containers[compose[indexServers]].publishers[indexPorts].PublishedPort, payload.compose.containers[compose[indexServers]].publishers[indexPorts].Protocol.toUpperCase(), "container", compose[indexServers], "Container port"]);
+                                if (payload.compose.containers[compose[indexServers]].publishers[indexPorts].URL === "0.0.0.0" || payload.compose.containers[compose[indexServers]].publishers[0].URL === "::") {
+                                    output.push([payload.compose.containers[compose[indexServers]].publishers[indexPorts].PublishedPort, payload.compose.containers[compose[indexServers]].publishers[indexPorts].Protocol, "container", compose[indexServers]]);
+                                }
                             } while (indexPorts > 0);
                         }
                     } while (indexServers > 0);
                 }
-                output.sort(function dashboard_portsInternal_sort(a:[number, string, string, string, string], b:[number, string, string, string, string]):-1|1 {
-                    if (a[0] < b[0]) {
-                        return 1;
+                ports.table(tbody, output);
+            },
+            table: function dashboard_table(tbody:HTMLElement, list:type_external_port[]):void {
+                let td:HTMLElement = null,
+                    tr:HTMLElement = null,
+                    index:number = list.length;
+                const tbody_new:HTMLElement = document.createElement("tbody"),
+                    column:number = Number(tbody.dataset.column),
+                    button:HTMLElement = (column < 0)
+                        ? null
+                        : tbody.getAncestor("table", "tag").getElementsByTagName("th")[column].getElementsByTagName("button")[0],
+                    direction:-1|1 = (column < 0)
+                        ? -1
+                        : Number(button.dataset.dir) as -1;
+                if (index > 0) {
+                    if (column < 0) {
+                        list.sort(function dashboard_table_sortDefault(a:type_external_port, b:type_external_port):-1|1 {
+                            if (a[1] < b[1]) {
+                                return 1;
+                            }
+                            if (a[1] === b[1] && a[0] < b[0]) {
+                                return 1;
+                            }
+                            return -1;
+                        });
+                    } else {
+                        list.sort(function dashboard_table_sortColumn(a:type_external_port, b:type_external_port):-1|1 {
+                            if (a[column] < b[column]) {
+                                return direction;
+                            }
+                            return (direction * -1 as -1);
+                        });
                     }
-                    return -1;
-                });
-                indexServers = output.length;
-                if (indexServers > 0) {
                     do {
-                        indexServers = indexServers - 1;
+                        index = index - 1;
                         tr = document.createElement("tr");
                         td = document.createElement("td");
-                        td.appendText(output[indexServers][0].toString());
+                        td.appendText(list[index][0].toString());
                         tr.appendChild(td);
                         td = document.createElement("td");
-                        td.appendText(output[indexServers][1]);
+                        td.appendText(list[index][1].toUpperCase());
                         tr.appendChild(td);
                         td = document.createElement("td");
-                        td.appendText(output[indexServers][2]);
+                        td.appendText(list[index][2]);
                         tr.appendChild(td);
                         td = document.createElement("td");
-                        td.appendText(output[indexServers][3]);
-                        tr.appendChild(td);
-                        td = document.createElement("td");
-                        td.appendText(output[indexServers][4]);
+                        td.appendText(list[index][3]);
                         tr.appendChild(td);
                         tbody_new.appendChild(tr);
-                    } while (indexServers > 0);
-                    tbody_old.parentNode.appendChild(tbody_new);
-                    tbody_old.parentNode.removeChild(tbody_old);
+                    } while (index > 0);
+                    tbody_new.setAttribute("data-column", String(column));
+                    tbody.parentNode.appendChild(tbody_new);
+                    tbody.parentNode.removeChild(tbody);
                 }
             }
         },
