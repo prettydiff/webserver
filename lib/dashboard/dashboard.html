@@ -234,13 +234,14 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
             <p class="tab-description">A list of ports in active use both from this application and outside this application. External port data refreshes every ${payload.intervals.nmap} seconds.</p>
             <div class="section">
                 <h3>System Ports Outside This Application</h3>
-                <table class="ports-external">
+                <table>
                     <thead><tr>
-                        <th>Port</th>
-                        <th>Protocol</th>
-                        <th>Utility</th>
+                        <th><button data-dir="1">Port</button></th>
+                        <th><button data-dir="1">Protocol</button></th>
+                        <th><button data-dir="1">Type</button></th>
+                        <th><button data-dir="1">Name</button></th>
                     </tr></thead>
-                    <tbody></tbody>
+                    <tbody data-column="-1"></tbody>
                 </table>
                 <p class="updated">Last Updated: <em></em></p>
             </div>
@@ -248,13 +249,12 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
                 <h3>Internal Application Ports</h3>
                 <table>
                     <thead><tr>
-                        <th>Port</th>
-                        <th>Protocol</th>
-                        <th>Type</th>
-                        <th>Name</th>
-                        <th>Description</th>
+                        <th><button data-dir="1">Port</button></th>
+                        <th><button data-dir="1">Protocol</button></th>
+                        <th><button data-dir="1">Type</button></th>
+                        <th><button data-dir="1">Name</button></th>
                     </tr></thead>
-                    <tbody></tbody>
+                    <tbody data-column="-1"></tbody>
                 </table>
             </div>
         </div>

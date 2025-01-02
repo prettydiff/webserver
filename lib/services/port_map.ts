@@ -8,7 +8,7 @@ import vars from "../utilities/vars.js";
 
 const port_map = function services_portMap(callback:() => void):void {
     const command:string = "nmap",
-        args:string[] = ["--open", "-p-", "127.0.0.1"],
+        args:string[] = ["--open", "-sTU", "-p-", "127.0.0.1"],
         callbackFirst = function services_portMap_callbackFirst(stderr:string, stdout:string, error:node_childProcess_ExecException):void {
             if (stderr !== "" || error !== null) {
                 const message:string = (error === null)
@@ -22,7 +22,7 @@ const port_map = function services_portMap(callback:() => void):void {
                     type: "port"
                 });
                 vars.system_ports = {
-                    list: [null, [0, message, ""]],
+                    list: [null, [0, message, "", ""]],
                     time: Date.now()
                 };
             } else {
@@ -60,7 +60,7 @@ const port_map = function services_portMap(callback:() => void):void {
                         }
                         if ((/\/((tcp)|(udp))/).test(lines[index]) === true) {
                             portItem = lines[index].replace(/\s+/g, " ").split(" ");
-                            output.push([Number(portItem[0].split("/")[0]), portItem[0].split("/")[1], portItem[2]]);
+                            output.push([Number(portItem[0].split("/")[0]), portItem[0].split("/")[1], "", portItem[2]]);
                         }
                     }
                     index = index + 1;
