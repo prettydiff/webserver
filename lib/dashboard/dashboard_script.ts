@@ -1473,6 +1473,7 @@ const dashboard = function dashboard():void {
                         const textArea:HTMLTextAreaElement = edit.getElementsByTagName("textarea")[0],
                             config:services_server = JSON.parse(textArea.value);
                         config.modification_name = edit.parentNode.getAttribute("data-name");
+                        payload.servers[config.modification_name].config.encryption = config.encryption;
                         return config;
                     }());
                 message.send(action, configuration, "dashboard-server");

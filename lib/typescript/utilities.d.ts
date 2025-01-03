@@ -144,6 +144,7 @@ interface terminal_size {
 }
 
 interface vars {
+    commands: store_string;
     compose: configuration_compose;
     dashboard: string;
     interfaces: string[];

@@ -21,7 +21,7 @@ Serves and proxies HTTP over WebSockets for both TCP and TLS.
 * Servers include a *temporary* option which creates a server with no state management, no changes to the file system, and is fully destroyed once the first connected socket ends
 
 ### Docker Containers
-* Provides a dashboard list of all managed containers with status in near real time via Docker Compose
+* Provides a dashboard list of all managed containers with status in near real time via Docker Compose events.
 
 ## Installation
 1. Install [Node.js](https://nodejs.org/)

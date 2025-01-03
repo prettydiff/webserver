@@ -128,6 +128,16 @@
                     <p>See if the problem is solved by restarting service <em>containerd</em> first and then service <em>docker</em> second. Then review service logs to determine if service <em>docker</em> started without error.</p>
                 </div>
             </div>
+            <div class="section">
+                <h3>Other Features</h3>
+                <div class="section">
+                    <h4>No external port information populates on the ports tab.</h4>
+                    <p>
+                        This application requires installation of NMap to scan the machine for open ports.
+                        If NMap is installed then modify the <em>vars.commands.nmap</em> value of <em>/lib/utilities/vars.ts</em> to fit the NMap command on your machine and rebuild the application.
+                    </p>
+                </div>
+            </div>
         </div>
         <div class="tab" id="help">
             <h2>Help</h2>
@@ -186,11 +196,7 @@ apt-get install nmap</code></p></li>
                 <ul>
                     <li><p>Windows - (Administrative Terminal)
 <code>winget install --id=Docker.DockerCLI -e
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-mkdir 'C:\Program Files\Docker'
-Start-BitsTransfer `
-    -Source "https://github.com/docker/compose/releases/download/v2.30.1/docker-compose-windows-x86_64.exe" `
-    -Destination $Env:ProgramFiles\Docker\docker-compose.exe</code></p></li>
+winget install --id=Docker.DockerCompose -e</code></p></li>
                     <li><p>Debian
 <code># Add Docker's official GPG key:
 sudo apt-get update

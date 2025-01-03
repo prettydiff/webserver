@@ -76,7 +76,7 @@ const compose = function services_compose(socket_data:socket_data):void {
 
             // check to see if container already exists and is running
             spawn({
-                args: ["compose", "-f", `${vars.path.compose}empty.yml`, "ps", "--format=json"],
+                args: ["-f", `${vars.path.compose}empty.yml`, "ps", "--format=json"],
                 callback: function services_compose_complete_ps(stderr:string, stdout:string, error:node_childProcess_ExecException):void {
                     if (stderr === "" && error === null) {
                         const lns:string[] = stdout.replace(/\s+$/, "").split("\n"),
@@ -105,7 +105,7 @@ const compose = function services_compose(socket_data:socket_data):void {
                     }
                     write(output, `${vars.path.compose}.env`, "variables");
                 },
-                command: "docker",
+                command: vars.commands.compose,
                 recurse: 0
             });
         }
@@ -142,7 +142,7 @@ const compose = function services_compose(socket_data:socket_data):void {
                                     spawn({
                                         args: ["image", "rm", lines[index].replace(/\s*image:\s*/, "")],
                                         callback: write,
-                                        command: "docker",
+                                        command: vars.commands.docker,
                                         recurse: 0
                                     });
                                     return;
@@ -151,11 +151,11 @@ const compose = function services_compose(socket_data:socket_data):void {
                         }
                         write();
                     },
-                    command: "docker",
+                    command: vars.commands.docker,
                     recurse: 0
                 });
             },
-            command: "docker",
+            command: vars.commands.docker,
             recurse: 0
         });
     }
