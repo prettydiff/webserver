@@ -11,6 +11,9 @@ const certificate = function services_certificate(config:config_certificate):voi
         cert = function services_certificate_cert():void {
             let index:number = 0;
             const commands:string[] = [],
+                domain:string = (vars.servers[config.name].config.domain_local.length < 1)
+                    ? "localhost"
+                    : vars.servers[config.name].config.domain_local[0],
                 crypto = function services_certificate_cert_crypto():void {
                     node.child_process.exec(commands[index], {
                         cwd: cert_path
@@ -54,15 +57,12 @@ const certificate = function services_certificate(config:config_certificate):voi
 [ name_constraints ]
         permitted;DNS.1 = localhost`,
                         "",
-                        `        # permitted;IP.1 = 127.0.0.1/255.0.0.0
-        # End Constraints
+                        `        # End Constraints
 
 [ alt_names ]
         DNS.1 = localhost`,
                         "",
-                        `        # IP.1 = 127.0.0.1/255.0.0.0
-        # End Alt Names
-        `
+                        `        # End Alt Names`
                         ],
                         keys:string[] = (server === null || server.redirect_domain === null || server.redirect_domain === undefined)
                             ? []
@@ -144,8 +144,8 @@ const certificate = function services_certificate(config:config_certificate):voi
                 //    - req           : use a certificate request as input opposed to an actual certificate
                 create = function services_certificate_cert_create():void {
                     const mode:[string, string] = (config.selfSign === true)
-                            ? ["server", config.domain_default]
-                            : ["root", config.domain_default],
+                            ? ["server", domain]
+                            : ["root", domain],
                         org:string = "/O=home_server/OU=home_server",
                         // provides the path to the configuration file used for certificate signing
                         pathConf = function services_certificate_cert_create_confPath(configName:"ca"|"selfSign"):string {
@@ -153,7 +153,7 @@ const certificate = function services_certificate(config:config_certificate):voi
                         },
                         // create a certificate signed by another certificate
                         actionCert = function services_certificate_cert_create_cert(type:"int"|"server"):string {
-                            return `openssl req -new -sha512 -key ${type}.key -out ${type}.csr -subj "/CN=${config.domain_default + org}"`;
+                            return `openssl req -new -sha512 -key ${type}.key -out ${type}.csr -subj "/CN=${domain + org}"`;
                         },
                         // generates the key file associated with a given certificate
                         actionKey = function services_certificate_cert_create_key(type:"int"|"root"|"server"):string {

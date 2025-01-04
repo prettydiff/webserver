@@ -1878,10 +1878,9 @@ const dashboard = function dashboard():void {
                     }
                 },
                 selection: function dashboard_terminalSelection():void {
-                    if (typeof ClipboardItem !== "undefined") {
-                        const clip:ClipboardItem = new ClipboardItem({["text/plain"]: terminal.item.getSelection()});
-                        navigator.clipboard.write([clip]);
-                    }
+                    navigator.clipboard.write([
+                        new ClipboardItem({["text/plain"]: terminal.item.getSelection()})
+                    ]);
                 }
             },
             id: null,
@@ -1890,9 +1889,9 @@ const dashboard = function dashboard():void {
                 if (typeof Terminal === "undefined") {
                     setTimeout(dashboard_terminalItem, 100);
                 } else {
-                    const encryption:type_encryption = (location.protocol === "https")
-                            ? "secure"
-                            : "open",
+                    const encryption:type_encryption = (location.protocol === "http")
+                            ? "open"
+                            : "secure",
                         scheme:"ws"|"wss" = (encryption === "open")
                             ? "ws"
                             : "wss",
@@ -1912,15 +1911,16 @@ const dashboard = function dashboard():void {
                     terminal.item.open(terminal.nodes.output);
                     terminal.item.onKey(terminal.events.input);
                     terminal.item.write("Terminal emulator pending connection...\r\n");
-                    terminal.item.onSelectionChange(terminal.events.selection);
                     // client-side terminal is ready, so alert the backend to initiate a pseudo-terminal
                     terminal.socket = new WebSocket(`${scheme}://${location.host}`, [id]);
                     terminal.socket.onmessage = terminal.events.firstData;
-                    if (typeof ClipboardItem === "undefined") {
+                    if (typeof navigator.clipboard === "undefined") {
                         const em:HTMLElement = document.getElementById("terminal").getElementsByClassName("tab-description")[0].getElementsByTagName("em")[0] as HTMLElement;
                         if (em !== undefined) {
                             em.parentNode.removeChild(em);
                         }
+                    } else {
+                        terminal.item.onSelectionChange(terminal.events.selection);
                     }
                 }
             },

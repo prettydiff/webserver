@@ -1,4 +1,5 @@
 
+import certificate from "./certificate.js";
 import file from "../utilities/file.js";
 import log from "../utilities/log.js";
 import node from "../utilities/node.js";
@@ -144,8 +145,15 @@ const server_halt = function services_serverHalt(data:services_dashboard_action,
                     configuration: data.configuration
                 }, server_restart);
             } else {
-                server(data, function services_serverHalt_restartComplete():void {
-                    complete("restart");
+                certificate({
+                    callback: function services_serverHalt_certificate():void {
+                        server(data, function services_serverHalt_certificate_restartComplete():void {
+                            complete("restart");
+                        });
+                    },
+                    days: 65535,
+                    name: data.configuration.name,
+                    selfSign: true
                 });
             }
         } else {
