@@ -54,6 +54,8 @@ declare global {
         color: (name_server:string, type:type_dashboard_list) => type_activation_status;
         details: (event:MouseEvent) => void;
         edit: (event:MouseEvent) => void;
+        sort: (event:MouseEvent) => void;
+        table: (tbody:HTMLElement, list:string[][]) => void;
         title: (name_server:string, type:type_dashboard_list) => HTMLElement;
     }
 
@@ -87,7 +89,6 @@ declare global {
         external: (input:external_ports) => void;
         init: (port_list:external_ports) => void;
         internal: () => void;
-        table: (tbody:HTMLElement, list:type_external_port[]) => void;
     }
 
     interface module_server {

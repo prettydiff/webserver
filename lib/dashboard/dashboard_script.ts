@@ -453,6 +453,95 @@ const dashboard = function dashboard():void {
                     textArea.focus();
                 }
             },
+            sort: function dashboard_commonSort(event:MouseEvent):void {
+                const target:HTMLElement = event.target,
+                    tableElement:HTMLElement = target.getAncestor("table", "tag"),
+                    tbody:HTMLElement = tableElement.getElementsByTagName("tbody")[0],
+                    records:HTMLCollectionOf<HTMLElement> = tbody.getElementsByTagName("tr"),
+                    tr_length:number = records.length;
+                if (tr_length > 0) {
+                    const th:HTMLElement = target.parentNode,
+                        tr_head:HTMLElement = th.parentNode,
+                        ths:HTMLCollectionOf<HTMLElement> = tr_head.getElementsByTagName("th"),
+                        cells_length:number = ths.length,
+                        table:string[][] = [];
+                    let index_td:number = 0,
+                        index_th:number = cells_length,
+                        index_tr:number = 0,
+                        tr:HTMLElement = null,
+                        tds:HTMLCollectionOf<HTMLElement> = null,
+                        record:string[] = null;
+
+                    // find which column to sort by
+                    do {
+                        index_th = index_th - 1;
+                        if (ths[index_th] === th) {
+                            break;
+                        }
+                    } while (index_th > 0);
+
+                    // build a table of data from the HTML table
+                    do {
+                        record = [];
+                        tr = tbody.getElementsByTagName("tr")[index_tr];
+                        tds = tr.getElementsByTagName("td");
+                        index_td = 0;
+                        do {
+                            record.push(tds[index_td].textContent);
+                            index_td = index_td + 1;
+                        } while (index_td < cells_length);
+                        table.push(record);
+                        index_tr = index_tr + 1;
+                    } while (index_tr < tr_length);
+
+                    tableElement.setAttribute("data-column", String(index_th));
+                    common.table(tbody, table);
+                }
+            },
+            table: function dashboard_commonTable(tbody:HTMLElement, list:string[][]):void {
+                const table:HTMLElement = tbody.getAncestor("table", "tag"),
+                    tbody_new:HTMLElement = document.createElement("tbody"),
+                    ths:HTMLCollectionOf<HTMLElement> = table.getElementsByTagName("th"),
+                    cells_length:number = ths.length,
+                    column:number = Number(table.dataset.column),
+                    button:HTMLElement = ths[column].getElementsByTagName("button")[0],
+                    direction:-1|1 = Number(button.dataset.dir) as -1;
+                let index_td:number = 0,
+                    index_tr:number = 0,
+                    tr:HTMLElement = null,
+                    td:HTMLElement = null;
+                if (direction === -1) {
+                    button.setAttribute("data-dir", "1");
+                } else {
+                    button.setAttribute("data-dir", "-1");
+                }
+                list.sort(function dashboard_table_sortColumn(a:string[], b:string[]):-1|1 {
+                    const numA:number = Number(a[column]),
+                        numB:number = Number(b[column]);
+                    if (isNaN(numA) === false && isNaN(numB) === false && numA < numB) {
+                        return direction;
+                    }
+                    if (a[column] < b[column]) {
+                        return direction;
+                    }
+                    return (direction * -1 as -1);
+                });
+                index_tr = list.length;
+                do {
+                    index_tr = index_tr - 1;
+                    tr = document.createElement("tr");
+                    index_td = 0;
+                    do {
+                        td = document.createElement("td");
+                        td.appendText(list[index_tr][index_td].toString());
+                        tr.appendChild(td);
+                        index_td = index_td + 1;
+                    } while (index_td < cells_length);
+                    tbody_new.appendChild(tr);
+                } while (index_tr > 0);
+                tbody.parentNode.appendChild(tbody_new);
+                tbody.parentNode.removeChild(tbody);
+            },
             title: function dashboard_commonTitle(name_server:string, type:type_dashboard_list):HTMLElement {
                 const li:HTMLElement = document.createElement("li"),
                     h4:HTMLElement = document.createElement("h4"),
@@ -494,7 +583,7 @@ const dashboard = function dashboard():void {
                 if (index < 1) {
                     return div;
                 }
-                ports.sort(function dashboard_composeActivePorts_sort(a:services_docker_compose_publishers,b:services_docker_compose_publishers):-1|1 {
+                ports.sort(function dashboard_composeActivePorts_sort(a:services_docker_compose_publishers, b:services_docker_compose_publishers):-1|1 {
                     if (a.PublishedPort < b.PublishedPort) {
                         return 1;
                     }
@@ -1194,78 +1283,12 @@ const dashboard = function dashboard():void {
                         }
                     } while (indexServers > 0);
                 }
-                ports.table(tbody, input.list);
+                common.table(tbody, input.list as string[][]);
                 updated.getElementsByTagName("em")[0].textContent = input.time.dateTime(true);
             },
             init: function dashboard_portsInit(port_list:external_ports):void {
-                const headings:HTMLCollectionOf<HTMLElement> = document.getElementById("ports").getElementsByTagName("thead"),
-                    assign = function dashboard_portsInit_assign(thead:HTMLElement):void {
-                        const buttons:HTMLCollectionOf<HTMLButtonElement> = thead.getElementsByTagName("button");
-                        let index:number = buttons.length;
-                        do {
-                            index = index - 1;
-                            buttons[index].onclick = sort;
-                        } while (index > 0);
-                    },
-                    sort = function dashboard_portsInit_sort(event:MouseEvent):void {
-                        const target:HTMLElement = event.target,
-                            tbody:HTMLElement = target.getAncestor("table", "tag").getElementsByTagName("tbody")[0],
-                            records:HTMLCollectionOf<HTMLElement> = tbody.getElementsByTagName("tr"),
-                            tr_length:number = records.length;
-                        let index_tr:number = 0;
-                        if (tr_length > 0) {
-                            const direction:string = target.dataset.dir,
-                                th:HTMLElement = target.parentNode,
-                                tr_head:HTMLElement = th.parentNode,
-                                ths:HTMLCollectionOf<HTMLElement> = tr_head.getElementsByTagName("th"),
-                                cells_length:number = ths.length,
-                                table:type_external_port[] = [];
-                            let index_th:number = cells_length,
-                                index_td:number = 0,
-                                tr:HTMLElement = null,
-                                tds:HTMLCollectionOf<HTMLElement> = null,
-                                record:type_external_port = null;
-
-                            // find which column to sort by
-                            do {
-                                index_th = index_th - 1;
-                                if (ths[index_th] === th) {
-                                    break;
-                                }
-                            } while (index_th > 0);
-
-                            // build a table of data
-                            do {
-                                record = [0, "", "", ""];
-                                tr = tbody.getElementsByTagName("tr")[index_tr];
-                                tds = tr.getElementsByTagName("td");
-                                index_td = 0;
-                                do {
-                                    if (index_td === 0) {
-                                        record[0] = Number(tds[0].textContent);
-                                    } else {
-                                        record[index_td] = tds[index_td].textContent;
-                                    }
-                                    index_td = index_td + 1;
-                                } while (index_td < cells_length);
-                                table.push(record);
-                                index_tr = index_tr + 1;
-                            } while (index_tr < tr_length);
-
-                            // modify the html
-                            tbody.setAttribute("data-column", String(index_th));
-                            if (direction === "-1") {
-                                target.setAttribute("data-dir", "1");
-                            } else {
-                                target.setAttribute("data-dir", "-1");
-                            }
-                            ports.table(tbody, table);
-                        }
-                    };
                 ports.external(port_list);
                 ports.internal();
-                assign(headings[0]);
-                assign(headings[1]);
             },
             internal: function dashboard_portsInternal():void {
                 const output:type_external_port[] = [],
@@ -1282,10 +1305,10 @@ const dashboard = function dashboard():void {
                     do {
                         indexServers = indexServers - 1;
                         if (typeof payload.servers[servers[indexServers]].status.open === "number" && payload.servers[servers[indexServers]].status.open > 0) {
-                            output.push([payload.servers[servers[indexServers]].status.open, "TCP", "server", `${servers[indexServers]} (open)`]);
+                            output.push([payload.servers[servers[indexServers]].status.open, "tcp", "server", `${servers[indexServers]} (open)`]);
                         }
                         if (typeof payload.servers[servers[indexServers]].status.secure === "number" && payload.servers[servers[indexServers]].status.secure > 0) {
-                            output.push([payload.servers[servers[indexServers]].status.secure, "TCP", "server", `${servers[indexServers]} (secure)`]);
+                            output.push([payload.servers[servers[indexServers]].status.secure, "tcp", "server", `${servers[indexServers]} (secure)`]);
                         }
                     } while (indexServers > 0);
                 }
@@ -1308,66 +1331,13 @@ const dashboard = function dashboard():void {
                             do {
                                 indexPorts = indexPorts - 1;
                                 if (payload.compose.containers[compose[indexServers]].publishers[indexPorts].URL === "0.0.0.0" || payload.compose.containers[compose[indexServers]].publishers[0].URL === "::") {
-                                    output.push([payload.compose.containers[compose[indexServers]].publishers[indexPorts].PublishedPort, payload.compose.containers[compose[indexServers]].publishers[indexPorts].Protocol, "container", compose[indexServers]]);
+                                    output.push([payload.compose.containers[compose[indexServers]].publishers[indexPorts].PublishedPort, payload.compose.containers[compose[indexServers]].publishers[indexPorts].Protocol.toUpperCase(), "container", compose[indexServers]]);
                                 }
                             } while (indexPorts > 0);
                         }
                     } while (indexServers > 0);
                 }
-                ports.table(tbody, output);
-            },
-            table: function dashboard_table(tbody:HTMLElement, list:type_external_port[]):void {
-                let td:HTMLElement = null,
-                    tr:HTMLElement = null,
-                    index:number = list.length;
-                const tbody_new:HTMLElement = document.createElement("tbody"),
-                    column:number = Number(tbody.dataset.column),
-                    button:HTMLElement = (column < 0)
-                        ? null
-                        : tbody.getAncestor("table", "tag").getElementsByTagName("th")[column].getElementsByTagName("button")[0],
-                    direction:-1|1 = (column < 0)
-                        ? -1
-                        : Number(button.dataset.dir) as -1;
-                if (index > 0) {
-                    if (column < 0) {
-                        list.sort(function dashboard_table_sortDefault(a:type_external_port, b:type_external_port):-1|1 {
-                            if (a[1] < b[1]) {
-                                return 1;
-                            }
-                            if (a[1] === b[1] && a[0] < b[0]) {
-                                return 1;
-                            }
-                            return -1;
-                        });
-                    } else {
-                        list.sort(function dashboard_table_sortColumn(a:type_external_port, b:type_external_port):-1|1 {
-                            if (a[column] < b[column]) {
-                                return direction;
-                            }
-                            return (direction * -1 as -1);
-                        });
-                    }
-                    do {
-                        index = index - 1;
-                        tr = document.createElement("tr");
-                        td = document.createElement("td");
-                        td.appendText(list[index][0].toString());
-                        tr.appendChild(td);
-                        td = document.createElement("td");
-                        td.appendText(list[index][1].toUpperCase());
-                        tr.appendChild(td);
-                        td = document.createElement("td");
-                        td.appendText(list[index][2]);
-                        tr.appendChild(td);
-                        td = document.createElement("td");
-                        td.appendText(list[index][3]);
-                        tr.appendChild(td);
-                        tbody_new.appendChild(tr);
-                    } while (index > 0);
-                    tbody_new.setAttribute("data-column", String(column));
-                    tbody.parentNode.appendChild(tbody_new);
-                    tbody.parentNode.removeChild(tbody);
-                }
+                common.table(tbody, output as string[][]);
             }
         },
         server:module_server = {
@@ -1490,7 +1460,9 @@ const dashboard = function dashboard():void {
                 server_new: document.getElementById("servers").getElementsByClassName("server-new")[0] as HTMLButtonElement
             },
             socket_add: function dashboard_serverSocketAdd(config:services_socket):void {
-                const tbody:HTMLElement = document.getElementById("sockets").getElementsByTagName("tbody")[0],
+                const table:HTMLElement = document.getElementById("sockets").getElementsByTagName("table")[0],
+                    tbody:HTMLElement = table.getElementsByTagName("tbody")[0],
+                    column:number = Number(table.dataset.column),
                     tr:HTMLElement = document.createElement("tr");
                 let td:HTMLElement = document.createElement("td");
                 if (config.address.local.port === undefined || config.address.remote.port === undefined) {
@@ -1537,6 +1509,7 @@ const dashboard = function dashboard():void {
                 td.appendText(config.address.remote.port.toString());
                 tr.appendChild(td);
                 tbody.appendChild(tr);
+                table.getElementsByTagName("th")[column].getElementsByTagName("button")[0].click();
             },
             validate: function dashboard_serverValidate(event:FocusEvent|KeyboardEvent):void {
                 const target:HTMLTextAreaElement = event.target as HTMLTextAreaElement,
@@ -2002,8 +1975,18 @@ const dashboard = function dashboard():void {
                     buttons[index].onclick = navigation;
                 } while (index > 0);
                 return output;
-            }());
+            }()),
+            th:HTMLCollectionOf<HTMLElement> = document.getElementsByTagName("th");
+        let index:number = th.length,
+            button:HTMLElement = null;
         socket.invoke();
+        do {
+            index = index - 1;
+            button = th[index].getElementsByTagName("button")[0];
+            if (button !== undefined) {
+                button.onclick = common.sort;
+            }
+        } while (index > 0);
     }
 };
 

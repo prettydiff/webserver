@@ -59,7 +59,7 @@ const port_map = function services_portMap(callback:() => void):void {
                         }
                         if ((/\/((tcp)|(udp))/).test(lines[index]) === true) {
                             portItem = lines[index].replace(/\s+/g, " ").split(" ");
-                            output.push([Number(portItem[0].split("/")[0]), portItem[0].split("/")[1], "", portItem[2]]);
+                            output.push([Number(portItem[0].split("/")[0]), portItem[0].split("/")[1].toUpperCase(), "", portItem[2]]);
                         }
                     }
                     index = index + 1;

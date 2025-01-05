@@ -151,6 +151,31 @@
                     <p>If extending the application code checks can be performed using <code>npm run tsc</code> and <code>npm run lint</code></p>
                 </div>
                 <div class="section">
+                    <h4>Register the application as a POSIX service</h4>
+                    <p>First, create a service file for <em>systemd</em> to consume at location: <strong>/etc/systemd/system/&lt;service name here&gt;.service</strong></p>
+                    <p>My service file looks like:
+<code>[Unit]
+Description=Node Web Server
+After=network.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/home/cheney/.nvm/versions/node/v23.1.0/bin/node /home/cheney/webserver/js/lib/index.js
+Restart=always
+RestartSec=3
+WorkingDirectory=/home/cheney/webserver
+
+[Install]
+WantedBy=multi-user.target</code></p>
+                    <p>Finally, register and start your service with the following commands:
+<code>sudo systemctl start &lt;service name here&gt;
+sudo systemctl enable &lt;service name here&gt;
+sudo systemctl status &lt;service name here&gt;
+</code> The <em>enable</em> command tells systemd to execute this service on OS boot. The <em>status</em> command prints output to screen indicating status health to confirm the service is executing as a service.</p>
+                    <p>To inspect output written to the shell by the application use this command: <code>sudo journalctl -u &lt;service name here&gt; --since "2 minutes ago".</code></p>
+                </div>
+                <div class="section">
                     <h4>Servers</h4>
                     <h5>Proxies</h5>
                     <p>The servers feature fully capable, though optional, support for proxies. The proxy support is divided between redirection to resources outside the given server and resources within the given server.  See the 'Definitions of Server Object Properties' on the Servers tab for more information.</p>
@@ -240,27 +265,27 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
             <p class="tab-description">A list of ports in active use both from this application and outside this application. External port data refreshes every ${payload.intervals.nmap} seconds.</p>
             <div class="section">
                 <h3>System Ports Outside This Application</h3>
-                <table>
+                <table data-column="0">
                     <thead><tr>
                         <th><button data-dir="1">Port</button></th>
                         <th><button data-dir="1">Protocol</button></th>
                         <th><button data-dir="1">Type</button></th>
                         <th><button data-dir="1">Name</button></th>
                     </tr></thead>
-                    <tbody data-column="-1"></tbody>
+                    <tbody></tbody>
                 </table>
                 <p class="updated">Last Updated: <em></em></p>
             </div>
             <div class="section">
                 <h3>Internal Application Ports</h3>
-                <table>
+                <table data-column="0">
                     <thead><tr>
                         <th><button data-dir="1">Port</button></th>
                         <th><button data-dir="1">Protocol</button></th>
                         <th><button data-dir="1">Type</button></th>
                         <th><button data-dir="1">Name</button></th>
                     </tr></thead>
-                    <tbody data-column="-1"></tbody>
+                    <tbody></tbody>
                 </table>
             </div>
         </div>
@@ -344,18 +369,18 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
         <div class="tab" id="sockets">
             <h2>Socket Summary</h2>
             <p class="tab-description">A list of connected sockets. Sockets not of 'type' http are WebSocket connections. Proxy identifies the id of the paired socket or null if not piped to another socket.</p>
-            <table>
+            <table data-column="0">
                 <thead><tr>
-                    <th>Server</th>
-                    <th>ID</th>
-                    <th>Type Descriptor</th>
-                    <th>Role</th>
-                    <th>Proxy</th>
-                    <th>Encrypted</th>
-                    <th>Local Server IP</th>
-                    <th>Local Server Port</th>
-                    <th>Remote IP</th>
-                    <th>Remote Port</th>
+                    <th><button data-dir="1">Server</button></th>
+                    <th><button data-dir="1">ID</button></th>
+                    <th><button data-dir="1">Type Descriptor</button></th>
+                    <th><button data-dir="1">Role</button></th>
+                    <th><button data-dir="1">Proxy</button></th>
+                    <th><button data-dir="1">Encrypted</button></th>
+                    <th><button data-dir="1">Local Server IP</button></th>
+                    <th><button data-dir="1">Local Server Port</button></th>
+                    <th><button data-dir="1">Remote IP</button></th>
+                    <th><button data-dir="1">Remote Port</button></th>
                 </tr></thead>
                 <tbody></tbody>
             </table>
