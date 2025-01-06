@@ -6,6 +6,13 @@ import node from "./node.js";
 const gid:number = process.getgid(),
     uid:number = process.getuid(),
     vars:vars = {
+        commands: {
+            compose: (process.platform === "win32")
+                ? "docker-compose"
+                : "docker compose",
+            docker: "docker",
+            nmap: "nmap"
+        },
         compose: {
             containers: {},
             variables: {}

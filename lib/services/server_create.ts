@@ -58,7 +58,6 @@ const server_create = function services_serverCreate(data:services_dashboard_act
                     certificate({
                         callback: certCallback,
                         days: 65535,
-                        domain_default: null,
                         name: config.name,
                         selfSign: false
                     });

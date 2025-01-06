@@ -4,7 +4,7 @@ import spawn from "../utilities/spawn.js";
 import vars from "../utilities/vars.js";
 
 const docker_ps = function services_dockerPS(callback:() => void):void {
-    const args:string[] = ["compose", "-f", `${vars.path.compose}empty.yml`, "ps", "--format=json"],
+    const args:string[] = ["-f", `${vars.path.compose}empty.yml`, "ps", "--format=json"],
         logger = function services_dockerPS_logger(action:"activate"|"deactivate", config:services_docker_compose):void {
             log({
                 action: action,
@@ -70,9 +70,9 @@ const docker_ps = function services_dockerPS(callback:() => void):void {
                     index = index + 1;
                 } while (index < len);
                 spawn({
-                    args: ["compose", "-f", `${vars.path.compose}empty.yml`, "events", "--json"],
+                    args: ["-f", `${vars.path.compose}empty.yml`, "events", "--json"],
                     callback: callbackRecurse,
-                    command: "docker",
+                    command: vars.commands.compose,
                     recurse: vars.intervals.compose
                 });
             } else {
@@ -118,7 +118,7 @@ const docker_ps = function services_dockerPS(callback:() => void):void {
     spawn({
         args: args,
         callback: callbackFirst,
-        command: "docker",
+        command: vars.commands.compose,
         recurse: -1
     });
 };

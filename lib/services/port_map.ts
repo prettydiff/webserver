@@ -7,12 +7,11 @@ import vars from "../utilities/vars.js";
 // cspell: words nmap;
 
 const port_map = function services_portMap(callback:() => void):void {
-    const command:string = "nmap",
-        args:string[] = ["--open", "-sTU", "-p-", "127.0.0.1"],
+    const args:string[] = ["--open", "-sTU", "-p-", "127.0.0.1"],
         callbackFirst = function services_portMap_callbackFirst(stderr:string, stdout:string, error:node_childProcess_ExecException):void {
             if (stderr !== "" || error !== null) {
                 const message:string = (error === null)
-                    ? `When gathering port data command '${command} ${args.join(" ")}' failed with an error. Perhaps application NMap is not available or not in the system path.`
+                    ? `When gathering port data command '${vars.commands.nmap} ${args.join(" ")}' failed with an error. Perhaps application NMap is not available or not in the system path.`
                     : "Exeucting command 'docker ps' returned an error.";
                 log({
                     action: "activate",
@@ -29,7 +28,7 @@ const port_map = function services_portMap(callback:() => void):void {
                 spawn({
                     args: args,
                     callback: callbackSpawn,
-                    command: command,
+                    command: vars.commands.nmap,
                     recurse: vars.intervals.nmap
                 });
             }
@@ -60,7 +59,7 @@ const port_map = function services_portMap(callback:() => void):void {
                         }
                         if ((/\/((tcp)|(udp))/).test(lines[index]) === true) {
                             portItem = lines[index].replace(/\s+/g, " ").split(" ");
-                            output.push([Number(portItem[0].split("/")[0]), portItem[0].split("/")[1], "", portItem[2]]);
+                            output.push([Number(portItem[0].split("/")[0]), portItem[0].split("/")[1].toUpperCase(), "", portItem[2]]);
                         }
                     }
                     index = index + 1;
@@ -78,7 +77,7 @@ const port_map = function services_portMap(callback:() => void):void {
                 log({
                     action: "activate",
                     config: error,
-                    message: `When gathering port data command '${command} ${args.join(" ")}' failed with an error. Perhaps application NMap is not available or not in the system path.`,
+                    message: `When gathering port data command '${vars.commands.nmap} ${args.join(" ")}' failed with an error. Perhaps application NMap is not available or not in the system path.`,
                     status: "error",
                     type: "port"
                 });
@@ -87,7 +86,7 @@ const port_map = function services_portMap(callback:() => void):void {
     spawn({
         args: args,
         callback: callbackFirst,
-        command: command,
+        command: vars.commands.nmap,
         recurse: -1
     });
 };

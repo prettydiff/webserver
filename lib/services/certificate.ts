@@ -11,6 +11,9 @@ const certificate = function services_certificate(config:config_certificate):voi
         cert = function services_certificate_cert():void {
             let index:number = 0;
             const commands:string[] = [],
+                domain:string = (vars.servers[config.name].config.domain_local.length < 1)
+                    ? "localhost"
+                    : vars.servers[config.name].config.domain_local[0],
                 crypto = function services_certificate_cert_crypto():void {
                     node.child_process.exec(commands[index], {
                         cwd: cert_path
@@ -38,35 +41,28 @@ const certificate = function services_certificate(config:config_certificate):voi
                             ? null
                             : vars.servers[config.name].config,
                         output:string[] = [
-                        `[ ca ]
+                            `[ ca ]
         basicConstraints       = CA:false
         subjectKeyIdentifier   = hash
         authorityKeyIdentifier = keyid,issuer
         subjectAltName         = @alt_names
         nameConstraints        = @name_constraints
 
-        [ selfSign ]
+[ selfSign ]
         basicConstraints     = critical,CA:true,pathlen:1
         subjectKeyIdentifier = hash
         subjectAltName       = @alt_names
         nameConstraints      = @name_constraints
 
-        [ name_constraints ]
-        # Name constraints list is dynamically populated from vars.network.domain
-        permitted;DNS.1 = localhost
-        permitted;DNS.2 = 192.168.0.3`,
-                        "",
-                        `# permitted;IP.1 = 127.0.0.1/255.0.0.0
-        # End Constraints
+[ name_constraints ]
+        permitted;DNS.1 = localhost`,
+                            "",
+                            `        # End Constraints
 
-        [ alt_names ]
-        # Alt names list is dynamically populated from vars.network.domain
-        DNS.1 = localhost
-        DNS.2 = 192.168.0.3`,
-                        "",
-                        `# IP.1 = 127.0.0.1/255.0.0.0
-        # End Alt Names
-        `
+[ alt_names ]
+        DNS.1 = localhost`,
+                            "",
+                            "        # End Alt Names"
                         ],
                         keys:string[] = (server === null || server.redirect_domain === null || server.redirect_domain === undefined)
                             ? []
@@ -75,30 +71,44 @@ const certificate = function services_certificate(config:config_certificate):voi
                         total_local:number = (server === null)
                             ? 0
                             : server.domain_local.length,
+                        total_int:number = vars.interfaces.length,
                         list1:string[] = [],
                         list2:string[] = [];
                     let cert_index:number = 0,
-                        line_index:number = 3;
+                        line_index:number = 2;
+                    // redirect_domain
                     if (total_keys > 0) {
                         do {
                             if (keys[cert_index] !== "" && (/\.secure$/).test(keys[cert_index]) === false) {
-                                list1.push(`permitted;DNS.${line_index} = ${keys[cert_index]}`);
-                                list2.push(`DNS.${line_index} = ${keys[cert_index]}`);
+                                list1.push(`        permitted;DNS.${line_index} = ${keys[cert_index]}`);
+                                list2.push(`        DNS.${line_index} = ${keys[cert_index]}`);
                                 line_index = line_index + 1;
                             }
                             cert_index = cert_index + 1;
                         } while (cert_index < total_keys);
                     }
+                    // domain_local
                     if (total_local > 0) {
                         cert_index = 0;
                         do {
                             if (server.domain_local[cert_index] !== "") {
-                                list1.push(`permitted;DNS.${line_index} = ${server.domain_local[cert_index]}`);
-                                list2.push(`DNS.${line_index} = ${server.domain_local[cert_index]}`);
+                                list1.push(`        permitted;DNS.${line_index} = ${server.domain_local[cert_index]}`);
+                                list2.push(`        DNS.${line_index} = ${server.domain_local[cert_index]}`);
                                 line_index = line_index + 1;
                             }
                             cert_index = cert_index + 1;
                         } while (cert_index < total_local);
+                    }
+                    // interfaces
+                    if (total_int > 0) {
+                        line_index = 1;
+                        cert_index = 0;
+                        do {
+                            list1.push(`        permitted;IP.${line_index} = ${vars.interfaces[cert_index]}`);
+                            list2.push(`        IP.${line_index} = ${vars.interfaces[cert_index]}`);
+                            line_index = line_index + 1;
+                            cert_index = cert_index + 1;
+                        } while (cert_index < total_int);
                     }
                     output[1] = list1.join("\n");
                     output[3] = list2.join("\n");
@@ -134,8 +144,8 @@ const certificate = function services_certificate(config:config_certificate):voi
                 //    - req           : use a certificate request as input opposed to an actual certificate
                 create = function services_certificate_cert_create():void {
                     const mode:[string, string] = (config.selfSign === true)
-                            ? ["server", config.domain_default]
-                            : ["root", config.domain_default],
+                            ? ["server", domain]
+                            : ["root", domain],
                         org:string = "/O=home_server/OU=home_server",
                         // provides the path to the configuration file used for certificate signing
                         pathConf = function services_certificate_cert_create_confPath(configName:"ca"|"selfSign"):string {
@@ -143,7 +153,7 @@ const certificate = function services_certificate(config:config_certificate):voi
                         },
                         // create a certificate signed by another certificate
                         actionCert = function services_certificate_cert_create_cert(type:"int"|"server"):string {
-                            return `openssl req -new -sha512 -key ${type}.key -out ${type}.csr -subj "/CN=${config.domain_default + org}"`;
+                            return `openssl req -new -sha512 -key ${type}.key -out ${type}.csr -subj "/CN=${domain + org}"`;
                         },
                         // generates the key file associated with a given certificate
                         actionKey = function services_certificate_cert_create_key(type:"int"|"root"|"server"):string {
