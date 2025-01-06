@@ -41,7 +41,7 @@ const certificate = function services_certificate(config:config_certificate):voi
                             ? null
                             : vars.servers[config.name].config,
                         output:string[] = [
-                        `[ ca ]
+                            `[ ca ]
         basicConstraints       = CA:false
         subjectKeyIdentifier   = hash
         authorityKeyIdentifier = keyid,issuer
@@ -56,13 +56,13 @@ const certificate = function services_certificate(config:config_certificate):voi
 
 [ name_constraints ]
         permitted;DNS.1 = localhost`,
-                        "",
-                        `        # End Constraints
+                            "",
+                            `        # End Constraints
 
 [ alt_names ]
         DNS.1 = localhost`,
-                        "",
-                        `        # End Alt Names`
+                            "",
+                            "        # End Alt Names"
                         ],
                         keys:string[] = (server === null || server.redirect_domain === null || server.redirect_domain === undefined)
                             ? []

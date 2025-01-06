@@ -453,7 +453,7 @@ const dashboard = function dashboard():void {
                     textArea.focus();
                 }
             },
-            sort: function dashboard_commonSort(event:MouseEvent):void {
+            sort_html: function dashboard_commonSortHTML(event:MouseEvent):void {
                 const target:HTMLElement = event.target,
                     tableElement:HTMLElement = target.getAncestor("table", "tag"),
                     tbody:HTMLElement = tableElement.getElementsByTagName("tbody")[0],
@@ -464,13 +464,21 @@ const dashboard = function dashboard():void {
                         tr_head:HTMLElement = th.parentNode,
                         ths:HTMLCollectionOf<HTMLElement> = tr_head.getElementsByTagName("th"),
                         cells_length:number = ths.length,
-                        table:string[][] = [];
+                        table:string[][] = [],
+                        column:number = Number(tableElement.dataset.column),
+                        button:HTMLElement = ths[column].getElementsByTagName("button")[0],
+                        direction:-1|1 = Number(button.dataset.dir) as -1;
                     let index_td:number = 0,
                         index_th:number = cells_length,
                         index_tr:number = 0,
                         tr:HTMLElement = null,
                         tds:HTMLCollectionOf<HTMLElement> = null,
                         record:string[] = null;
+                    if (direction === -1) {
+                        button.setAttribute("data-dir", "1");
+                    } else {
+                        button.setAttribute("data-dir", "-1");
+                    }
 
                     // find which column to sort by
                     do {
@@ -495,10 +503,10 @@ const dashboard = function dashboard():void {
                     } while (index_tr < tr_length);
 
                     tableElement.setAttribute("data-column", String(index_th));
-                    common.table(tbody, table);
+                    common.sort_records(tbody, table);
                 }
             },
-            table: function dashboard_commonTable(tbody:HTMLElement, list:string[][]):void {
+            sort_records: function dashboard_commonSortRecords(tbody:HTMLElement, list:string[][]):void {
                 const table:HTMLElement = tbody.getAncestor("table", "tag"),
                     tbody_new:HTMLElement = document.createElement("tbody"),
                     ths:HTMLCollectionOf<HTMLElement> = table.getElementsByTagName("th"),
@@ -510,11 +518,6 @@ const dashboard = function dashboard():void {
                     index_tr:number = 0,
                     tr:HTMLElement = null,
                     td:HTMLElement = null;
-                if (direction === -1) {
-                    button.setAttribute("data-dir", "1");
-                } else {
-                    button.setAttribute("data-dir", "-1");
-                }
                 list.sort(function dashboard_table_sortColumn(a:string[], b:string[]):-1|1 {
                     const numA:number = Number(a[column]),
                         numB:number = Number(b[column]);
@@ -1181,7 +1184,7 @@ const dashboard = function dashboard():void {
                         if (indexPorts > 0) {
                             do {
                                 indexPorts = indexPorts - 1;
-                                if (number === input.list[indexPorts][0] && protocol === input.list[indexPorts][1]) {
+                                if (number === input.list[indexPorts][0] && protocol.toUpperCase() === input.list[indexPorts][1]) {
                                     input.list.splice(indexPorts, 1);
                                 }
                             } while (indexPorts > 0);
@@ -1283,7 +1286,7 @@ const dashboard = function dashboard():void {
                         }
                     } while (indexServers > 0);
                 }
-                common.table(tbody, input.list as string[][]);
+                common.sort_records(tbody, input.list as string[][]);
                 updated.getElementsByTagName("em")[0].textContent = input.time.dateTime(true);
             },
             init: function dashboard_portsInit(port_list:external_ports):void {
@@ -1305,10 +1308,10 @@ const dashboard = function dashboard():void {
                     do {
                         indexServers = indexServers - 1;
                         if (typeof payload.servers[servers[indexServers]].status.open === "number" && payload.servers[servers[indexServers]].status.open > 0) {
-                            output.push([payload.servers[servers[indexServers]].status.open, "tcp", "server", `${servers[indexServers]} (open)`]);
+                            output.push([payload.servers[servers[indexServers]].status.open, "TCP", "server", `${servers[indexServers]} (open)`]);
                         }
                         if (typeof payload.servers[servers[indexServers]].status.secure === "number" && payload.servers[servers[indexServers]].status.secure > 0) {
-                            output.push([payload.servers[servers[indexServers]].status.secure, "tcp", "server", `${servers[indexServers]} (secure)`]);
+                            output.push([payload.servers[servers[indexServers]].status.secure, "TCP", "server", `${servers[indexServers]} (secure)`]);
                         }
                     } while (indexServers > 0);
                 }
@@ -1337,7 +1340,7 @@ const dashboard = function dashboard():void {
                         }
                     } while (indexServers > 0);
                 }
-                common.table(tbody, output as string[][]);
+                common.sort_records(tbody, output as string[][]);
             }
         },
         server:module_server = {
@@ -1462,54 +1465,45 @@ const dashboard = function dashboard():void {
             socket_add: function dashboard_serverSocketAdd(config:services_socket):void {
                 const table:HTMLElement = document.getElementById("sockets").getElementsByTagName("table")[0],
                     tbody:HTMLElement = table.getElementsByTagName("tbody")[0],
-                    column:number = Number(table.dataset.column),
-                    tr:HTMLElement = document.createElement("tr");
-                let td:HTMLElement = document.createElement("td");
+                    trs:HTMLCollectionOf<HTMLElement> = tbody.getElementsByTagName("tr"),
+                    tr_len:number = trs.length,
+                    td_len:number = (tr_len < 1)
+                        ? 0
+                        : trs[0].getElementsByTagName("td").length,
+                    list:string[][] = [];
+                let record:string[] = null,
+                    index_tr:number = tr_len,
+                    index_td:number = 0;
                 if (config.address.local.port === undefined || config.address.remote.port === undefined) {
                     return;
                 }
-                tr.setAttribute("data-name", config.hash);
-                // server
-                td.appendText(config.server);
-                tr.appendChild(td);
-                // id
-                td = document.createElement("td");
-                td.appendText(config.hash);
-                tr.appendChild(td);
-                // type
-                td = document.createElement("td");
-                td.appendText(config.type);
-                tr.appendChild(td);
-                // role
-                td = document.createElement("td");
-                td.appendText(config.role);
-                tr.appendChild(td);
-                // proxy
-                td = document.createElement("td");
-                td.appendText(config.proxy);
-                tr.appendChild(td);
-                // encrypted
-                td = document.createElement("td");
-                td.appendText((config.encrypted === true) ? "true" : "false");
-                tr.appendChild(td);
-                // local ip
-                td = document.createElement("td");
-                td.appendText(config.address.local.address);
-                tr.appendChild(td);
-                // local port
-                td = document.createElement("td");
-                td.appendText(config.address.local.port.toString());
-                tr.appendChild(td);
-                // remote ip
-                td = document.createElement("td");
-                td.appendText(config.address.remote.address);
-                tr.appendChild(td);
-                // remote port
-                td = document.createElement("td");
-                td.appendText(config.address.remote.port.toString());
-                tr.appendChild(td);
-                tbody.appendChild(tr);
-                table.getElementsByTagName("th")[column].getElementsByTagName("button")[0].click();
+                if (tr_len > 0) {
+                    do {
+                        index_tr = index_tr - 1;
+                        index_td = 0;
+                        record = [];
+                        do {
+                            record.push(trs[index_tr].getElementsByTagName("td")[index_td].textContent);
+                            index_td = index_td + 1;
+                        } while (index_td < td_len);
+                        list.push(record);
+                    } while (index_tr > 0);
+                }
+                list.push([
+                    config.server,
+                    config.hash,
+                    config.type,
+                    config.role,
+                    (config.proxy === null)
+                        ? ""
+                        : config.proxy,
+                    String(config.encrypted),
+                    config.address.local.address,
+                    config.address.local.port.toString(),
+                    config.address.remote.address,
+                    config.address.remote.port.toString()
+                ]);
+                common.sort_records(tbody, list);
             },
             validate: function dashboard_serverValidate(event:FocusEvent|KeyboardEvent):void {
                 const target:HTMLTextAreaElement = event.target as HTMLTextAreaElement,
@@ -1984,7 +1978,7 @@ const dashboard = function dashboard():void {
             index = index - 1;
             button = th[index].getElementsByTagName("button")[0];
             if (button !== undefined) {
-                button.onclick = common.sort;
+                button.onclick = common.sort_html;
             }
         } while (index > 0);
     }

@@ -52,7 +52,7 @@ const socket_extension = function transmit_socketExtension(config:config_websock
                     socket: config.socket,
                     type: "ws"
                 }),
-                encrypted: config.socket.encrypted,
+                encrypted: (config.socket.encrypted === true),
                 hash: config.identifier,
                 proxy: (config.socket.proxy === undefined || config.socket.proxy === null)
                     ? null
