@@ -29,8 +29,8 @@ type type_server_property = "block_list" | "domain_local" | "encryption" | "http
 // * dashboard-payload           - transmit_dashboard        - Contains all dynamic data for populating a browser page
 // * dashboard-server            - services_dashboard_status - A single server's configuration data plus an action to perform
 // * dashboard-status            - services_dashboard_status - Typically conveys log entries
-type type_service = "dashboard-compose-container" | "dashboard-compose-variables" | "dashboard-payload" | "dashboard-server" | "dashboard-status" | "youtube-download-status";
-type type_socket_data = services_dashboard_action | services_dashboard_status | services_dashboard_terminal | services_docker_compose | services_processKill | services_youtubeDownload | services_youtubeStatus | store_string | transmit_dashboard;
+type type_service = "dashboard-compose-container" | "dashboard-compose-variables" | "dashboard-http" | "dashboard-payload" | "dashboard-server" | "dashboard-status" | "youtube-download-status";
+type type_socket_data = services_action_compose | services_action_server | services_dashboard_status | services_dashboard_terminal | services_docker_compose | services_http_test | services_processKill | services_youtubeDownload | services_youtubeStatus | store_string | transmit_dashboard;
 type type_socket_status = "closed" | "end" | "open" | "pending";
 type type_ui_control = "select" | "text";
 type type_vars = "block_list" | "domain_local" | "ports" | "redirect_asset" | "redirect_domain" | "server_name";
@@ -39,5 +39,5 @@ type type_youtubeDownload = "audio-file" | "audio-playlist" | "video-file" | "vi
 
 type http_action = (headerList:string[], socket:websocket_client, payload:Buffer) => void;
 type receiver = (socketData:socket_data, transmit:transmit_socket) => void;
-type type_server_action = (data:services_dashboard_action, callback:() => void, halt?:type_halt_action) => void;
+type type_server_action = (data:services_action_server, callback:() => void, halt?:type_halt_action) => void;
 type websocket_message_handler = (resultBuffer:Buffer) => void;

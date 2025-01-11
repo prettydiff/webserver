@@ -309,6 +309,9 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                 "",
                 ""
             ];
+            if (headerList.indexOf("dashboard-http: true") < 0) {
+                vars.http_headers = headerList.join("\n");
+            }
             write(headers.join("\r\n") + vars.dashboard);
         } else if (decoded.includes("node_modules") === true) {
             input = vars.path.project + decoded;

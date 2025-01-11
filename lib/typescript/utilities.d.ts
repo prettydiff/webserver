@@ -147,6 +147,7 @@ interface vars {
     commands: store_string;
     compose: configuration_compose;
     dashboard: string;
+    http_headers: string;
     interfaces: string[];
     intervals: store_number;
     logs: services_dashboard_status[];

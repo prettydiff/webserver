@@ -24,7 +24,7 @@
     <h1>Server Management Dashboard</h1>
     <p id="connection-status" class="connection-offline">Dashboard Connection: <strong>Offline</strong></p>
     <nav><ul>
-        <li><button class="nav-focus" data-section="servers">Servers</button></li><li><button data-section="compose">Docker Compose</button></li><li><button data-section="logs">Logs</button></li><li><button data-section="terminal">Terminal</button></li><li><button data-section="ports">Port Summary</button></li><li><button data-section="sockets">Socket Summary</button></li><li><button data-section="help">Help</button></li><li><button data-section="faq">FAQ</button></li>
+        <li><button class="nav-focus" data-section="servers">Servers</button></li><li><button data-section="compose">Docker Compose</button></li><li><button data-section="logs">Logs</button></li><li><button data-section="terminal">Terminal</button></li><li><button data-section="ports">Port Summary</button></li><li><button data-section="sockets">Socket Summary</button></li><li><button data-section="http">HTTP Test</button></li><li><button data-section="websocket">WebSocket Test</button></li><li><button data-section="dns">DNS Resolve</button></li><li><button data-section="help">Help</button></li><li><button data-section="faq">FAQ</button></li>
     </ul></nav>
     <main>
         <div class="tab" id="faq">
@@ -293,7 +293,7 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
             <h2>Servers</h2>
             <p class="tab-description">A list of configured HTTP/WS servers hosted by this application and their respective status.</p>
             <div class="section">
-                <h3>Definitions of Server Object Properties <button class="expand">Expand</button></h3>
+                <h3>Definitions of Server Object Properties <button class="expand" data-tag="dl">Expand</button></h3>
                 <dl>
                     <dt><em>activate</em> (string)</dt>
                     <dd><p>
@@ -389,6 +389,51 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
             <h2>Terminal</h2>
             <p class="tab-description">A command terminal to interact with the local operating system. Expect this terminal to mirror the operating system terminal exactly. <em>Text selections in the console are automatically copied to the clipboard.</em></p>
             <div class="terminal-output"></div>
+        </div>
+        <div class="tab" id="http">
+            <h2>HTTP Test</h2>
+            <p class="tab-description">A means to write arbitrary HTTP requests and read the raw response.</p>
+            <div class="section">
+                <h3>HTTP Format <button class="expand" data-tag="div">Expand</button></h3>
+                <div class="definitions">
+                    <p>Each line is separated by a CRLF (x0Dx0A) sequence. This application handles that formatting for you.
+                        The header portion of the request is separated from a body portion by an empty line, which is two or more consecutive sequences of CRLF.
+                        A body portion is optional and only used by certain HTTP methods. All lines after the first and before the body portion are headers.
+                        Each header gets its own line and is a case-insensitive name followed by a colon, zero or more spaces, and a text value.</p>
+                    <p>The first line of an HTTP request a space separated list of method, resource path (also known as <em>end point</em>), and protocol.</p>
+                    <p>A <em>host</em> header is required and is generally the second line of the raw request string.
+                        The host value is taken from the domain portion of a web address.
+                        The domain portion of an address includes authentication, domain name, and port.
+                        The authentication portion is optional and rarely used.</p>
+                    <p>The port portion of a domain is optional and rarely included if connecting with plain text HTTP over port 80 or encrypted HTTPS over port 443.
+                        In all other cases the port number is a colon separated suffix to the domain name.
+                        In the case of an IPv6 address the domain name must be inclosed in sqaure braces before specifying the port number, example: <strong>host: [2600:1700:1234:5678::a]:8081</strong>.</p>
+                    <ul>
+                        <li>The method is one of the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods">HTTP request methods</a>. <strong>GET</strong> is the most common.</li>
+                        <li>The end point looks like a Unix absolute file path always starting with a forward slash.</li>
+                        <li>The protocol is HTTP, forward slash, and a version number, such as <em>HTTP/1.1</em>.</li>
+                    </ul>
+                    <p>An HTTP request can be either plain text or a TLS encryption. That distinction is not provided in the HTTP header but is inferred from the scheme a web address.</p>
+                </div>
+            </div>
+            <h3>Request Scheme</h3>
+            <p><label class="radio">Plain text <input name="http_scheme" type="radio" value="false"/></label> <label class="radio">Encrypted <input checked="checked" name="http_scheme" type="radio" value="true"/></label></p>
+            <h3>Raw Request</h3>
+            <p class="buttons"><button class="server-new">Send Request</button></p>
+            <p><label>Complete raw HTTP request including header <textarea spellcheck="false"></textarea></label></p>
+            <h3>Response</h3>
+            <p><label>Complete raw HTTP response <textarea readonly="readonly" spellcheck="false"></textarea></label></p>
+        </div>
+        <div class="tab" id="websocket">
+            <h2>WebSocket Test</h2>
+            <p class="tab-description">Attempt to open arbitrary WebSocket connections and experiment with custom message frame assembly.</p>
+            <h3>Address</h3>
+            <p><label>Full address including scheme and as necessary port and query string. <input spellcheck="false" type="text"/></label></p>
+            <h3>Outbound Message</h3>
+        </div>
+        <div class="tab" id="dns">
+            <h2>DNS Resolve</h2>
+            <p class="tab-description">Test DNS name resolution from the application's location.</p>
         </div>
     </main>
 <script src="node_modules/@xterm/xterm/lib/xterm.js"></script><script type="application/javascript">replace_javascript</script></body></html>

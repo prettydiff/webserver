@@ -16,7 +16,7 @@ import vars from "../utilities/vars.js";
 
 // cspell: words untrapped
 
-const server = function transmit_server(data:services_dashboard_action, callback:(name:string) => void):void {
+const server = function transmit_server(data:services_action_server, callback:(name:string) => void):void {
     let count:number = 0;
     const connection = function transmit_server_connection(TLS_socket:node_tls_TLSSocket):void {
             // eslint-disable-next-line no-restricted-syntax
@@ -107,7 +107,7 @@ const server = function transmit_server(data:services_dashboard_action, callback
                                                 const this_socket:websocket_client = this;
                                                 server_halt({
                                                     action: "destroy",
-                                                    configuration: vars.servers[this_socket.server].config
+                                                    server: vars.servers[this_socket.server].config
                                                 }, null);
                                             };
                                             socket.on("close", terminate);
@@ -159,6 +159,7 @@ const server = function transmit_server(data:services_dashboard_action, callback
                                             } else if (server_name === "dashboard") {
                                                 const browser:transmit_dashboard = {
                                                     compose: vars.compose,
+                                                    http_headers: vars.http_headers,
                                                     logs: vars.logs,
                                                     path: vars.path,
                                                     ports: vars.system_ports,
@@ -369,7 +370,7 @@ const server = function transmit_server(data:services_dashboard_action, callback
             wsServer.secure = (options === null)
                 ? false
                 : true;
-            wsServer.name = data.configuration.name;
+            wsServer.name = data.server.name;
             wsServer.on("error", server_error);
 
             // insecure connection listener
@@ -379,14 +380,14 @@ const server = function transmit_server(data:services_dashboard_action, callback
 
             // secure connection listener
             wsServer.listen({
-                port: vars.servers[data.configuration.name].config.ports[secureType]
+                port: vars.servers[data.server.name].config.ports[secureType]
             }, listenerCallback);
         };
-    if (Array.isArray(data.configuration.domain_local) === false) {
-        data.configuration.domain_local = [];
+    if (Array.isArray(data.server.domain_local) === false) {
+        data.server.domain_local = [];
     }
-    if (vars.server_meta[data.configuration.name] === undefined) {
-        vars.server_meta[data.configuration.name] = {
+    if (vars.server_meta[data.server.name] === undefined) {
+        vars.server_meta[data.server.name] = {
             server: {
                 open: null,
                 secure: null
@@ -397,21 +398,21 @@ const server = function transmit_server(data:services_dashboard_action, callback
             }
         };
     }
-    if (vars.servers[data.configuration.name].config.encryption === "open") {
-        if (vars.servers[data.configuration.name].config.temporary === true) {
+    if (vars.servers[data.server.name].config.encryption === "open") {
+        if (vars.servers[data.server.name].config.temporary === true) {
             file.remove({
                 callback: function transmit_server_readCerts_starterOpen():void {
                     start(null);
                 },
                 error_terminate: null,
                 exclusions: null,
-                location: vars.path.servers + data.configuration.name
+                location: vars.path.servers + data.server.name
             });
         } else {
             start(null);
         }
     } else {
-        read_certs(data.configuration.name, function transmit_server_readCerts(server_name:string, options:transmit_tlsOptions):void {
+        read_certs(data.server.name, function transmit_server_readCerts(server_name:string, options:transmit_tlsOptions):void {
             const starter = function transmit_server_readCerts_starterSecure():void {
                 if (vars.servers[server_name].config.encryption === "both") {
                     start(null);

@@ -6,7 +6,7 @@ import server_halt from "./server_halt.js";
 import vars from "../utilities/vars.js";
 
 const dashboard = function services_dashboard(socketData:socket_data, transmit:transmit_socket):void {
-    const data:services_dashboard_action = socketData.data as services_dashboard_action;
+    const data:services_action_server = socketData.data as services_action_server;
 
     if (socketData.service === "dashboard-server") {
         const action_map:services_dashboard = {
@@ -21,6 +21,7 @@ const dashboard = function services_dashboard(socketData:socket_data, transmit:t
         const socket:websocket_client = transmit.socket as websocket_client,
             browser:transmit_dashboard = {
                 compose: vars.compose,
+                http_headers: vars.http_headers,
                 logs: vars.logs,
                 path: vars.path,
                 ports: vars.system_ports,

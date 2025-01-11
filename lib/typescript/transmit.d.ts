@@ -26,6 +26,7 @@ interface transmit_addresses_socket {
 
 interface transmit_dashboard {
     compose: configuration_compose;
+    http_headers: string;
     logs: services_dashboard_status[];
     path: {
         compose: string;

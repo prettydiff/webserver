@@ -2,6 +2,43 @@ import { IModes } from "@xterm/xterm";
 
 declare global {
 
+    interface services_action_compose {
+        action: type_dashboard_action;
+        compose: services_docker_compose;
+    }
+
+    interface services_action_server {
+        action: type_dashboard_action;
+        server: services_server;
+    }
+
+    interface services_dashboard {
+        "activate": type_server_action;
+        "add": type_server_action;
+        "deactivate": type_server_action;
+        "destroy": type_server_action;
+        "modify": type_server_action;
+    }
+
+    interface services_dashboard_activate {
+        name: string;
+        ports: server_ports;
+    }
+
+    interface services_dashboard_status {
+        action: type_dashboard_action;
+        configuration: type_dashboard_config;
+        message: string;
+        status: type_dashboard_status;
+        time: number;
+        type: type_dashboard_type;
+    }
+
+    interface services_dashboard_terminal {
+        modes: IModes;
+        text: string;
+    }
+
     interface services_docker_compose {
         command: string;
         compose: string;
@@ -49,38 +86,6 @@ declare global {
         type: string;
     }
 
-    interface services_dashboard {
-        "activate": type_server_action;
-        "add": type_server_action;
-        "deactivate": type_server_action;
-        "destroy": type_server_action;
-        "modify": type_server_action;
-    }
-
-    interface services_dashboard_action {
-        action: type_dashboard_action;
-        configuration: services_server;
-    }
-
-    interface services_dashboard_activate {
-        name: string;
-        ports: server_ports;
-    }
-
-    interface services_dashboard_status {
-        action: type_dashboard_action;
-        configuration: type_dashboard_config;
-        message: string;
-        status: type_dashboard_status;
-        time: number;
-        type: type_dashboard_type;
-    }
-
-    interface services_dashboard_terminal {
-        modes: IModes;
-        text: string;
-    }
-
     interface services_http {
         connect: http_action;
         delete: http_action;
@@ -88,6 +93,11 @@ declare global {
         head: http_action;
         post: http_action;
         put: http_action;
+    }
+
+    interface services_http_test {
+        encryption: boolean;
+        request: string;
     }
 
     interface services_processKill {

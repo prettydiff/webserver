@@ -5,7 +5,7 @@ import { constants as constantsCrypto, createHash, createPrivateKey, createPubli
 import { cp, createReadStream, createWriteStream, lstat, mkdir, open, read, readdir, readFile, readlink, realpath, rename, rm, rmdir, stat, Stats, symlink, unlink, utimes, writeFile } from "node:fs";
 import { createServer as httpServer, get as httpGet, request as httpRequest, STATUS_CODES } from "node:http";
 import { createServer as httpsServer, get as httpsGet, request as httpsRequest } from "node:https";
-import { connect as netConnect, createServer as netCreateServer } from "node:net";
+import { connect as netConnect, createServer as netCreateServer, isIPv4, isIPv6 } from "node:net";
 import { arch, cpus, EOL, freemem, hostname, networkInterfaces, platform, release, totalmem, type } from "node:os";
 import { isAbsolute, resolve, sep } from "node:path";
 import { clearScreenDown, cursorTo } from "node:readline";
@@ -64,7 +64,9 @@ const node = {
     },
     net: {
         connect: netConnect,
-        createServer: netCreateServer
+        createServer: netCreateServer,
+        isIPv4: isIPv4,
+        isIPv6: isIPv6
     },
     os: {
         arch: arch,

@@ -16,15 +16,15 @@ import vars from "../utilities/vars.js";
 // 7. remove server from the servers.json file
 // 8. call the callback
 
-const server_halt = function services_serverHalt(data:services_dashboard_action, callback:() => void):void {
-    const old:string = (data.configuration.modification_name === undefined)
-            ? data.configuration.name
-            : data.configuration.modification_name,
+const server_halt = function services_serverHalt(data:services_action_server, callback:() => void):void {
+    const old:string = (data.server.modification_name === undefined)
+            ? data.server.name
+            : data.server.modification_name,
         temporary:boolean = vars.servers[old].config.temporary;
     if (vars.servers[old] === undefined) {
         log({
             action: data.action,
-            config: data.configuration,
+            config: data.server,
             message: `Server named ${old} does not exist.  Called on library server_halt.`,
             status: "error",
             type: "log"
@@ -52,12 +52,12 @@ const server_halt = function services_serverHalt(data:services_dashboard_action,
                         callback();
                     }
                     if (data.action === "modify") {
-                        data.configuration.modification_name = old;
+                        data.server.modification_name = old;
                     }
                     log({
                         action: data.action,
-                        config: data.configuration,
-                        message: `Server named ${data.configuration.name} ${actionText}.`,
+                        config: data.server,
+                        message: `Server named ${data.server.name} ${actionText}.`,
                         status: "success",
                         type: "server"
                     });
@@ -67,12 +67,12 @@ const server_halt = function services_serverHalt(data:services_dashboard_action,
                 callback: function services_serverHalt_remove():void {
                     complete("remove");
                 },
-                error_terminate: data.configuration,
+                error_terminate: data.server,
                 exclusions: [],
                 location: path_name
             },
             server_restart = function services_serverHalt_serverRestart():void {
-                node.fs.cp(path_name, vars.path.servers + data.configuration.name + vars.sep, {
+                node.fs.cp(path_name, vars.path.servers + data.server.name + vars.sep, {
                     recursive: true
                 }, function server_restart_cp(erc:node_error):void {
                     if (erc === null) {
@@ -81,7 +81,7 @@ const server_halt = function services_serverHalt(data:services_dashboard_action,
                     } else {
                         log({
                             action: "modify",
-                            config: data.configuration,
+                            config: data.server,
                             message: "Error copying files from old server location to new server location.",
                             status: "error",
                             type: "server"
@@ -136,13 +136,13 @@ const server_halt = function services_serverHalt(data:services_dashboard_action,
         }
         // 6. modify the server
         if (data.action === "modify") {
-            delete data.configuration.modification_name;
-            vars.servers[data.configuration.name].config = data.configuration;
-            if (data.configuration.name !== old) {
+            delete data.server.modification_name;
+            vars.servers[data.server.name].config = data.server;
+            if (data.server.name !== old) {
                 delete vars.servers[old];
                 server_create({
                     action: "add",
-                    configuration: data.configuration
+                    server: data.server
                 }, server_restart);
             } else {
                 certificate({
@@ -152,7 +152,7 @@ const server_halt = function services_serverHalt(data:services_dashboard_action,
                         });
                     },
                     days: 65535,
-                    name: data.configuration.name,
+                    name: data.server.name,
                     selfSign: true
                 });
             }
@@ -178,7 +178,7 @@ const server_halt = function services_serverHalt(data:services_dashboard_action,
                     complete("config");
                 },
                 contents: JSON.stringify(servers),
-                error_terminate: data.configuration,
+                error_terminate: data.server,
                 location: path_config
             });
         } else {

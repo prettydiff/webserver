@@ -129,6 +129,19 @@ const dashboard = function dashboard():void {
                     return ["green", "online"];
                 }
             },
+            definitions: function dashboard_commonDefinitions(event:MouseEvent):void {
+                const target:HTMLElement = event.target,
+                    tagName:string = target.dataset.tag,
+                    div:HTMLElement = target.getAncestor("div", "tag"),
+                    child:HTMLElement = div.getElementsByTagName(tagName)[0] as HTMLElement;
+                if (target.textContent === "Expand") {
+                    child.style.display = "block";
+                    target.textContent = "Hide";
+                } else {
+                    child.style.display = "none";
+                    target.textContent = "Expand";
+                }
+            },
             details: function dashboard_commonDetails(event:MouseEvent):void {
                const target:HTMLElement = event.target,
                     classy:string = target.getAttribute("class"),
@@ -777,7 +790,7 @@ const dashboard = function dashboard():void {
                     value:string = edit.getElementsByTagName("textarea")[0].value;
                 if (title === "Environmental Variables") {
                     const variables:store_string = JSON.parse(value);
-                    message.send("modify", variables, "dashboard-compose-variables");
+                    message.send(variables, "dashboard-compose-variables");
                     compose.nodes.variables_new.disabled = false;
                 } else {
                     const action:type_dashboard_action = classy.replace("server-", "") as type_dashboard_action,
@@ -817,11 +830,15 @@ const dashboard = function dashboard():void {
                                     state: "dead",
                                     status: ""
                                 }
-                                : payload.compose.containers[newTitle];
+                                : payload.compose.containers[newTitle],
+                            data:services_action_compose = {
+                                action: action,
+                                compose: item
+                            };
                         item.compose = trim(yaml);
                         item.description = trim(value);
                         payload.compose.containers[newTitle] = item;
-                        message.send(action, item, "dashboard-compose-container");
+                        message.send(data, "dashboard-compose-container");
                     }
                     compose.nodes.containers_new.disabled = false;
                 }
@@ -943,6 +960,30 @@ const dashboard = function dashboard():void {
                 }
             }
         },
+        http:module_http = {
+            init: function dashboard_httpInit():void {
+                // populate a default HTTP test value
+                http.nodes.request.value = payload.http_headers;
+                http.nodes.http_definitions.onclick = common.definitions;
+                http.nodes.http_request.onclick = http.request;
+            },
+            nodes: {
+                http_definitions: document.getElementById("http").getElementsByClassName("expand")[0] as HTMLElement,
+                http_request: document.getElementById("http").getElementsByClassName("server-new")[0] as HTMLButtonElement,
+                request: document.getElementById("http").getElementsByTagName("textarea")[0],
+                response: document.getElementById("http").getElementsByTagName("textarea")[1]
+            },
+            request: function dashboard_httpRequest():void {
+                const value:string = document.getElementById("http").getElementsByTagName("textarea")[0].value,
+                    encryption:boolean = document.getElementById("http").getElementsByTagName("input")[1].checked,
+                    data:services_http_test = {
+                        encryption: encryption,
+                        request: value
+                    };
+                message.send(data, "dashboard-http");
+                http.nodes.response.value = "";
+            }
+        },
         message:module_message = {
             receiver: function dashboard_messageReceiver(event:websocket_event):void {
                 if (typeof event.data === "string") {
@@ -966,10 +1007,12 @@ const dashboard = function dashboard():void {
                         }
                         // populate docker containers
                         compose.init();
-                        // populate server list
-                        server.list();
+                        // populate the http content
+                        http.init();
                         // populate port data
                         ports.init(payload.ports);
+                        // populate server list
+                        server.list();
                         // start the terminal
                         terminal.init();
                     } else if (message_item.service === "dashboard-status") {
@@ -1155,16 +1198,15 @@ const dashboard = function dashboard():void {
                                 compose.list("variables");
                             }
                         }
+                    } else if (message_item.service === "dashboard-http") {
+                        const response:services_http_test = message_item.data as services_http_test;
+                        http.nodes.response.value = response.request.replace(/\\r\\n/g, "\r\n").replace(/\r\n/g, "\n");
                     }
                 }
             },
-            send: function dashboard_messageSend(action:type_dashboard_action, config:services_docker_compose|services_server|store_string, service:type_service):void {
-                const payload:services_dashboard_action = {
-                        action: action,
-                        configuration: config as services_server
-                    },
-                    message:socket_data = {
-                        data: payload,
+            send: function dashboard_messageSend(data:type_socket_data, service:type_service):void {
+                const message:socket_data = {
+                        data: data,
                         service: service
                     };
                 socket.queue(JSON.stringify(message));
@@ -1392,18 +1434,6 @@ const dashboard = function dashboard():void {
                 button.disabled = true;
                 common.details(event);
             },
-            definitions: function dashboard_serverDefinitions(event:MouseEvent):void {
-                const target:HTMLElement = event.target,
-                    div:HTMLElement = target.getAncestor("div", "tag"),
-                    dl:HTMLElement = div.parentNode.getElementsByTagName("dl")[0];
-                if (target.textContent === "Expand") {
-                    dl.style.display = "block";
-                    target.textContent = "Hide";
-                } else {
-                    dl.style.display = "none";
-                    target.textContent = "Expand";
-                }
-            },
             list: function dashboard_serverList():void {
                 const list:string[] = Object.keys(payload.servers),
                     list_old:HTMLElement = server.nodes.list,
@@ -1413,7 +1443,7 @@ const dashboard = function dashboard():void {
                     indexSocket:number = 0,
                     totalSocket:number = 0;
                 server.nodes.server_new.onclick = server.create;
-                server.nodes.server_definitions.onclick = server.definitions;
+                server.nodes.server_definitions.onclick = common.definitions;
                 list_new.setAttribute("class", list_old.getAttribute("class"));
                 list.sort(function dashboard_serverList_sort(a:string, b:string):-1|1 {
                     if (a < b) {
@@ -1448,8 +1478,12 @@ const dashboard = function dashboard():void {
                         config.modification_name = edit.parentNode.getAttribute("data-name");
                         payload.servers[config.modification_name].config.encryption = config.encryption;
                         return config;
-                    }());
-                message.send(action, configuration, "dashboard-server");
+                    }()),
+                    data:services_action_server = {
+                        action: action,
+                        server: configuration
+                    };
+                message.send(data, "dashboard-server");
                 if (cancel === undefined) {
                     edit.parentNode.getElementsByTagName("button")[0].click();
                 } else {
@@ -1856,7 +1890,7 @@ const dashboard = function dashboard():void {
                 if (typeof Terminal === "undefined") {
                     setTimeout(dashboard_terminalItem, 100);
                 } else {
-                    const encryption:type_encryption = (location.protocol === "http")
+                    const encryption:type_encryption = (location.protocol === "http:")
                             ? "open"
                             : "secure",
                         scheme:"ws"|"wss" = (encryption === "open")

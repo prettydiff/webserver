@@ -91,7 +91,7 @@ const socket_extension = function transmit_socketExtension(config:config_websock
                         const socket:websocket_client = this;
                         server_halt({
                             action: "destroy",
-                            configuration: vars.servers[socket.server].config
+                            server: vars.servers[socket.server].config
                         }, null);
                     };
                     config.socket.on("close", temporary);

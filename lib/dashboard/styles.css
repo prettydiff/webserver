@@ -45,6 +45,8 @@ dt{font-size:1.4em}
 dd{margin:0 0 1em 2.5em}
 dd p{font-size:1em}
 li{margin:1em 0 0}
+#http textarea,
+#websocket textarea,
 code{display:block;font-family:monospace;font-size:0.9em;white-space:pre}
 fieldset{background:var(--background_fieldset);border-color:var(--border_color);border-style:solid;border-width:0.1em;margin:0 0 0 -2.8em;max-width:48.25em;padding:0 1em 1em;overflow:scroll}
 a{color:var(--fail_bright)}
@@ -76,7 +78,6 @@ label.radio{display:inline-block;width:45%}
 label.radio{cursor:pointer}
 label.radio input{display:inline}
 input{background:var(--background_textarea);border-color:var(--border_input);border-style:solid;border-width:0.065em;color:var(--text_input);font-family:monospace;margin:0.5em 0 0;padding:0.5em}
-input[type="radio"]{visibility:hidden}
 th button{float:right;margin:0 1em}
 .controls p{margin:2em 0}
 .controls button{font-size:2em}
@@ -114,7 +115,6 @@ td .icon{display:inline-block;width:1.5em}
 #servers .detail_item p{margin:0 0 0.5em}
 #dashboard .compose-container-list,
 #dashboard .server-list{padding:0}
-#servers p,
 #dashboard h2,
 #dashboard .compose-container-list h4,
 #dashboard .server-list h4{cursor:pointer;margin:0 0 0.42em}
@@ -132,6 +132,7 @@ td .icon{display:inline-block;width:1.5em}
 #dashboard div.edit{font-size:var(--font-size)}
 #dashboard div > .edit{border-color:var(--border_input);border-style:solid;border-width:0.1em;padding:1em}
 #dashboard div.edit p{font-size:1em}
+#http .section div,
 #servers .section dl{display:none}
 #dashboard .section > .buttons{margin:0 0 2em}
 #dashboard .compose-container-list h4 button,
@@ -204,3 +205,5 @@ td .icon{display:inline-block;width:1.5em}
 #dashboard #compose textarea.compose-variables-edit{height:10em}
 #dashboard textarea.short{height:6em}
 #dashboard thead button{background:transparent;border-style:none;margin:0;padding:0.5em 1em;text-align:left;width:100%}
+#dashboard label input[type="radio"]{box-sizing:unset;display:inline-block;width:1em}
+#dashboard .definitions li{border-style:none;list-style:disc}

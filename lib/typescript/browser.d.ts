@@ -52,6 +52,7 @@ declare global {
     interface module_common {
         cancel: (event:MouseEvent) => void;
         color: (name_server:string, type:type_dashboard_list) => type_activation_status;
+        definitions: (event:MouseEvent) => void;
         details: (event:MouseEvent) => void;
         edit: (event:MouseEvent) => void;
         sort_html: (event:MouseEvent) => void;
@@ -80,9 +81,20 @@ declare global {
         validateVariables: (event:FocusEvent|KeyboardEvent) => void;
     }
 
+    interface module_http {
+        init: () => void;
+        nodes: {
+            http_definitions: HTMLElement;
+            http_request: HTMLElement;
+            request: HTMLTextAreaElement;
+            response: HTMLTextAreaElement;
+        };
+        request: (event:MouseEvent) => void;
+    }
+
     interface module_message {
         receiver: (event:websocket_event) => void;
-        send: (action:type_dashboard_action, config:services_docker_compose|services_server|store_string, service:type_service) => void;
+        send: (data:type_socket_data, service:type_service) => void;
     }
 
     interface module_port {
@@ -94,7 +106,6 @@ declare global {
     interface module_server {
         activePorts: (name_server:string) => HTMLElement;
         create: (event:MouseEvent) => void;
-        definitions: (event:MouseEvent) => void;
         list: () => void;
         message: (event:MouseEvent) => void;
         nodes: {
