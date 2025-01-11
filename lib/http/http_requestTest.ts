@@ -68,6 +68,7 @@ const http_request = function http_request(socket_data:socket_data, transmit:tra
             host: host,
             port: port
         });
+    socket.setTimeout(5000);
     socket.once("error", function http_request_error(error:node_error):void {
         if (error.code === "EPROTO" && error.syscall === "write") {
             write("Remote server is likely using TLSv1.1 which is not supported by OpenSSL3 used by Node.js since version 17.");
@@ -103,7 +104,11 @@ const http_request = function http_request(socket_data:socket_data, transmit:tra
             urlPush("pathname");
             urlPush("search");
             urlPush("hash");
-            write(`${JSON.stringify(url)}\n{${urls.join("\n    ").replace(/,$/, "")}\n}\n\n${chunks.join("").toString()}`);
+            if (chunks.length < 1) {
+                write("Error: message ended with no data, which indicates no web server or connection refused.");
+            } else {
+                write(`${JSON.stringify(url)}\n{${urls.join("\n    ").replace(/,$/, "")}\n}\n\n${chunks.join("").toString()}`);
+            }
         });
     });
 };
