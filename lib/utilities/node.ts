@@ -2,17 +2,18 @@
 
 import { exec, spawn } from "node:child_process";
 import { constants as constantsCrypto, createHash, createPrivateKey, createPublicKey, generateKeyPair, Hash, privateDecrypt, publicEncrypt } from "node:crypto";
+import { resolve as resolveDNS } from "node:dns";
 import { cp, createReadStream, createWriteStream, lstat, mkdir, open, read, readdir, readFile, readlink, realpath, rename, rm, rmdir, stat, Stats, symlink, unlink, utimes, writeFile } from "node:fs";
 import { createServer as httpServer, get as httpGet, request as httpRequest, STATUS_CODES } from "node:http";
 import { createServer as httpsServer, get as httpsGet, request as httpsRequest } from "node:https";
 import { connect as netConnect, createServer as netCreateServer, isIPv4, isIPv6 } from "node:net";
 import { arch, cpus, EOL, freemem, hostname, networkInterfaces, platform, release, totalmem, type } from "node:os";
-import { isAbsolute, resolve, sep } from "node:path";
+import { isAbsolute, resolve as resolvePath, sep } from "node:path";
 import { clearScreenDown, cursorTo } from "node:readline";
 import { Readable } from "node:stream";
 import { StringDecoder } from "node:string_decoder";
 import { connect as tlsConnect, createServer as tlsCreateServer } from "node:tls";
-import { constants as constantsZlib, createBrotliCompress, createBrotliDecompress } from "node:zlib";
+import { brotliDecompress, constants as constantsZlib, createBrotliCompress, createBrotliDecompress, createGunzip, gunzip, inflate, unzip } from "node:zlib";
 
 const node = {
     child_process: {
@@ -28,6 +29,9 @@ const node = {
         privateDecrypt: privateDecrypt,
         publicEncrypt: publicEncrypt,
         Hash: Hash
+    },
+    dns: {
+        resolve: resolveDNS
     },
     fs: {
         cp: cp,
@@ -82,7 +86,7 @@ const node = {
     },
     path: {
         isAbsolute: isAbsolute,
-        resolve: resolve,
+        resolve: resolvePath,
         sep: sep
     },
     readline: {
@@ -100,9 +104,14 @@ const node = {
         createServer: tlsCreateServer
     },
     zlib: {
+        brotliDecompress: brotliDecompress,
         constants: constantsZlib,
         createBrotliCompress: createBrotliCompress,
-        createBrotliDecompress: createBrotliDecompress
+        createBrotliDecompress: createBrotliDecompress,
+        createGunzip: createGunzip,
+        gunzip: gunzip,
+        inflate: inflate,
+        unzip: unzip
     }
 };
 

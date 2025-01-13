@@ -417,12 +417,17 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
                 </div>
             </div>
             <h3>Request Scheme</h3>
-            <p><label class="radio">Plain text <input name="http_scheme" type="radio" value="false"/></label> <label class="radio">Encrypted <input checked="checked" name="http_scheme" type="radio" value="true"/></label></p>
+            <p><label class="radio">Plain text (http) <input name="http_scheme" type="radio" value="false"/></label> <label class="radio">Encrypted (https) <input checked="checked" name="http_scheme" type="radio" value="true"/></label></p>
             <h3>Raw Request</h3>
-            <p class="buttons"><button class="server-new">Send Request</button></p>
+            <p class="buttons"><button>Send Request</button></p>
             <p><label>Complete raw HTTP request including header <textarea spellcheck="false"></textarea></label></p>
             <h3>Response</h3>
-            <p><label>Complete raw HTTP response <textarea readonly="readonly" spellcheck="false"></textarea></label></p>
+            <div class="http_response">
+                <p><label>URI <textarea readonly="readonly" spellcheck="false"></textarea></label></p>
+                <p><label>Response Headers <textarea readonly="readonly" spellcheck="false"></textarea></label></p>
+                <p class="float-last"><label>Response Body <textarea readonly="readonly" spellcheck="false"></textarea></label></p>
+                <span class="clear"></span>
+            </div>
         </div>
         <div class="tab" id="websocket">
             <h2>WebSocket Test</h2>
@@ -434,6 +439,12 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
         <div class="tab" id="dns">
             <h2>DNS Resolve</h2>
             <p class="tab-description">Test DNS name resolution from the application's location.</p>
+            <h3>Input</h3>
+            <p class="buttons"><button>Resolve</button></p>
+            <p><label>Comma separated list of domains and/or hostname entries</label> <input type="text"/></p>
+            <p><label>Comma separated list of record types. Leave blank for all types. Supported types: A, AAAA, ANY, CAA, CNAME, MX, NAPTR, NS, PTR, SOA, SRV, TXT</label> <input type="text"/></p>
+            <h3>Output</h3>
+            <p><label>List of DNS resolutions</label> <textarea readonly="readonly" spellcheck="false"></textarea></p>
         </div>
     </main>
 <script src="node_modules/@xterm/xterm/lib/xterm.js"></script><script type="application/javascript">replace_javascript</script></body></html>

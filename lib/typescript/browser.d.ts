@@ -81,15 +81,29 @@ declare global {
         validateVariables: (event:FocusEvent|KeyboardEvent) => void;
     }
 
+    interface module_dns {
+        init: () => void;
+        nodes: {
+            button: HTMLButtonElement;
+            input: HTMLInputElement;
+            output: HTMLTextAreaElement;
+            types: HTMLInputElement;
+        };
+        resolve: (event:MouseEvent) => void;
+    }
+
     interface module_http {
         init: () => void;
         nodes: {
             http_definitions: HTMLElement;
             http_request: HTMLElement;
             request: HTMLTextAreaElement;
-            response: HTMLTextAreaElement;
+            responseBody: HTMLTextAreaElement;
+            responseHeaders: HTMLTextAreaElement;
+            responseURI: HTMLTextAreaElement;
         };
         request: (event:MouseEvent) => void;
+        response: (data:services_http_test) => void;
     }
 
     interface module_message {

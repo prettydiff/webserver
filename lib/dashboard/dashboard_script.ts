@@ -960,28 +960,98 @@ const dashboard = function dashboard():void {
                 }
             }
         },
+        dns:module_dns = {
+            init: function dashboard_dnsInit():void {
+                dns.nodes.button.onclick = dns.resolve;
+                dns.nodes.output.value = "";
+            },
+            nodes: {
+                button: document.getElementById("dns").getElementsByTagName("button")[0],
+                input: document.getElementById("dns").getElementsByTagName("input")[0],
+                output: document.getElementById("dns").getElementsByTagName("textarea")[0],
+                types: document.getElementById("dns").getElementsByTagName("input")[1]
+            },
+            resolve: function dashboard_dnsResolve():void {
+                const values:string[] = dns.nodes.input.value.replace(/,\s+/g, ",").split(","),
+                    types:string = dns.nodes.types.value.replace(/,\s*/g, ",").toUpperCase(),
+                    qualified:types_dns_types[] = [],
+                    qualifiedPush = function dashboard_dnsResolve_qualifiedPush(key:types_dns_types):void {
+                        if (types.includes(key) === true) {
+                            const reg:RegExp = new RegExp(key, "g");
+                            qualified.push(key);
+                            types.replace(reg, "");
+                        }
+                    },
+                    payload:services_dns_input = {
+                        names: values,
+                        types: qualified
+                    };
+                qualifiedPush("AAAA");
+                qualifiedPush("ANY");
+                qualifiedPush("CAA");
+                qualifiedPush("CNAME");
+                qualifiedPush("MX");
+                qualifiedPush("NAPTR");
+                qualifiedPush("NS");
+                qualifiedPush("PTR");
+                qualifiedPush("SOA");
+                qualifiedPush("SRV");
+                qualifiedPush("TXT");
+                if ((/^A$/).test(types) === true || (/,A$/).test(types) === true || (/^A,/).test(types) === true || (/,A,/).test(types) === true) {
+                    qualified.push("A");
+                }
+                if (qualified.length === 0) {
+                    qualified.push("A");
+                    qualified.push("AAAA");
+                    qualified.push("ANY");
+                    qualified.push("CAA");
+                    qualified.push("CNAME");
+                    qualified.push("MX");
+                    qualified.push("NAPTR");
+                    qualified.push("NS");
+                    qualified.push("PTR");
+                    qualified.push("SOA");
+                    qualified.push("SRV");
+                    qualified.push("TXT");
+                }
+                message.send(payload, "dashboard-dns");
+            }
+        },
         http:module_http = {
             init: function dashboard_httpInit():void {
                 // populate a default HTTP test value
                 http.nodes.request.value = payload.http_headers;
                 http.nodes.http_definitions.onclick = common.definitions;
                 http.nodes.http_request.onclick = http.request;
+                http.nodes.responseBody.value = "";
+                http.nodes.responseHeaders.value = "";
+                http.nodes.responseURI.value = "";
             },
             nodes: {
                 http_definitions: document.getElementById("http").getElementsByClassName("expand")[0] as HTMLElement,
-                http_request: document.getElementById("http").getElementsByClassName("server-new")[0] as HTMLButtonElement,
+                http_request: document.getElementById("http").getElementsByTagName("button")[1] as HTMLButtonElement,
                 request: document.getElementById("http").getElementsByTagName("textarea")[0],
-                response: document.getElementById("http").getElementsByTagName("textarea")[1]
+                responseBody: document.getElementById("http").getElementsByTagName("textarea")[3],
+                responseHeaders: document.getElementById("http").getElementsByTagName("textarea")[2],
+                responseURI: document.getElementById("http").getElementsByTagName("textarea")[1]
             },
             request: function dashboard_httpRequest():void {
-                const value:string = document.getElementById("http").getElementsByTagName("textarea")[0].value,
-                    encryption:boolean = document.getElementById("http").getElementsByTagName("input")[1].checked,
+                const encryption:boolean = document.getElementById("http").getElementsByTagName("input")[1].checked,
                     data:services_http_test = {
+                        body: "",
                         encryption: encryption,
-                        request: value
+                        headers: http.nodes.request.value,
+                        uri: ""
                     };
                 message.send(data, "dashboard-http");
-                http.nodes.response.value = "";
+                http.nodes.responseBody.value = "";
+                http.nodes.responseHeaders.value = "";
+                http.nodes.responseURI.value = "";
+            },
+            response: function dashboard_httpResponse(data:services_http_test):void {
+                http.nodes.responseBody.value = data.body;
+                http.nodes.responseHeaders.value = data.headers;
+                http.nodes.responseURI.value = data.uri;
             }
         },
         message:module_message = {
@@ -1199,8 +1269,7 @@ const dashboard = function dashboard():void {
                             }
                         }
                     } else if (message_item.service === "dashboard-http") {
-                        const response:services_http_test = message_item.data as services_http_test;
-                        http.nodes.response.value = response.request.replace(/\\r\\n/g, "\r\n").replace(/\r\n/g, "\n");
+                        http.response(message_item.data as services_http_test);
                     }
                 }
             },

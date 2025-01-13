@@ -1,6 +1,7 @@
 
 import compose from "../services/compose.js";
 import dashboard from "../services/dashboard.js";
+import dns from "../services/dns.js";
 import process_kill from "../services/processKill.js";
 import http_request from "../http/http_requestTest.js";
 import youtube_download from "../services/youtubeDownload.js";
@@ -10,6 +11,7 @@ const router = function transmit_router(socketData:socket_data, transmit:transmi
         actions:transmit_receiver = {
             "dashboard-compose-container": compose,
             "dashboard-compose-variables": compose,
+            "dashboard-dns": dns,
             "dashboard-http": http_request,
             "dashboard_payload": dashboard,
             "dashboard-server": dashboard,

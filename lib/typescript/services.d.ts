@@ -86,6 +86,28 @@ declare global {
         type: string;
     }
 
+    interface services_dns_input {
+        names: string[];
+        types: types_dns_types[];
+    }
+
+    interface services_dns_output {
+        [key:string]: {
+            "A": string[];
+            "AAAA": string[]
+            "ANY": string[];
+            "CAA": string[];
+            "CNAME": string[];
+            "MX": string[];
+            "NAPTR": string[];
+            "NS": string[];
+            "PTR": string[];
+            "SOA": string[];
+            "SRV": string[];
+            "TXT": string[];
+        };
+    }
+
     interface services_http {
         connect: http_action;
         delete: http_action;
@@ -96,8 +118,10 @@ declare global {
     }
 
     interface services_http_test {
+        body: string;
         encryption: boolean;
-        request: string;
+        headers: string;
+        uri: string;
     }
 
     interface services_processKill {
