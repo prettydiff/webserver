@@ -413,7 +413,14 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
                         <li>The end point looks like a Unix absolute file path always starting with a forward slash.</li>
                         <li>The protocol is HTTP, forward slash, and a version number, such as <em>HTTP/1.1</em>.</li>
                     </ul>
-                    <p>An HTTP request can be either plain text or a TLS encryption. That distinction is not provided in the HTTP header but is inferred from the scheme a web address.</p>
+                    <p>An HTTP request can be either plain text or a TLS encryption. That distinction is not provided in the HTTP header but is inferred by context.</p>
+                    <p>The default behavior of HTTP version 1.1 is to keep a socket open for multiple sequential request/response round trips. HTTP 1.0 does not have this capability, called <em>keep-alive</em>, and it forbidden in HTTP/2 and HTTP/3.  As a result, in HTTP/1.1, we must have an indicator different than socket termination to determine when a response completes. This following list determines response message completion.</p>
+                    <ul>
+                        <li>The socket closes.</li>
+                        <li>The response header is completed with the <em>"\r\n\r\n</em> empty line sequence and the response contains no body portion.</li>
+                        <li>The response header contains a heading <em>transfer-encoding: chunked</em> and the body terminates with a message chunk containing exactly <em>0\r\n\r\n</em>.</li>
+                        <li>The response header contains a heading <em>content-length</em> with a numeric value and the byte length, not character length, of the body portion only equals that header value.</li>
+                    </ul>
                 </div>
             </div>
             <h3>Request Scheme</h3>
@@ -439,12 +446,41 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
         <div class="tab" id="dns">
             <h2>DNS Resolve</h2>
             <p class="tab-description">Test DNS name resolution from the application's location.</p>
+            <div class="section">
+                <h3>DNS Type Definitions <button class="expand" data-tag="dl">Expand</button></h3>
+                <dl>
+                    <dt>A</dt>
+                    <dd>IPv4 addresses</dd>
+                    <dt>AAAA</dt>
+                    <dd>IPv6 addresses</dd>
+                    <dt>ANY</dt>
+                    <dd>any records</dd>
+                    <dt>CAA</dt>
+                    <dd>certificate authority authorization records</dd>
+                    <dt>CNAME</dt>
+                    <dd>canonical name records</dd>
+                    <dt>MX</dt>
+                    <dd>mail exchange records</dd>
+                    <dt>NAPTR</dt>
+                    <dd>name authority pointer records</dd>
+                    <dt>NS</dt>
+                    <dd>name server records</dd>
+                    <dt>PTR</dt>
+                    <dd>pointer records</dd>
+                    <dt>SOA</dt>
+                    <dd>start of authority records</dd>
+                    <dt>SRV</dt>
+                    <dd>service records</dd>
+                    <dt>TXT</dt>
+                    <dd>text records</dd>
+                </dl>
+            </div>
             <h3>Input</h3>
             <p class="buttons"><button>Resolve</button></p>
             <p><label>Comma separated list of domains and/or hostname entries</label> <input type="text"/></p>
             <p><label>Comma separated list of record types. Leave blank for all types. Supported types: A, AAAA, ANY, CAA, CNAME, MX, NAPTR, NS, PTR, SOA, SRV, TXT</label> <input type="text"/></p>
             <h3>Output</h3>
-            <p><label>List of DNS resolutions</label> <textarea readonly="readonly" spellcheck="false"></textarea></p>
+            <p><label>List of DNS resolutions in beautified JSON format</label> <textarea readonly="readonly" spellcheck="false"></textarea></p>
         </div>
     </main>
 <script src="node_modules/@xterm/xterm/lib/xterm.js"></script><script type="application/javascript">replace_javascript</script></body></html>

@@ -84,12 +84,14 @@ declare global {
     interface module_dns {
         init: () => void;
         nodes: {
-            button: HTMLButtonElement;
+            expand: HTMLButtonElement;
             input: HTMLInputElement;
             output: HTMLTextAreaElement;
+            resolve: HTMLButtonElement;
             types: HTMLInputElement;
         };
         resolve: (event:MouseEvent) => void;
+        response: (result:services_dns_output) => void;
     }
 
     interface module_http {

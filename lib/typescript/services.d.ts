@@ -88,23 +88,23 @@ declare global {
 
     interface services_dns_input {
         names: string[];
-        types: types_dns_types[];
+        types: string;
     }
 
     interface services_dns_output {
         [key:string]: {
-            "A": string[];
-            "AAAA": string[]
-            "ANY": string[];
-            "CAA": string[];
-            "CNAME": string[];
-            "MX": string[];
-            "NAPTR": string[];
-            "NS": string[];
-            "PTR": string[];
-            "SOA": string[];
-            "SRV": string[];
-            "TXT": string[];
+            "A"?: type_dns_records;
+            "AAAA"?: type_dns_records;
+            "ANY"?: type_dns_records;
+            "CAA"?: type_dns_records;
+            "CNAME"?: type_dns_records;
+            "MX"?: type_dns_records;
+            "NAPTR"?: type_dns_records;
+            "NS"?: type_dns_records;
+            "PTR"?: type_dns_records;
+            "SOA"?: type_dns_records;
+            "SRV"?: type_dns_records;
+            "TXT"?: type_dns_records;
         };
     }
 

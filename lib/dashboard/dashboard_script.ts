@@ -962,59 +962,165 @@ const dashboard = function dashboard():void {
         },
         dns:module_dns = {
             init: function dashboard_dnsInit():void {
-                dns.nodes.button.onclick = dns.resolve;
+                dns.nodes.expand.onclick = common.definitions;
+                dns.nodes.resolve.onclick = dns.resolve;
                 dns.nodes.output.value = "";
             },
             nodes: {
-                button: document.getElementById("dns").getElementsByTagName("button")[0],
+                expand: document.getElementById("dns").getElementsByTagName("button")[0],
                 input: document.getElementById("dns").getElementsByTagName("input")[0],
                 output: document.getElementById("dns").getElementsByTagName("textarea")[0],
+                resolve: document.getElementById("dns").getElementsByTagName("button")[1],
                 types: document.getElementById("dns").getElementsByTagName("input")[1]
             },
             resolve: function dashboard_dnsResolve():void {
                 const values:string[] = dns.nodes.input.value.replace(/,\s+/g, ",").split(","),
-                    types:string = dns.nodes.types.value.replace(/,\s*/g, ",").toUpperCase(),
-                    qualified:types_dns_types[] = [],
-                    qualifiedPush = function dashboard_dnsResolve_qualifiedPush(key:types_dns_types):void {
-                        if (types.includes(key) === true) {
-                            const reg:RegExp = new RegExp(key, "g");
-                            qualified.push(key);
-                            types.replace(reg, "");
-                        }
-                    },
+                    types:string = dns.nodes.types.value,
                     payload:services_dns_input = {
                         names: values,
-                        types: qualified
+                        types: types
                     };
-                qualifiedPush("AAAA");
-                qualifiedPush("ANY");
-                qualifiedPush("CAA");
-                qualifiedPush("CNAME");
-                qualifiedPush("MX");
-                qualifiedPush("NAPTR");
-                qualifiedPush("NS");
-                qualifiedPush("PTR");
-                qualifiedPush("SOA");
-                qualifiedPush("SRV");
-                qualifiedPush("TXT");
-                if ((/^A$/).test(types) === true || (/,A$/).test(types) === true || (/^A,/).test(types) === true || (/,A,/).test(types) === true) {
-                    qualified.push("A");
-                }
-                if (qualified.length === 0) {
-                    qualified.push("A");
-                    qualified.push("AAAA");
-                    qualified.push("ANY");
-                    qualified.push("CAA");
-                    qualified.push("CNAME");
-                    qualified.push("MX");
-                    qualified.push("NAPTR");
-                    qualified.push("NS");
-                    qualified.push("PTR");
-                    qualified.push("SOA");
-                    qualified.push("SRV");
-                    qualified.push("TXT");
-                }
                 message.send(payload, "dashboard-dns");
+                dns.nodes.output.value = "";
+            },
+            response: function dashboard_dnsResponse(result:services_dns_output):void {
+                const hosts:string[] = Object.keys(result),
+                    len_hosts:number = hosts.length;
+                if (len_hosts > 0) {
+                    const output:string[] = ["{"],
+                        sort = function dashboard_dnsResponse(a:string, b:string):-1|1 {
+                            if (a < b) {
+                                return -1;
+                            }
+                            return 1;
+                        },
+                        types:type_dns_types[] = Object.keys(result[hosts[0]]) as type_dns_types[],
+                        len_types:number = types.length,
+                        get_max = function dashboard_dnsResponse_getMax(input:string[]):number {
+                            let index_input:number = input.length,
+                                max:number = 0;
+                            do {
+                                index_input = index_input - 1;
+                                if (input[index_input].length > max) {
+                                    max = input[index_input].length;
+                                }
+                            } while (index_input > 0);
+                            return max;
+                        },
+                        max_type:number = get_max(types),
+                        pad = function dashboard_dnsResponse_pad(input:string, max:number):string {
+                            input = `"${input}"`;
+                            max = max + 2;
+                            if (input.length === max) {
+                                return input;
+                            }
+                            do {
+                                input = `${input} `;
+                            } while (input.length < max);
+                            return input;
+                        },
+                        object = function dashboard_dnsResponse_object(object:node_dns_soaRecord, soa:boolean):void {
+                            const indent:string = (soa === true)
+                                    ? ""
+                                    : "    ",
+                                obj:string[] = Object.keys(object),
+                                len_obj:number = obj.length,
+                                max_obj:number = get_max(obj);
+                            let index_obj:number = 0;
+                            obj.sort();
+                            if (soa === true) {
+                                output.push(`        ${pad("SOA", max_type)}: {`);
+                            } else {
+                                output.push("            {");
+                            }
+                            do {
+                                if (isNaN(Number(object[obj[index_obj] as "hostmaster"])) === true) {
+                                    output.push(`            ${indent + pad(obj[index_obj], max_obj)}: "${object[obj[index_obj] as "hostmaster"]}",`);
+                                } else {
+                                    output.push(`            ${indent + pad(obj[index_obj], max_obj)}: ${object[obj[index_obj] as "hostmaster"]},`);
+                                }
+                                index_obj = index_obj + 1;
+                            } while (index_obj < len_obj);
+                            output[output.length - 1] = output[output.length - 1].slice(0, output[output.length - 1].length - 1);
+                            output.push(`${indent}        },`);
+                        };
+                    let index_hosts:number = 0,
+                        index_types:number = 0,
+                        index_object:number = 0,
+                        len_object:number = 0,
+                        record_string:string[] = null,
+                        record_strings:string[][] = null,
+                        record_object:node_dns_soaRecord[] = null;
+                    types.sort(sort);
+                    // beautification, loop through hostnames
+                    do {
+                        output.push(`    "${hosts[index_hosts]}": {`);
+                        index_types = 0;
+                        // loop through type names on each hostname
+                        do {
+                            // SOA object
+                            if (types[index_types] === "SOA" && Array.isArray(result[hosts[index_hosts]].SOA) === false) {
+                                object(result[hosts[index_hosts]].SOA as node_dns_soaRecord, true);
+                                output.push("        },");
+                            // array of objects
+                            } else if ((types[index_types] === "CAA" || types[index_types] === "MX" || types[index_types] === "NAPTR" || types[index_types] === "SRV")) {
+                                record_object = result[hosts[index_hosts]][types[index_types]] as node_dns_soaRecord[];
+                                len_object = record_object.length;
+                                if (len_object < 1) {
+                                    output.push(`        ${pad(types[index_types], max_type)}: [],`);
+                                } else if (typeof record_object[0] === "string") {
+                                    output.push(`        ${pad(types[index_types], max_type)}: ["${record_object[0]}"],`);
+                                } else {
+                                    output.push(`        ${pad(types[index_types], max_type)}: [`);
+                                    index_object = 0;
+                                    if (len_object > 0) {
+                                        // loop through keys of each child object of an array
+                                        do {
+                                            object(record_object[index_object] as node_dns_soaRecord, false);
+                                            index_object = index_object + 1;
+                                        } while (index_object < len_object);
+                                        output[output.length - 1] = output[output.length - 1].slice(0, output[output.length - 1].length - 1);
+                                    }
+                                    output.push("        ],");
+                                }
+                            // string[][]
+                            } else if (types[index_types] === "TXT") {
+                                record_strings = result[hosts[index_hosts]].TXT as string[][];
+                                len_object = record_strings.length;
+                                if (len_object < 1) {
+                                    output.push(`        ${pad(types[index_types], max_type)}: [],`);
+                                } else {
+                                    output.push(`        ${pad(types[index_types], max_type)}: [`);
+                                    index_object = 0;
+                                    // loop through string array of a parent array
+                                    do {
+                                        output.push(`            ["${record_strings[index_object].join("\", \"")}"],`);
+                                        index_object = index_object + 1;
+                                    } while (index_object < len_object);
+                                    output[output.length - 1] = output[output.length - 1].slice(0, output[output.length - 1].length - 1);
+                                    output.push(`        ],`);
+                                }
+                            // string[]
+                            } else {
+                                record_string = (result[hosts[index_hosts]][types[index_types]] as string[])
+                                if (record_string.length < 1) {
+                                    output.push(`        ${pad(types[index_types], max_type)}: [],`);
+                                } else {
+                                    output.push(`        ${pad(types[index_types], max_type)}: ["${record_string.join("\", \"")}"],`);
+                                }
+                            }
+                            index_types = index_types + 1;
+                        } while (index_types < len_types);
+                        output[output.length - 1] = output[output.length - 1].slice(0, output[output.length - 1].length - 1);
+                        output.push("    },");
+                        index_hosts = index_hosts + 1;
+                    } while (index_hosts < len_hosts);
+                    output[output.length - 1] = output[output.length - 1].slice(0, output[output.length - 1].length - 1);
+                    output.push("}");
+                    dns.nodes.output.value = output.join("\n");
+                } else {
+                    dns.nodes.output.value = "{}";
+                }
             }
         },
         http:module_http = {
@@ -1077,6 +1183,8 @@ const dashboard = function dashboard():void {
                         }
                         // populate docker containers
                         compose.init();
+                        // assign the dns events
+                        dns.init();
                         // populate the http content
                         http.init();
                         // populate port data
@@ -1270,6 +1378,8 @@ const dashboard = function dashboard():void {
                         }
                     } else if (message_item.service === "dashboard-http") {
                         http.response(message_item.data as services_http_test);
+                    } else if (message_item.service === "dashboard-dns") {
+                        dns.response(message_item.data as services_dns_output);
                     }
                 }
             },

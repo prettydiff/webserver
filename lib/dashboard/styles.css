@@ -133,6 +133,7 @@ td .icon{display:inline-block;width:1.5em}
 #dashboard div > .edit{border-color:var(--border_input);border-style:solid;border-width:0.1em;padding:1em}
 #dashboard div.edit p{font-size:1em}
 #http .section div,
+#dns .section dl,
 #servers .section dl{display:none}
 #dashboard .section > .buttons{margin:0 0 2em}
 #dashboard .compose-container-list h4 button,
@@ -207,5 +208,5 @@ td .icon{display:inline-block;width:1.5em}
 #dashboard thead button{background:transparent;border-style:none;margin:0;padding:0.5em 1em;text-align:left;width:100%}
 #dashboard label input[type="radio"]{box-sizing:unset;display:inline-block;width:1em}
 #dashboard .definitions li{border-style:none;list-style:disc}
-#dashboard .http_response p{float:left;margin:0 5% 0 0;width:30%}
+#dashboard .http_response p{float:left;margin:0 2% 0 0;width:32%}
 #dashboard .http_response p.float-last{margin:0}

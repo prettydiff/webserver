@@ -2,6 +2,7 @@
 // cspell: words lydell, RSAPSS
 import { ChildProcess, ExecException, ExecOptions, SpawnOptions } from "node:child_process";
 import { ECDH, Hash, KeyObject, RSAKeyPairOptions } from "node:crypto";
+import { AnyRecord, MxRecord, NaptrRecord, SoaRecord, SrvRecord } from "node:dns";
 import { BigIntStats, ReadStream, Stats, WriteStream } from "node:fs";
 import { ClientRequest, IncomingMessage, OutgoingHttpHeaders, Server as httpServer, ServerResponse } from "node:http";
 import { RequestOptions } from "node:https";
@@ -23,6 +24,11 @@ declare global {
     type node_crypto_Hash = Hash;
     type node_crypto_KeyObject = KeyObject;
     type node_crypto_RSAKeyPairOptions = RSAKeyPairOptions<"pem", "pem">;
+    type node_dns_anyRecord = AnyRecord;
+    type node_dns_mxRecord = MxRecord;
+    type node_dns_naptrRecord = NaptrRecord;
+    type node_dns_soaRecord = SoaRecord;
+    type node_dns_srvRecord = SrvRecord;
     type node_error = NodeJS.ErrnoException;
     type node_fs_BigIntStats = BigIntStats;
     type node_fs_ReadStream = ReadStream;
