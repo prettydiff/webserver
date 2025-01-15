@@ -124,6 +124,7 @@ const http_request = function http_request(socket_data:socket_data, transmit:tra
                 return;
             }
             fragment = decoder.write(responseData);
+            chunks = chunks + fragment;
             if (bodyIndex < 4) {
                 const lower:string = chunks.toLowerCase(),
                     contentIndex:number = lower.indexOf("content-length");
@@ -136,7 +137,6 @@ const http_request = function http_request(socket_data:socket_data, transmit:tra
                     contentLength = 0;
                 }
             }
-            chunks = chunks + fragment;
             if (Buffer.byteLength(chunks.slice(bodyIndex)) === contentLength) {
                 socket.end();
             }

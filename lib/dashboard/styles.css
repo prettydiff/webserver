@@ -1,6 +1,7 @@
 /* cspell: words ytdownload, ytstatus */
 
 :root{
+    scrollbar-color:#444 #111;
     --black:#000;
 
     --background:#333;
@@ -210,3 +211,9 @@ td .icon{display:inline-block;width:1.5em}
 #dashboard .definitions li{border-style:none;list-style:disc}
 #dashboard .http_response p{float:left;margin:0 2% 0 0;width:32%}
 #dashboard .http_response p.float-last{margin:0}
+
+#dashboard *::-webkit-scrollbar{background-color:var(--background-dark);border-color:var(--background)}
+#dashboard textarea::-webkit-scrollbar{background-color:black}
+#dashboard *::-webkit-scrollbar-thumb{background-color:var(--background);border-color:black}
+#dashboard *::-webkit-scrollbar-thumb:hover{background-color:var(--background)}
+#dashboard *::-webkit-scrollbar-corner{background-color:var(--background-dark)}

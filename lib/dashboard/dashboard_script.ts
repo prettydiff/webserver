@@ -4,7 +4,6 @@ import core from "../browser/core.js";
 import Terminal from "@xterm/xterm";
 
 // cspell: words buildx, containerd, nmap, winget
-
 const dashboard = function dashboard():void {
     let payload:transmit_dashboard = null,
         loaded:boolean = false,
@@ -519,7 +518,7 @@ const dashboard = function dashboard():void {
                     common.sort_records(tbody, table);
                 }
             },
-            sort_records: function dashboard_commonSortRecords(tbody:HTMLElement, list:string[][]):void {
+            sort_records: function dashboard_commonSortRecords(tbody:HTMLElement, list:string[][], id?:string):void {
                 const table:HTMLElement = tbody.getAncestor("table", "tag"),
                     tbody_new:HTMLElement = document.createElement("tbody"),
                     ths:HTMLCollectionOf<HTMLElement> = table.getElementsByTagName("th"),
@@ -1202,7 +1201,7 @@ const dashboard = function dashboard():void {
                                 if (index > 0) {
                                     do {
                                         index = index - 1;
-                                        if (tr[index].getAttribute("data-name") === hash || (hash === "dashboard" && tr[index].getElementsByTagName("td")[2].textContent === "dashboard")) {
+                                        if (tr[index].getElementsByTagName("td")[1].textContent === hash || (hash === "dashboard" && tr[index].getElementsByTagName("td")[2].textContent === "dashboard")) {
                                             tbody.removeChild(tr[index]);
                                             return;
                                         }
@@ -2067,7 +2066,7 @@ const dashboard = function dashboard():void {
             info: null,
             init: function dashboard_terminalItem():void {
                 if (typeof Terminal === "undefined") {
-                    setTimeout(dashboard_terminalItem, 100);
+                    setTimeout(dashboard_terminalItem, 200);
                 } else {
                     const encryption:type_encryption = (location.protocol === "http:")
                             ? "open"
@@ -2096,7 +2095,10 @@ const dashboard = function dashboard():void {
                     terminal.socket.onmessage = terminal.events.firstData;
                     if (typeof navigator.clipboard === "undefined") {
                         const em:HTMLElement = document.getElementById("terminal").getElementsByClassName("tab-description")[0].getElementsByTagName("em")[0] as HTMLElement;
-                        if (em !== undefined) {
+                        if (location.protocol === "http:") {
+                            em.textContent = "Clipboard functionality only available when page is requested with HTTPS.";
+                            em.style.fontWeight = "bold";
+                        } else if (em !== undefined) {
                             em.parentNode.removeChild(em);
                         }
                     } else {
