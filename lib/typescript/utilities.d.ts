@@ -19,6 +19,20 @@ interface directory_list extends Array<type_directory_item> {
     failures?: string[];
 }
 
+interface dns_callback {
+    "0": (err:node_error, records:type_dns_records) => void;
+    "1": (err:node_error, records:type_dns_records) => void;
+    "10": (err:node_error, records:type_dns_records) => void;
+    "2": (err:node_error, records:type_dns_records) => void;
+    "3": (err:node_error, records:type_dns_records) => void;
+    "4": (err:node_error, records:type_dns_records) => void;
+    "5": (err:node_error, records:type_dns_records) => void;
+    "6": (err:node_error, records:type_dns_records) => void;
+    "7": (err:node_error, records:type_dns_records) => void;
+    "8": (err:node_error, records:type_dns_records) => void;
+    "9": (err:node_error, records:type_dns_records) => void;
+}
+
 interface external_ports {
     list: type_external_port[];
     time: number;
@@ -147,6 +161,7 @@ interface vars {
     commands: store_string;
     compose: configuration_compose;
     dashboard: string;
+    http_headers: string;
     interfaces: string[];
     intervals: store_number;
     logs: services_dashboard_status[];

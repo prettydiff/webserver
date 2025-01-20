@@ -18,6 +18,7 @@ const gid:number = process.getgid(),
             variables: {}
         },
         dashboard: "",
+        http_headers: "",
         interfaces: [
             "localhost",
             "127.0.0.1",

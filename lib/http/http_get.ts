@@ -91,10 +91,10 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                             `<script type="application/javascript">${script}</script></body></html>`
                         ],
                     bodyText:string = templateText.join("\r\n") + config.content.join("\r\n") + templateEnd.join("\r\n");
-                    headerText[2] = `content-length: ${Buffer.from(bodyText).length}`;
+                    headerText[2] = `content-length: ${Buffer.byteLength(bodyText)}`;
                 return payload(headerText, bodyText);
             }
-            headerText[2] = `content-length: ${Buffer.from(bodyText).length}`;
+            headerText[2] = `content-length: ${Buffer.byteLength(bodyText)}`;
             return payload(headerText, bodyText);
         },
         write = function http_get_write(payload:Buffer|string):void {
@@ -304,11 +304,14 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
             const headers:string[] = [
                 "HTTP/1.1 200",
                 "content-type: text/html",
-                `content-length: ${Buffer.from(vars.dashboard).length}`,
+                `content-length: ${Buffer.byteLength(vars.dashboard)}`,
                 "server: prettydiff/webserver",
                 "",
                 ""
             ];
+            if (headerList.indexOf("dashboard-http: true") < 0) {
+                vars.http_headers = headerList.join("\n");
+            }
             write(headers.join("\r\n") + vars.dashboard);
         } else if (decoded.includes("node_modules") === true) {
             input = vars.path.project + decoded;

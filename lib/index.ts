@@ -80,7 +80,7 @@ startup(function index():void {
         do {
             server({
                 action: "activate",
-                configuration: vars.servers[servers[index]].config
+                server: vars.servers[servers[index]].config
             }, callback);
             index = index + 1;
         } while (index < total);
@@ -88,7 +88,7 @@ startup(function index():void {
     if (vars.servers.dashboard === undefined) {
         server_create({
             action: "add",
-            configuration: default_server("dashboard")
+            server: default_server("dashboard")
         }, function index_startDashboard():void {
             start();
         });

@@ -12,9 +12,9 @@ import vars from "../utilities/vars.js";
 // 5. launch servers
 // 6. call the callback
 
-const server_create = function services_serverCreate(data:services_dashboard_action, callback:() => void):void {
+const server_create = function services_serverCreate(data:services_action_server, callback:() => void):void {
     let count:number = 0;
-    const config:services_server = data.configuration,
+    const config:services_server = data.server,
         path_config:string = `${vars.path.project}servers.json`,
         path_name:string = vars.path.servers + config.name + vars.sep,
         path_assets:string = `${path_name}assets${vars.sep}`,

@@ -2,6 +2,43 @@ import { IModes } from "@xterm/xterm";
 
 declare global {
 
+    interface services_action_compose {
+        action: type_dashboard_action;
+        compose: services_docker_compose;
+    }
+
+    interface services_action_server {
+        action: type_dashboard_action;
+        server: services_server;
+    }
+
+    interface services_dashboard {
+        "activate": type_server_action;
+        "add": type_server_action;
+        "deactivate": type_server_action;
+        "destroy": type_server_action;
+        "modify": type_server_action;
+    }
+
+    interface services_dashboard_activate {
+        name: string;
+        ports: server_ports;
+    }
+
+    interface services_dashboard_status {
+        action: type_dashboard_action;
+        configuration: type_dashboard_config;
+        message: string;
+        status: type_dashboard_status;
+        time: number;
+        type: type_dashboard_type;
+    }
+
+    interface services_dashboard_terminal {
+        modes: IModes;
+        text: string;
+    }
+
     interface services_docker_compose {
         command: string;
         compose: string;
@@ -49,36 +86,26 @@ declare global {
         type: string;
     }
 
-    interface services_dashboard {
-        "activate": type_server_action;
-        "add": type_server_action;
-        "deactivate": type_server_action;
-        "destroy": type_server_action;
-        "modify": type_server_action;
+    interface services_dns_input {
+        names: string[];
+        types: string;
     }
 
-    interface services_dashboard_action {
-        action: type_dashboard_action;
-        configuration: services_server;
-    }
-
-    interface services_dashboard_activate {
-        name: string;
-        ports: server_ports;
-    }
-
-    interface services_dashboard_status {
-        action: type_dashboard_action;
-        configuration: type_dashboard_config;
-        message: string;
-        status: type_dashboard_status;
-        time: number;
-        type: type_dashboard_type;
-    }
-
-    interface services_dashboard_terminal {
-        modes: IModes;
-        text: string;
+    interface services_dns_output {
+        [key:string]: {
+            "A"?: type_dns_records;
+            "AAAA"?: type_dns_records;
+            "ANY"?: type_dns_records;
+            "CAA"?: type_dns_records;
+            "CNAME"?: type_dns_records;
+            "MX"?: type_dns_records;
+            "NAPTR"?: type_dns_records;
+            "NS"?: type_dns_records;
+            "PTR"?: type_dns_records;
+            "SOA"?: type_dns_records;
+            "SRV"?: type_dns_records;
+            "TXT"?: type_dns_records;
+        };
     }
 
     interface services_http {
@@ -88,6 +115,13 @@ declare global {
         head: http_action;
         post: http_action;
         put: http_action;
+    }
+
+    interface services_http_test {
+        body: string;
+        encryption: boolean;
+        headers: string;
+        uri: string;
     }
 
     interface services_processKill {

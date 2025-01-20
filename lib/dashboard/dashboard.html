@@ -24,9 +24,48 @@
     <h1>Server Management Dashboard</h1>
     <p id="connection-status" class="connection-offline">Dashboard Connection: <strong>Offline</strong></p>
     <nav><ul>
-        <li><button class="nav-focus" data-section="servers">Servers</button></li><li><button data-section="compose">Docker Compose</button></li><li><button data-section="logs">Logs</button></li><li><button data-section="terminal">Terminal</button></li><li><button data-section="ports">Port Summary</button></li><li><button data-section="sockets">Socket Summary</button></li><li><button data-section="help">Help</button></li><li><button data-section="faq">FAQ</button></li>
+        <li><button class="nav-focus" data-section="servers">Servers</button></li><li><button data-section="compose">Docker Compose</button></li><li><button data-section="logs">Logs</button></li><li><button data-section="terminal">Terminal</button></li><li><button data-section="ports">Port Summary</button></li><li><button data-section="sockets">Socket Summary</button></li><li><button data-section="http">HTTP Test</button></li><li><button data-section="dns">DNS Resolve</button></li><li><button data-section="help">Help</button></li><li><button data-section="faq">FAQ</button></li>
     </ul></nav>
-    <main>
+    <main></main>
+        <div class="tab" id="dns">
+            <h2>DNS Resolve</h2>
+            <p class="tab-description">Test DNS name resolution from the application's location.</p>
+            <div class="section">
+                <h3>DNS Type Definitions <button class="expand" data-tag="dl">Expand</button></h3>
+                <dl>
+                    <dt>A</dt>
+                    <dd>IPv4 addresses</dd>
+                    <dt>AAAA</dt>
+                    <dd>IPv6 addresses</dd>
+                    <dt>ANY</dt>
+                    <dd>any records</dd>
+                    <dt>CAA</dt>
+                    <dd>certificate authority authorization records</dd>
+                    <dt>CNAME</dt>
+                    <dd>canonical name records</dd>
+                    <dt>MX</dt>
+                    <dd>mail exchange records</dd>
+                    <dt>NAPTR</dt>
+                    <dd>name authority pointer records</dd>
+                    <dt>NS</dt>
+                    <dd>name server records</dd>
+                    <dt>PTR</dt>
+                    <dd>pointer records</dd>
+                    <dt>SOA</dt>
+                    <dd>start of authority records</dd>
+                    <dt>SRV</dt>
+                    <dd>service records</dd>
+                    <dt>TXT</dt>
+                    <dd>text records</dd>
+                </dl>
+            </div>
+            <h3>Input</h3>
+            <p class="buttons"><button>Resolve</button></p>
+            <p><label>Comma separated list of domains and/or hostname entries</label> <input type="text"/></p>
+            <p><label>Comma separated list of record types. Leave blank for all types. Supported types: A, AAAA, CAA, CNAME, MX, NAPTR, NS, PTR, SOA, SRV, TXT</label> <input type="text"/></p>
+            <h3>Output</h3>
+            <p><label>List of DNS resolutions in beautified JSON format</label> <textarea readonly="readonly" spellcheck="false"></textarea></p>
+        </div>
         <div class="tab" id="faq">
             <h2>Frequently Asked Questions</h2>
             <p class="tab-description">Please review these items to help troubleshoot common problems.</p>
@@ -241,6 +280,53 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
                 </ul>
             </div>
         </div>
+        <div class="tab" id="http">
+            <h2>HTTP Test</h2>
+            <p class="tab-description">A means to write arbitrary HTTP requests and read the raw response.</p>
+            <div class="section">
+                <h3>HTTP Format <button class="expand" data-tag="div">Expand</button></h3>
+                <div class="definitions">
+                    <p>HTTP is a text-based application layer transmission protocol defined as <a href="https://datatracker.ietf.org/doc/html/rfc2616">RFC 2616</a>.</p>
+                    <p>The first line of an HTTP request a space separated list of method, resource path (also known as <em>end point</em>), and protocol.
+                        Each following line is separated by a CRLF (x0Dx0A) sequence. This application handles that formatting for you.
+                        The header portion of the request is separated from a body portion by an empty line, which is two or more consecutive sequences of CRLF.
+                        A body portion is optional and only used by certain HTTP methods. All lines after the first and before the body portion are headers.
+                        Each header gets its own line and is a case-insensitive name followed by a colon, zero or more spaces, and a text value.</p>
+                    <p>A <em>host</em> header is required and is generally the second line of the raw request string.
+                        The host value is taken from the domain portion of a web address.
+                        The domain portion of an address includes authentication, domain name, and port.
+                        The authentication portion is optional and rarely used.</p>
+                    <p>The port portion of a domain is optional and rarely included if connecting with plain text HTTP over port 80 or encrypted HTTPS over port 443.
+                        In all other cases the port number is a colon separated suffix to the domain name.
+                        In the case of an IPv6 address the domain name must be inclosed in sqaure braces before specifying the port number, example: <strong>host: [2600:1700:1234:5678::a]:8081</strong>.</p>
+                    <ul>
+                        <li>The method is one of the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods">HTTP request methods</a>. <strong>GET</strong> is the most common.</li>
+                        <li>The end point looks like a Unix absolute file path always starting with a forward slash.</li>
+                        <li>The protocol is HTTP, forward slash, and a version number, such as <em>HTTP/1.1</em>.</li>
+                    </ul>
+                    <p>An HTTP request can be either plain text or a TLS encryption. That distinction is not provided in the HTTP header but is inferred by context.</p>
+                    <p>The default behavior of HTTP version 1.1 is to keep a socket open for multiple sequential request/response round trips. HTTP 1.0 does not have this capability, called <em>keep-alive</em>, and it forbidden in HTTP/2 and HTTP/3.  As a result, in HTTP/1.1, we must have an indicator different than socket termination to determine when a response completes. This following list determines response message completion.</p>
+                    <ul>
+                        <li>The socket closes.</li>
+                        <li>The response header is completed with the <em>"\r\n\r\n</em> empty line sequence and the response contains no body portion.</li>
+                        <li>The response header contains a heading <em>transfer-encoding: chunked</em> and the body terminates with a message chunk containing exactly <em>0\r\n\r\n</em>.</li>
+                        <li>The response header contains a heading <em>content-length</em> with a numeric value and the byte length, not character length, of the body portion only equals that header value.</li>
+                    </ul>
+                </div>
+            </div>
+            <h3>Request Scheme</h3>
+            <p><label class="radio">Plain text (http) <input name="http_scheme" type="radio" value="false"/></label> <label class="radio">Encrypted (https) <input checked="checked" name="http_scheme" type="radio" value="true"/></label></p>
+            <h3>Raw Request</h3>
+            <p><label>Complete raw HTTP request including header <textarea class="test-input" spellcheck="false"></textarea></label></p>
+            <p class="buttons"><button class="send_request">Send Request</button></p>
+            <h3>Response</h3>
+            <div class="http_response">
+                <p><label>URI <textarea readonly="readonly" spellcheck="false"></textarea></label></p>
+                <p><label>Response Headers <textarea readonly="readonly" spellcheck="false"></textarea></label></p>
+                <p class="float-last"><label>Response Body <textarea readonly="readonly" spellcheck="false"></textarea></label></p>
+                <span class="clear"></span>
+            </div>
+        </div>
         <div class="tab" id="compose">
             <h2>Docker Compose</h2>
             <p class="tab-description">A list of configured Docker containers and their status. Container status refreshes every ${payload.intervals.compose} seconds. All containers run under the Docker daemon detached from this application.</p>
@@ -293,7 +379,7 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
             <h2>Servers</h2>
             <p class="tab-description">A list of configured HTTP/WS servers hosted by this application and their respective status.</p>
             <div class="section">
-                <h3>Definitions of Server Object Properties <button class="expand">Expand</button></h3>
+                <h3>Definitions of Server Object Properties <button class="expand" data-tag="dl">Expand</button></h3>
                 <dl>
                     <dt><em>activate</em> (string)</dt>
                     <dd><p>
