@@ -31,10 +31,10 @@ const server = function transmit_server(data:services_action_server, callback:(n
                     // eslint-disable-next-line @typescript-eslint/no-this-alias, no-restricted-syntax
                     const socket:websocket_client = this,
                         dataString:string = data.toString("utf-8"),
-                        headerIndex:number = dataString.indexOf("\r\n\r\n"),
+                        headerIndex:number = dataString.replace(/^\s+/, "").indexOf("\r\n\r\n"),
                         headerString:string = (headerIndex > 0)
-                            ? dataString.slice(0, headerIndex)
-                            : dataString,
+                            ? dataString.replace(/^\s+/, "").slice(0, headerIndex)
+                            : dataString.replace(/^\s+/, ""),
                         headerList:string[] = headerString.split("\r\n"),
                         testNonce:RegExp = (/^Sec-WebSocket-Protocol:\s*/),
                         temporary:boolean = (server.temporary === true),

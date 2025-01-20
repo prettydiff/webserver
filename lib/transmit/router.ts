@@ -2,12 +2,13 @@
 import compose from "../services/compose.js";
 import dashboard from "../services/dashboard.js";
 import dns from "../services/dns.js";
-import process_kill from "../services/processKill.js";
 import http_request from "../http/http_requestTest.js";
+import process_kill from "../services/processKill.js";
 import youtube_download from "../services/youtubeDownload.js";
 
 const router = function transmit_router(socketData:socket_data, transmit:transmit_socket):void {
     const services:type_service = socketData.service,
+        socket:websocket_client = transmit.socket as websocket_client,
         actions:transmit_receiver = {
             "dashboard-compose-container": compose,
             "dashboard-compose-variables": compose,

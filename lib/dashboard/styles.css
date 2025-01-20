@@ -39,6 +39,8 @@ h4{font-size:1.8em}
 h5{font-size:1.4em}
 h1,h2,h3,h4,h5,h6{margin:0 0 1em}
 p,li,dd,dt,td,th,textarea{font-size:var(--font-size)}
+li p{font-size:1em}
+p textarea{font-size:1em}
 li li{font-size:1em}
 label input{display:block}
 dt em{color:var(--text_input);font-size:1.4em;font-style:normal;font-weight:bold;text-decoration:underline}
@@ -100,12 +102,14 @@ table{border-collapse:collapse}
 td{background:var(--background);font-family:monospace;padding:0.5em}
 td .icon{display:inline-block;width:1.5em}
 
+#dashboard #servers li,
+#dashboard #compose li{border-color:var(--border_color);border-style:solid;border-width:0.1em}
 #connection-status{border-color:var(--border_color);border-style:solid;border-width:0.1em;padding:0.2em}
 #dashboard button{background:var(--background_button);border-color:var(--border_color);border-style:solid;border-radius:0;border-width:0.065em;font-size:1em;font-weight:bold;text-shadow:0.05em 0.05em var(--background_dark);width:10em}
 #dashboard button:hover{background:var(--border_input)}
 #dashboard button:hover:disabled{background:var(--background_button);color:var(--border_input);cursor:auto}
 #dashboard .buttons button:disabled{color:var(--border_input)}
-#dashboard code {background:var(--background_textarea);border-color:var(--border_color);border-style:solid;border-width:0.1em;margin:0.5em 2em;padding:0.5em}
+#dashboard code {background:var(--background_textarea);border-color:var(--border_soft);border-style:solid;border-width:0.1em;margin:0.5em 2em;padding:0.5em}
 #dashboard nav ul{border-color:var(--border_color);border-style:none none solid;border-width:0.1em;margin:0 0 4em;padding:0 0 1em}
 #dashboard nav li{border-color:var(--border_color);border-style:none solid none none;border-width:0.1em;display:inline-block;padding:0 0.5em}
 #dashboard nav button{background:transparent;border-style:none;box-shadow:none;color:var(--text)}
@@ -118,7 +122,7 @@ td .icon{display:inline-block;width:1.5em}
 #dashboard .server-list{padding:0}
 #dashboard h2,
 #dashboard .compose-container-list h4,
-#dashboard .server-list h4{cursor:pointer;margin:0 0 0.42em}
+#dashboard .server-list h4{cursor:pointer;font-size:1.4em;margin:0}
 #dashboard .compose-container-list h4:hover,
 #dashboard .server-list h4:hover{background:rgba(0,0,0,0.25)}
 #dashboard .compose-container-list .amber,
@@ -130,15 +134,15 @@ td .icon{display:inline-block;width:1.5em}
 #dashboard .compose-container-list .red,
 #dashboard .server-list .red{background:var(--status_red)}
 #dashboard .edit .summary h5{font-size:1em;margin:0}
-#dashboard div.edit{font-size:var(--font-size)}
+#dashboard div.edit{padding:0 0.694em}
 #dashboard div > .edit{border-color:var(--border_input);border-style:solid;border-width:0.1em;padding:1em}
-#dashboard div.edit p{font-size:1em}
 #http .section div,
 #dns .section dl,
-#servers .section dl{display:none}
+#servers .section dl,
+#websocket .section div{display:none}
 #dashboard .section > .buttons{margin:0 0 2em}
 #dashboard .compose-container-list h4 button,
-#dashboard .server-list h4 button{background:none;border-style:none;box-shadow:none;display:block;font-size:1em;padding:0;text-align:left;width:100%}
+#dashboard .server-list h4 button{background:none;border-style:none;box-shadow:none;display:block;font-size:1em;padding:0.595em;text-align:left;width:100%}
 #dashboard h3 .expand,
 #dashboard h4 .expand{display:block;float:right;font-size:0.6em}
 #dashboard .edit .summary ul{font-size:1em;margin:1em 0 0;padding:0}
@@ -147,8 +151,6 @@ td .icon{display:inline-block;width:1.5em}
 #compose li,
 #servers li{list-style:none}
 #compose .compose-variable-list li{background:var(--background_textarea);padding:1em}
-#compose .compose-variable-list span,
-#compose .compose-variable-list strong{font-size:var(--font-size)}
 #compose .compose-variable-list strong{border-color:var(--text);border-style:none solid none none;border-width:0 0.065em 0 0;display:inline-block;margin:0 1.5em 0 0;width:10em}
 #servers label{display:flex;width:100%}
 #servers label span.details-redundant,
@@ -187,7 +189,8 @@ td .icon{display:inline-block;width:1.5em}
 #dashboard .edit label span{display:block}
 #dashboard .edit label span{height:2em}
 #dashboard .edit h4{font-size:1.2em}
-#dashboard .edit li{border-style:none;list-style-type:disc;margin:0.5em 0 0 1em;padding:0}
+#dashboard #servers .edit li,
+#dashboard #compose .edit li{border-style:none;list-style-type:disc;margin:0.5em 0 0 1em;padding:0}
 #dashboard .edit dt,
 #dashboard .edit dd{font-size:1em}
 #dashboard #servers .note{clear:both;font-size:1.2em}
@@ -202,15 +205,16 @@ td .icon{display:inline-block;width:1.5em}
 #logs code{color:var(--fail_bright)}
 #dashboard table{border-collapse:collapse;margin:0 0 4em}
 #dashboard td,
-#dashboard th{border-color:var(--border_input);border-style:solid;border-width:0.1em;padding:0.2em;text-align:left}
+#dashboard th{border-color:var(--border_input);border-style:solid;border-width:0.1em;padding:0.2em 0.5em;text-align:left}
 #dashboard th{background:var(--background_textarea)}
 #dashboard #compose textarea.compose-variables-edit{height:10em}
 #dashboard textarea.short{height:6em}
 #dashboard thead button{background:transparent;border-style:none;margin:0;padding:0.5em 1em;text-align:left;width:100%}
 #dashboard label input[type="radio"]{box-sizing:unset;display:inline-block;width:1em}
 #dashboard .definitions li{border-style:none;list-style:disc}
-#dashboard .http_response p{float:left;margin:0 2% 0 0;width:32%}
-#dashboard .http_response p.float-last{margin:0}
+#dashboard .http_response p{float:left;margin:0 2% 0 0;width:16%}
+#dashboard .http_response p.float-last{margin:0;width:64%}
+#dashboard textarea.test-input{height:20em}
 
 #dashboard *::-webkit-scrollbar{background-color:var(--background-dark);border-color:var(--background)}
 #dashboard textarea::-webkit-scrollbar{background-color:black}

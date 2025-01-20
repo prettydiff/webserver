@@ -36,7 +36,7 @@ const send = function transmit_send(body:Buffer|socket_data|string, socketItem:w
     // OPCODES
     // ## Messages
     // 0 - continuation - fragments of a message payload following an initial fragment
-    // 1 - text message
+    // 1 - socket_data object (normally a text string)
     // 2 - binary message
     // 3 - in this application 3 means raw string, but officially it is reserved for future use
     // 4-7 - officially (reserved for future use)

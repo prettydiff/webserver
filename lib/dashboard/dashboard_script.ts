@@ -1133,15 +1133,16 @@ const dashboard = function dashboard():void {
                 http.nodes.responseURI.value = "";
             },
             nodes: {
+                encryption: document.getElementById("http").getElementsByTagName("input")[1],
                 http_definitions: document.getElementById("http").getElementsByClassName("expand")[0] as HTMLElement,
-                http_request: document.getElementById("http").getElementsByTagName("button")[1] as HTMLButtonElement,
+                http_request: document.getElementById("http").getElementsByClassName("send_request")[0] as HTMLButtonElement,
                 request: document.getElementById("http").getElementsByTagName("textarea")[0],
                 responseBody: document.getElementById("http").getElementsByTagName("textarea")[3],
                 responseHeaders: document.getElementById("http").getElementsByTagName("textarea")[2],
                 responseURI: document.getElementById("http").getElementsByTagName("textarea")[1]
             },
             request: function dashboard_httpRequest():void {
-                const encryption:boolean = document.getElementById("http").getElementsByTagName("input")[1].checked,
+                const encryption:boolean = http.nodes.encryption.checked,
                     data:services_http_test = {
                         body: "",
                         encryption: encryption,
@@ -1519,7 +1520,12 @@ const dashboard = function dashboard():void {
                     servers:string[] = Object.keys(payload.servers),
                     compose:string[] = (payload.compose === null)
                         ? null
-                        : Object.keys(payload.compose.containers);
+                        : Object.keys(payload.compose.containers),
+                    populate = function dashboard_portsInternal_populate(index:number, key:"open"|"secure"):void {
+                        if (typeof payload.servers[servers[index]].status[key] === "number" && payload.servers[servers[index]].status[key] > 0) {
+                            output.push([payload.servers[servers[index]].status[key], "TCP", `server (${key})`, servers[index]]);
+                        }
+                    };
                 let indexServers:number = servers.length,
                     indexPorts:number = 0;
                 // per server
@@ -1527,12 +1533,8 @@ const dashboard = function dashboard():void {
                 if (indexServers > 0) {
                     do {
                         indexServers = indexServers - 1;
-                        if (typeof payload.servers[servers[indexServers]].status.open === "number" && payload.servers[servers[indexServers]].status.open > 0) {
-                            output.push([payload.servers[servers[indexServers]].status.open, "TCP", "server", `${servers[indexServers]} (open)`]);
-                        }
-                        if (typeof payload.servers[servers[indexServers]].status.secure === "number" && payload.servers[servers[indexServers]].status.secure > 0) {
-                            output.push([payload.servers[servers[indexServers]].status.secure, "TCP", "server", `${servers[indexServers]} (secure)`]);
-                        }
+                        populate(indexServers, "open");
+                        populate(indexServers, "secure");
                     } while (indexServers > 0);
                 }
 
@@ -2096,7 +2098,7 @@ const dashboard = function dashboard():void {
                     if (typeof navigator.clipboard === "undefined") {
                         const em:HTMLElement = document.getElementById("terminal").getElementsByClassName("tab-description")[0].getElementsByTagName("em")[0] as HTMLElement;
                         if (location.protocol === "http:") {
-                            em.textContent = "Clipboard functionality only available when page is requested with HTTPS.";
+                            em.textContent = "Terminal clipboard functionality only available when page is requested with HTTPS.";
                             em.style.fontWeight = "bold";
                         } else if (em !== undefined) {
                             em.parentNode.removeChild(em);

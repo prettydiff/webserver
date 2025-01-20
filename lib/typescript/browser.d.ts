@@ -97,6 +97,7 @@ declare global {
     interface module_http {
         init: () => void;
         nodes: {
+            encryption: HTMLInputElement;
             http_definitions: HTMLElement;
             http_request: HTMLElement;
             request: HTMLTextAreaElement;
