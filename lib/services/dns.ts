@@ -60,7 +60,7 @@ const dns = function services_dns(socket_data:socket_data, transmit:transmit_soc
                 types.replace(reg, "");
             }
         },
-        types = data.types.replace(/,\s*/g, ",").toUpperCase(),
+        types:string = data.types.replace(/,\s*/g, ",").toUpperCase(),
         qualified:type_dns_types[] = [],
         len_names:number = data.names.length,
         output:services_dns_output = {};

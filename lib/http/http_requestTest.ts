@@ -87,7 +87,7 @@ const http_request = function http_request(socket_data:socket_data, transmit:tra
     if (url.hostname === undefined) {
         write(`Error: Host value does not appear valid: ${host}`, "", true);
         return;
-    };
+    }
     socket = (data.encryption === true)
         ? node.tls.connect({
             host: host,

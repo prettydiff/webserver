@@ -8,7 +8,6 @@ import youtube_download from "../services/youtubeDownload.js";
 
 const router = function transmit_router(socketData:socket_data, transmit:transmit_socket):void {
     const services:type_service = socketData.service,
-        socket:websocket_client = transmit.socket as websocket_client,
         actions:transmit_receiver = {
             "dashboard-compose-container": compose,
             "dashboard-compose-variables": compose,

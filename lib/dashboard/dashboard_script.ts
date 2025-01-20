@@ -518,7 +518,7 @@ const dashboard = function dashboard():void {
                     common.sort_records(tbody, table);
                 }
             },
-            sort_records: function dashboard_commonSortRecords(tbody:HTMLElement, list:string[][], id?:string):void {
+            sort_records: function dashboard_commonSortRecords(tbody:HTMLElement, list:string[][]):void {
                 const table:HTMLElement = tbody.getAncestor("table", "tag"),
                     tbody_new:HTMLElement = document.createElement("tbody"),
                     ths:HTMLCollectionOf<HTMLElement> = table.getElementsByTagName("th"),
@@ -1097,11 +1097,11 @@ const dashboard = function dashboard():void {
                                         index_object = index_object + 1;
                                     } while (index_object < len_object);
                                     output[output.length - 1] = output[output.length - 1].slice(0, output[output.length - 1].length - 1);
-                                    output.push(`        ],`);
+                                    output.push("        ],");
                                 }
                             // string[]
                             } else {
-                                record_string = (result[hosts[index_hosts]][types[index_types]] as string[])
+                                record_string = (result[hosts[index_hosts]][types[index_types]] as string[]);
                                 if (record_string.length < 1) {
                                     output.push(`        ${pad(types[index_types], max_type)}: [],`);
                                 } else {
