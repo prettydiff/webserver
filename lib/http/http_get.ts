@@ -98,9 +98,16 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
             return payload(headerText, bodyText);
         },
         write = function http_get_write(payload:Buffer|string):void {
-            socket.write(payload, function http_get_write_callback():void {
+            const destroy = function http_get_write_destroy():void {
                 socket.destroy();
-            });
+            };
+            if (socket.write(payload) === true) {
+                setTimeout(destroy, 100);
+            } else {
+                socket.once("drain", function http_get_write_callback_drain():void {
+                    setTimeout(destroy, 100);
+                });
+            }
         },
         notFound = function http_get_notFound():void {
             write(html({
@@ -313,7 +320,9 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                 vars.http_headers = headerList.join("\n");
             }
             write(headers.join("\r\n") + vars.dashboard);
-        } else if (decoded.includes("node_modules") === true) {
+            return;
+        }
+        if (decoded.includes("node_modules") === true) {
             input = vars.path.project + decoded;
         } else {
             input = `${vars.path.project}lib${vars.sep}dashboard${vars.sep}` + decoded;
