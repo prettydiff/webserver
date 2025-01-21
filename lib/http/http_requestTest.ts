@@ -111,7 +111,8 @@ const http_request = function http_request(socket_data:socket_data, transmit:tra
         let chunks:string = "",
             fragment:string = "",
             bodyIndex:number = -1,
-            contentLength:number = -1;
+            contentLength:number = -1,
+            chunked:boolean = false;
         if (vars.servers.dashboard.config.domain_local.indexOf(host) > -1 || vars.interfaces.indexOf(host) > -1) {
             headers.push("dashboard-http: true");
         }
@@ -124,7 +125,11 @@ const http_request = function http_request(socket_data:socket_data, transmit:tra
                 return;
             }
             fragment = decoder.write(responseData);
-            chunks = chunks + fragment;
+            if (chunked === true) {
+                chunks = chunks + fragment.replace(/^[0-9a-f]+\r\n/, "");
+            } else {
+                chunks = chunks + fragment;
+            }
             if (bodyIndex < 4) {
                 const lower:string = chunks.toLowerCase(),
                     contentIndex:number = lower.indexOf("content-length");
@@ -135,6 +140,7 @@ const http_request = function http_request(socket_data:socket_data, transmit:tra
                     contentLength = Number(content.slice(content.indexOf(":") + 1, content.indexOf("\r\n")).replace(/\s+/g, ""));
                 } else if ((/transfer-encoding:\s*chunked/).test(lower) === true) {
                     contentLength = 0;
+                    chunked = true;
                 }
             }
             if (Buffer.byteLength(chunks.slice(bodyIndex)) === contentLength) {
