@@ -109,12 +109,20 @@ const startup = function utilities_startup(callback:() => void):void {
             }
             readComplete("config");
         },
-        readHTML = function utilities_startup_readHTML(fileContents:Buffer):void {
-            vars.dashboard = fileContents.toString()
-                .replace("${payload.intervals.nmap}", (vars.intervals.nmap / 1000).toString())
-                .replace("${payload.intervals.compose}", (vars.intervals.compose / 1000).toString())
-                .replace("replace_javascript", `(${dashboard_script.toString().replace(/\(\s*\)/, "(core)")}(${core.toString()}));`);
-            readComplete("html");
+        readXterm = function utilities_startup_readXterm(xtermFile:Buffer):void {
+            const xterm:string = xtermFile.toString().replace(/\s*\/\/# sourceMappingURL=xterm\.js\.map/, "");
+            file.read({
+                callback: function utilities_startup_readHTML(fileContents:Buffer):void {
+                    vars.dashboard = fileContents.toString()
+                        .replace("${payload.intervals.nmap}", (vars.intervals.nmap / 1000).toString())
+                        .replace("${payload.intervals.compose}", (vars.intervals.compose / 1000).toString())
+                        .replace("replace_javascript", `${xterm}(${dashboard_script.toString().replace(/\(\s*\)/, "(core)")}(${core.toString()}));`);
+                    readComplete("html");
+                },
+                error_terminate: null,
+                location: `${vars.path.project}lib${vars.sep}dashboard${vars.sep}dashboard.html`,
+                no_file: null
+            });
         },
         options = function utilities_startup_options(key:"no_color"|"verbose", iterate:string):void {
             const argv:number = process.argv.indexOf(key);
@@ -147,9 +155,9 @@ const startup = function utilities_startup(callback:() => void):void {
                     no_file: null
                 });
                 file.read({
-                    callback: readHTML,
+                    callback: readXterm,
                     error_terminate: null,
-                    location: `${vars.path.project}lib${vars.sep}dashboard${vars.sep}dashboard.html`,
+                    location: `${vars.path.project}node_modules${vars.sep}@xterm${vars.sep}xterm${vars.sep}lib${vars.sep}xterm.js`,
                     no_file: null
                 });
             }
