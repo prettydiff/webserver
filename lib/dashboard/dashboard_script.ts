@@ -530,11 +530,17 @@ const dashboard = function dashboard():void {
                     index_tr:number = 0,
                     tr:HTMLElement = null,
                     td:HTMLElement = null;
-                list.sort(function dashboard_table_sortColumn(a:string[], b:string[]):-1|1 {
+                list.sort(function dashboard_table_sortColumn(a:string[], b:string[]):-1|0|1 {
                     const numA:number = Number(a[column]),
                         numB:number = Number(b[column]);
-                    if (isNaN(numA) === false && isNaN(numB) === false && numA < numB) {
-                        return direction;
+                    if (isNaN(numA) === false && isNaN(numB) === false) {
+                        if (numA < numB) {
+                            return direction;
+                        }
+                        if (numA > numB) {
+                            return (direction * -1 as -1);
+                        }
+                        return 0;
                     }
                     if (a[column] < b[column]) {
                         return direction;
