@@ -61,7 +61,8 @@ th{min-width:10em}
 strong,
 em{color:var(--text_yellow)}
 .clear{background:transparent;border-style:none;display:block;clear:both;float:none}
-td.number{text-align:right}
+.file-list td.file-name{text-align:left}
+.file-list td{padding:0.5em;text-align:right}
 th{background:var(--background_textarea);border-color:var(--border_input);border-style:solid;border-width:0.1em}
 #dashboard thead button,
 thead button{background:transparent;border-style:none;margin:0;padding:0.5em 1em;text-align:left;width:100%}
@@ -77,7 +78,7 @@ table.data-table th{background:var(--text_table_header);padding:0.5em}
 table{border-collapse:collapse}
 td{background:var(--background);font-family:monospace}
 td .icon{display:inline-block;width:1.5em}
-td,
+#dashboard td,
 th{border-color:var(--background_button);border-style:solid;border-width:0.1em;padding:0.2em 0.5em;text-align:left}
 
 /* end basic html */

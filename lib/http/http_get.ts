@@ -154,7 +154,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                                 const list:directory_list = dir as directory_list,
                                     content:string[] = [
                                         `<h2>Directory List - ${decodeURI(index0[1])}</h2>`,
-                                        "<table class=\"file-list\"><thead><tr><th><button data-dir=\"1\">object</button></th><th><button data-dir=\"1\">type</button></th><th><button data-dir=\"1\">size</button></th><th><button data-dir=\"1\">modified date</button></th><th><button data-dir=\"1\">modified time</button></th><th><button data-dir=\"1\">children</button></th></tr></thead><tbody>"
+                                        "<table class=\"file-list\"><thead><tr><th><button data-dir=\"1\">object</button></th><th><button data-dir=\"1\">type</button></th><th><button data-dir=\"1\">size</button></th><th><button data-dir=\"1\">modified date</button></th><th><button data-dir=\"1\">modified time</button></th><th><buttom data-dir=\"1\">permissions</button></th><th><button data-dir=\"1\">children</button></th></tr></thead><tbody>"
                                     ],
                                     total:number = list.length,
                                     icon:store_string = {
@@ -171,16 +171,11 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                                         : "http",
                                     host:string = (function http_get_host():string {
                                         let index:number = headerList.length,
-                                            colon:number = -1,
                                             value:string = "";
                                         do {
                                             index = index - 1;
                                             if (headerList[index].toLowerCase().indexOf("host:") === 0) {
                                                 value = headerList[index].slice(headerList[index].indexOf(":") + 1).replace(/\s+/g, "");
-                                                colon = value.indexOf(":");
-                                                value = (colon > 0)
-                                                    ? value.slice(0, colon)
-                                                    : value;
                                             } else if (headerList[index].toLowerCase().indexOf("connection:") === 0) {
                                                 headerList.splice(index, 1);
                                                 index = index + 1;
@@ -192,7 +187,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                                     if (list[index_item][3] === 0 && list[index_item][0].indexOf(input) !== list[index_item][0].length - input.length) {
                                         address = `${scheme}://${host + index0[1].replace(/\/$/, "") + vars.sep + list[index_item][0]}`;
                                         dtg = list[index_item][5].mtimeMs.dateTime(true).split(", ");
-                                        content.push(`<tr class="${(index_item % 2 === 0) ? "even" : "odd"}"><td><span class="icon">${icon[list[index_item][1]]}</span> <a href="${address}">${list[index_item][0]}</a></td><td>${list[index_item][1]}</td><td class="number" data-raw="${list[index_item][5].size}">${commas(list[index_item][5].size)}</td><td data-raw="${list[index_item][5].mtimeMs}">${dtg[0]}</td><td>${dtg[1]}</td><td class="number" data-raw="${list[index_item][4]}">${commas(list[index_item][4])}</td></tr>`);
+                                        content.push(`<tr class="${(index_item % 2 === 0) ? "even" : "odd"}"><td class="file-name"><span class="icon">${icon[list[index_item][1]]}</span> <a href="${address}">${list[index_item][0]}</a></td><td>${list[index_item][1]}</td><td data-raw="${list[index_item][5].size}">${commas(list[index_item][5].size)}</td><td data-raw="${list[index_item][5].mtimeMs}">${dtg[0]}</td><td>${dtg[1]}</td><td>${(list[index_item][5].mode & parseInt("777", 8)).toString(8)}</td><td data-raw="${list[index_item][4]}">${commas(list[index_item][4])}</td></tr>`);
                                     }
                                     index_item = index_item + 1;
                                 } while (index_item < total);
