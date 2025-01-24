@@ -2,7 +2,7 @@
 import node from "./node.js";
 import vars from "./vars.js";
 
-const spawn = function utilities_spawn(config:config_spawn):void {
+const spawn = function utilities_spawn(config:config_spawn):node_childProcess_ChildProcess {
     let err:boolean = false;
     const flags:store_flag = {
             stderr: false,
@@ -45,13 +45,17 @@ const spawn = function utilities_spawn(config:config_spawn):void {
         stdout:Buffer[] = [],
         spawn:node_childProcess_ChildProcess = node.child_process.spawn(config.command, config.args, {
             cwd: vars.path.project,
-            shell: true
+            shell: true,
+            timeout: (typeof config.timeout === "number")
+                ? config.timeout
+                : undefined
         });
     spawn.stderr.on("data", handler_stderr);
     spawn.stderr.on("end", handler_stderrEnd);
     spawn.stdout.on("data", handler_stdout);
     spawn.stdout.on("end", handler_stdoutEnd);
     spawn.on("error", handler_error);
+    return spawn;
 };
 
 export default spawn;

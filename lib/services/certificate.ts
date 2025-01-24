@@ -54,13 +54,11 @@ const certificate = function services_certificate(config:config_certificate):voi
         subjectAltName       = @alt_names
         nameConstraints      = @name_constraints
 
-[ name_constraints ]
-        permitted;DNS.1 = localhost`,
+[ name_constraints ]`,
                             "",
                             `        # End Constraints
 
-[ alt_names ]
-        DNS.1 = localhost`,
+[ alt_names ]`,
                             "",
                             "        # End Alt Names"
                         ],
@@ -71,15 +69,24 @@ const certificate = function services_certificate(config:config_certificate):voi
                         total_local:number = (server === null)
                             ? 0
                             : server.domain_local.length,
-                        total_int:number = vars.interfaces.length,
+                        // total_int:number = vars.interfaces.length,
                         list1:string[] = [],
-                        list2:string[] = [];
+                        list2:string[] = [],
+                        values:string[] = [];
                     let cert_index:number = 0,
-                        line_index:number = 2;
+                        line_index:number = 0;
                     // redirect_domain
                     if (total_keys > 0) {
                         do {
-                            if (keys[cert_index] !== "" && (/\.secure$/).test(keys[cert_index]) === false) {
+                            if (
+                                keys[cert_index] !== "" &&
+                                (/\.secure$/).test(keys[cert_index]) === false &&
+                                keys[cert_index].indexOf("[") < 0 &&
+                                node.net.isIPv4(keys[cert_index]) === false &&
+                                node.net.isIPv6(keys[cert_index]) === false &&
+                                values.includes(keys[cert_index]) === false
+                            ) {
+                                values.push(keys[cert_index]);
                                 list1.push(`        permitted;DNS.${line_index} = ${keys[cert_index]}`);
                                 list2.push(`        DNS.${line_index} = ${keys[cert_index]}`);
                                 line_index = line_index + 1;
@@ -91,7 +98,14 @@ const certificate = function services_certificate(config:config_certificate):voi
                     if (total_local > 0) {
                         cert_index = 0;
                         do {
-                            if (server.domain_local[cert_index] !== "") {
+                            if (
+                                server.domain_local[cert_index] !== "" &&
+                                server.domain_local[cert_index].indexOf("[") < 0 &&
+                                node.net.isIPv4(server.domain_local[cert_index]) === false &&
+                                node.net.isIPv6(server.domain_local[cert_index]) === false &&
+                                values.includes(server.domain_local[cert_index]) === false
+                            ) {
+                                values.push(server.domain_local[cert_index]);
                                 list1.push(`        permitted;DNS.${line_index} = ${server.domain_local[cert_index]}`);
                                 list2.push(`        DNS.${line_index} = ${server.domain_local[cert_index]}`);
                                 line_index = line_index + 1;
@@ -100,16 +114,23 @@ const certificate = function services_certificate(config:config_certificate):voi
                         } while (cert_index < total_local);
                     }
                     // interfaces
-                    if (total_int > 0) {
-                        line_index = 1;
-                        cert_index = 0;
-                        do {
-                            list1.push(`        permitted;IP.${line_index} = ${vars.interfaces[cert_index]}`);
-                            list2.push(`        IP.${line_index} = ${vars.interfaces[cert_index]}`);
-                            line_index = line_index + 1;
-                            cert_index = cert_index + 1;
-                        } while (cert_index < total_int);
-                    }
+                    // if (total_int > 0) {
+                    //     line_index = 0;
+                    //     cert_index = 0;
+                    //     do {
+                    //         if (
+                    //             vars.interfaces[cert_index] !== "localhost" &&
+                    //             vars.interfaces[cert_index].indexOf("[") < 0 &&
+                    //             values.includes(vars.interfaces[cert_index]) === false
+                    //         ) {
+                    //             values.push(vars.interfaces[cert_index]);
+                    //             list1.push(`        permitted;IP.${line_index} = ${vars.interfaces[cert_index]}`);
+                    //             list2.push(`        IP.${line_index} = ${vars.interfaces[cert_index]}`);
+                    //             line_index = line_index + 1;
+                    //         }
+                    //         cert_index = cert_index + 1;
+                    //     } while (cert_index < total_int);
+                    // }
                     output[1] = list1.join("\n");
                     output[3] = list2.join("\n");
                     return output.join("\n");

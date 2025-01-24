@@ -7,12 +7,13 @@ import vars from "../utilities/vars.js";
 // cspell: words nmap;
 
 const port_map = function services_portMap(callback:() => void):void {
-    const args:string[] = ["--open", "-sTU", "-p-", "127.0.0.1"],
+    const args:string[] = ["--open", (process.platform === "win32") ? "" : "-sTU", "-p-", "127.0.0.1"],
         callbackFirst = function services_portMap_callbackFirst(stderr:string, stdout:string, error:node_childProcess_ExecException):void {
+            clearTimeout(delay);
             if (stderr !== "" || error !== null) {
                 const message:string = (error === null)
-                    ? `When gathering port data command '${vars.commands.nmap} ${args.join(" ")}' failed with an error. Perhaps application NMap is not available or not in the system path.`
-                    : "Exeucting command 'docker ps' returned an error.";
+                    ? `When gathering port data from command '${vars.commands.nmap} ${args.join(" ")}' failed with an error. Perhaps application NMap is not available or not in the system path.`
+                    : "Exeucting command 'nmap' returned an error.";
                 log({
                     action: "activate",
                     config: error,
@@ -82,13 +83,29 @@ const port_map = function services_portMap(callback:() => void):void {
                     type: "port"
                 });
             }
-        };
-    spawn({
-        args: args,
-        callback: callbackFirst,
-        command: vars.commands.nmap,
-        recurse: -1
-    });
+        },
+        delay:NodeJS.Timeout = setTimeout(function services_portMap_timeout():void {
+            const message:string = `NMAP timed out when gathering port data from command '${vars.commands.nmap} ${args.join(" ")}'.`;
+            child.kill("SIGINT");
+            log({
+                action: "activate",
+                config: null,
+                message: message,
+                status: "error",
+                type: "port"
+            });
+            vars.system_ports = {
+                list: [null, [0, message, "", ""]],
+                time: Date.now()
+            };
+            callback();
+        }, vars.intervals.nmap),
+        child:node_childProcess_ChildProcess = spawn({
+            args: args,
+            callback: callbackFirst,
+            command: vars.commands.nmap,
+            recurse: -1
+        });
 };
 
 export default port_map;

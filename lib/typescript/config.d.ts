@@ -55,6 +55,7 @@ interface config_spawn {
     callback: (stderr:string, stdout:string, error:node_childProcess_ExecException) => void;
     command: string;
     recurse: number;
+    timeout?: number;
 }
 
 interface config_validate_serverKeys {

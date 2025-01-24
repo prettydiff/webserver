@@ -89,9 +89,7 @@ startup(function index():void {
         server_create({
             action: "add",
             server: default_server("dashboard")
-        }, function index_startDashboard():void {
-            start();
-        });
+        }, start);
     } else {
         start();
     }

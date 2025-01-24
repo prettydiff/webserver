@@ -3,8 +3,12 @@ import node from "./node.js";
 
 /* cspell: words appdata */
 
-const gid:number = process.getgid(),
-    uid:number = process.getuid(),
+const gid:number = (typeof process.getgid === "undefined")
+        ? 0
+        : process.getgid(),
+    uid:number = (typeof process.getuid === "undefined")
+        ? 0
+        : process.getuid(),
     vars:vars = {
         commands: {
             compose: (process.platform === "win32")
@@ -17,6 +21,7 @@ const gid:number = process.getgid(),
             containers: {},
             variables: {}
         },
+        css: "",
         dashboard: "",
         http_headers: "",
         interfaces: [
