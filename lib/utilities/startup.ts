@@ -19,7 +19,7 @@ const startup = function utilities_startup(callback:() => void):void {
             html: false,
             ports: false
         },
-        readComplete = function utilities_startup_readComplete(flag:"css"|"config"|"docker"|"html"):void {
+        readComplete = function utilities_startup_readComplete(flag:"config"|"css"|"docker"|"html"):void {
             flags[flag] = true;
             if (flags.config === true && flags.css === true && flags.docker === true && flags.html === true) {
                 callback();
