@@ -13,9 +13,7 @@ const file_list = function fileList():void {
                 tbodyNew:HTMLElement = document.createElement("tbody"),
                 table:HTMLElement = tbodyOld.parentNode,
                 parentList:HTMLCollectionOf<Element> = grandParent.getElementsByTagName(parent.nodeName),
-                direction:"down"|"up" = (target.getAttribute("data-direction") === null)
-                    ? "down"
-                    : target.getAttribute("data-direction") as "down"|"up",
+                direction:-1|1 = Number(target.dataset.dir) as -1|1,
                 getText = function fileList_sortEvent_getText(record:Element):number|string {
                     if (column === 0) {
                         return record.getElementsByTagName("a")[0].firstChild.textContent;
@@ -38,10 +36,10 @@ const file_list = function fileList():void {
                 };
             let count:number = parentList.length,
                 column:number = 0;
-            if (direction === "down") {
-                target.setAttribute("data-direction", "up");
+            if (direction === -1) {
+                target.setAttribute("data-dir", "1");
             } else {
-                target.setAttribute("data-direction", "down");
+                target.setAttribute("data-dir", "-1");
             }
             do {
                 count = count - 1;
@@ -51,19 +49,16 @@ const file_list = function fileList():void {
                 }
             } while (count > 0);
 
-            recordList.sort(function fileList_sortEvent_sort(a:Element, b:Element):-1|1 {
+            recordList.sort(function fileList_sortEvent_sort(a:Element, b:Element):-1|0|1 {
                 const valueA:number|string = getText(a),
                     valueB:number|string = getText(b);
                 if (valueA < valueB) {
-                    if (direction === "down") {
-                        return -1;
-                    }
-                    return 1;
+                    return direction;
                 }
-                if (direction === "down") {
-                    return 1;
+                if (valueA > valueB) {
+                    return (direction * -1 as -1);
                 }
-                return -1;
+                return 0;
             });
 
             count = 0;

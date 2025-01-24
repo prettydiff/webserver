@@ -29,9 +29,8 @@ const read_certs = function utilities_readCerts(name:string, callback:(name:stri
                         status: "error",
                         type: "server"
                     });
-                } else {
-                    callback(name, https);
                 }
+                callback(name, https);
             }
         },
         httpsRead = function utilities_readCerts_httpsRead(certType:type_certKey):void {

@@ -160,6 +160,7 @@ interface terminal_size {
 interface vars {
     commands: store_string;
     compose: configuration_compose;
+    css: string;
     dashboard: string;
     http_headers: string;
     interfaces: string[];

@@ -246,6 +246,12 @@ sudo systemctl status &lt;service name here&gt;
             </div>
             <div class="section">
                 <h3>Dependencies</h3>
+                <h4>OpenSSL</h4>
+                <p>OpenSSL is a Swiss Army knife of cryptographic tools, but is primarily used for certificate creation and analysis.</p>
+                <ul>
+                    <li><p>Windows: <code>winget install --id=ShiningLight.OpenSSL.Dev -e</code></p></li>
+                    <li><p>Debian: <code>sudo apt install openssl</code></p></li>
+                </ul>
                 <h4>NMap</h4>
                 <p>NMap is the port scanner used to generate the list of ports consumed by the local machine but not related to this application instance.</p>
                 <ul>

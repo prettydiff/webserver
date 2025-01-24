@@ -14,13 +14,14 @@ const startup = function utilities_startup(callback:() => void):void {
     const flags:store_flag = {
             compose: false,
             config: false,
+            css: false,
             docker: false,
             html: false,
             ports: false
         },
-        readComplete = function utilities_startup_readComplete(flag:"config"|"docker"|"html"):void {
+        readComplete = function utilities_startup_readComplete(flag:"css"|"config"|"docker"|"html"):void {
             flags[flag] = true;
-            if (flags.config === true && flags.docker === true && flags.html === true) {
+            if (flags.config === true && flags.css === true && flags.docker === true && flags.html === true) {
                 callback();
             }
         },
@@ -36,77 +37,80 @@ const startup = function utilities_startup(callback:() => void):void {
             flags.compose = true;
             commandsCallback();
         },
+        readCSS = function utilities_startup_readCSS(fileContents:Buffer):void {
+            const css:string = fileContents.toString();
+            vars.css = css.slice(css.indexOf(":root"), css.indexOf("/* end basic html */"));
+            readComplete("css");
+        },
         readConfig = function utilities_startup_readConfig(fileContents:Buffer):void {
-            if (fileContents === null) {
-                vars.servers = {};
-            } else {
-                const configStr:string = fileContents.toString(),
-                    config:store_server_config = (configStr === "" || (/^\s*\{/).test(configStr) === false || (/\}\s*$/).test(configStr) === false)
-                        ? null
-                        : JSON.parse(configStr) as store_server_config,
-                    includes = function utilities_startup_read_instructions_includes(input:string):void {
-                        if (vars.interfaces.includes(input) === false && input.toLowerCase().indexOf("fe80") !== 0) {
-                            vars.interfaces.push(input);
+            const configStr:string = (fileContents === null)
+                    ? ""
+                    : fileContents.toString(),
+                config:store_server_config = (configStr === "" || (/^\s*\{/).test(configStr) === false || (/\}\s*$/).test(configStr) === false)
+                    ? null
+                    : JSON.parse(configStr) as store_server_config,
+                includes = function utilities_startup_read_instructions_includes(input:string):void {
+                    if (vars.interfaces.includes(input) === false && input.toLowerCase().indexOf("fe80") !== 0) {
+                        vars.interfaces.push(input);
+                    }
+                },
+                interfaces:{ [index: string]: node_os_NetworkInterfaceInfo[]; } = node.os.networkInterfaces(),
+                keys_int:string[] = Object.keys(interfaces),
+                keys_srv:string[] = (config === null)
+                    ? null
+                    : Object.keys(config);
+            let index_int:number = keys_int.length,
+                index_srv:number = (config === null)
+                    ? 0
+                    : keys_srv.length,
+                server:server = null,
+                sub:number = 0;
+            if (index_srv > 0) {
+                do {
+                    index_srv = index_srv - 1;
+                    index_int = keys_int.length;
+                    server = {
+                        config: config[keys_srv[index_srv]],
+                        sockets: [],
+                        status: {
+                            open: 0,
+                            secure: 0
                         }
-                    },
-                    interfaces:{ [index: string]: node_os_NetworkInterfaceInfo[]; } = node.os.networkInterfaces(),
-                    keys_int:string[] = Object.keys(interfaces),
-                    keys_srv:string[] = (config === null)
-                        ? null
-                        : Object.keys(config);
-                let index_int:number = keys_int.length,
-                    index_srv:number = (config === null)
-                        ? 0
-                        : keys_srv.length,
-                    server:server = null,
-                    sub:number = 0;
-                if (index_srv > 0) {
-                    do {
-                        index_srv = index_srv - 1;
-                        index_int = keys_int.length;
-                        server = {
-                            config: config[keys_srv[index_srv]],
-                            sockets: [],
-                            status: {
-                                open: 0,
-                                secure: 0
-                            }
+                    };
+                    if (server.config.ports === null || server.config.ports === undefined) {
+                        server.config.ports = {
+                            open: 0,
+                            secure: 0
                         };
-                        if (server.config.ports === null || server.config.ports === undefined) {
-                            server.config.ports = {
-                                open: 0,
-                                secure: 0
-                            };
-                        } else {
-                            if (typeof server.config.ports.open !== "number") {
-                                server.config.ports.open = 0;
-                            }
-                            if (typeof server.config.ports.secure !== "number") {
-                                server.config.ports.secure = 0;
-                            }
+                    } else {
+                        if (typeof server.config.ports.open !== "number") {
+                            server.config.ports.open = 0;
                         }
-                        if (server.config.block_list === undefined || server.config.block_list === null) {
-                            server.config.block_list = {
-                                host: [],
-                                ip: [],
-                                referrer: []
-                            };
+                        if (typeof server.config.ports.secure !== "number") {
+                            server.config.ports.secure = 0;
                         }
-                        if (Array.isArray(server.config.domain_local) === false) {
-                            server.config.domain_local = [];
-                        }
-                        vars.servers[server.config.name] = server;
-                    } while (index_srv > 0);
-                    do {
-                        index_int = index_int - 1;
-                        sub = interfaces[keys_int[index_int]].length;
-                        do {
-                            sub = sub - 1;
-                            includes(interfaces[keys_int[index_int]][sub].address);
-                        } while (sub > 0);
-                    } while (index_int > 0);
-                }
+                    }
+                    if (server.config.block_list === undefined || server.config.block_list === null) {
+                        server.config.block_list = {
+                            host: [],
+                            ip: [],
+                            referrer: []
+                        };
+                    }
+                    if (Array.isArray(server.config.domain_local) === false) {
+                        server.config.domain_local = [];
+                    }
+                    vars.servers[server.config.name] = server;
+                } while (index_srv > 0);
             }
+            do {
+                index_int = index_int - 1;
+                sub = interfaces[keys_int[index_int]].length;
+                do {
+                    sub = sub - 1;
+                    includes(interfaces[keys_int[index_int]][sub].address);
+                } while (sub > 0);
+            } while (index_int > 0);
             readComplete("config");
         },
         readXterm = function utilities_startup_readXterm(xtermFile:Buffer):void {
@@ -158,6 +162,12 @@ const startup = function utilities_startup(callback:() => void):void {
                     callback: readXterm,
                     error_terminate: null,
                     location: `${vars.path.project}node_modules${vars.sep}@xterm${vars.sep}xterm${vars.sep}lib${vars.sep}xterm.js`,
+                    no_file: null
+                });
+                file.read({
+                    callback: readCSS,
+                    error_terminate: null,
+                    location: `${vars.path.project}lib${vars.sep}dashboard${vars.sep}styles.css`,
                     no_file: null
                 });
             }

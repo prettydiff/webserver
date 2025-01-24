@@ -227,7 +227,7 @@ const dashboard = function dashboard():void {
                                     serverData:services_server = (newFlag === true)
                                         ? {
                                             activate: true,
-                                            domain_local: [],
+                                            domain_local: ["localhost"],
                                             encryption: "both",
                                             name: "new_server",
                                             ports: {
@@ -545,7 +545,10 @@ const dashboard = function dashboard():void {
                     if (a[column] < b[column]) {
                         return direction;
                     }
-                    return (direction * -1 as -1);
+                    if (a[column] > b[column]) {
+                        return (direction * -1 as -1);
+                    }
+                    return 0;
                 });
                 index_tr = list.length;
                 do {
@@ -1425,7 +1428,6 @@ const dashboard = function dashboard():void {
                         const ulNew:HTMLElement = document.createElement("ul"),
                             section:HTMLElement = portElement.getElementsByClassName("section")[0] as HTMLElement,
                             ulOld:HTMLElement = section.getElementsByTagName("ul")[0],
-                            p:HTMLElement = section.getElementsByTagName("p")[0],
                             em:HTMLElement = document.createElement("em"),
                             text:string[] = input.list[1][1].split("'");
                         let li:HTMLElement = document.createElement("li"),
@@ -1434,10 +1436,12 @@ const dashboard = function dashboard():void {
                         if (ulOld !== undefined) {
                             ulOld.parentNode.removeChild(ulOld);
                         }
-                        p.textContent = text[0];
+                        para.textContent = text[0];
                         em.textContent = text[1];
-                        p.appendChild(em);
-                        p.appendText(`${text[2]} Download and install NMap with these commands:`);
+                        para.appendChild(em);
+                        para.appendText(`${text[2]} Download and install NMap with these commands:`);
+                        section.appendChild(para);
+                        para = document.createElement("p");
                         para.appendText("Windows ");
                         code.appendText("winget install -e --id Insecure.Nmap");
                         para.appendChild(code);
@@ -1451,7 +1455,7 @@ const dashboard = function dashboard():void {
                         para.appendChild(code);
                         li.appendChild(para);
                         ulNew.appendChild(li);
-                        p.parentNode.insertBefore(ulNew, p.nextSibling);
+                        section.appendChild(ulNew);
                         tbody.parentNode.style.display = "none";
                         updated.style.display = "none";
                         ports_external = true;
@@ -1662,7 +1666,9 @@ const dashboard = function dashboard():void {
                         const textArea:HTMLTextAreaElement = edit.getElementsByTagName("textarea")[0],
                             config:services_server = JSON.parse(textArea.value);
                         config.modification_name = edit.parentNode.getAttribute("data-name");
-                        payload.servers[config.modification_name].config.encryption = config.encryption;
+                        if (payload.servers[config.modification_name] !== undefined) {
+                            payload.servers[config.modification_name].config.encryption = config.encryption;
+                        }
                         return config;
                     }()),
                     data:services_action_server = {

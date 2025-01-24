@@ -53,7 +53,19 @@ import { exec } from "child_process";
                     logger(`Built as module type: ${text.cyan + moduleType + text.none}`);
                     logger(`Installation complete in ${end} seconds!`);
                     logger(`To run the server execute: ${text.bold + text.green}npm run server${text.none}`);
-                    logger("");
+                    logger("Be sure to install the external dependencies: OpenSSL, NMap, and Docker Compose.");
+                    logger((process.platform === "win32")
+                        ? `* OpenSSL:        ${text.cyan}winget install --id=ShiningLight.OpenSSL.Dev -e${text.none}`
+                        : `* OpenSSL:        ${text.cyan}sudo apt install openssl${text.none}`
+                    );
+                    logger((process.platform === "win32")
+                        ? `* NMap:           ${text.cyan}winget install -e --id Insecure.Nmap${text.none}`
+                        : `* NMap:           ${text.cyan}sudo apt-get install nmap${text.none}`
+                    );
+                    logger((process.platform === "win32")
+                        ? `* Docker Compose: ${text.cyan}winget install --id=Docker.DockerCLI -e;winget install --id=Docker.DockerCompose -e${text.none}`
+                        : `* Docker Compose: ${text.cyan}sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin${text.none}`
+                    );
                 } else {
                     install_execute();
                 }

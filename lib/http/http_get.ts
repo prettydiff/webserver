@@ -71,7 +71,9 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                         "<meta content=\"text/css\" http-equiv=\"content-style-type\"/>",
                         "<meta content=\"application/javascript\" http-equiv=\"content-script-type\"/>",
                         "<meta content=\"#bbbbff\" name=\"msapplication-TileColor\"/>",
-                        "<link href=\"/styles.css\" media=\"all\" rel=\"stylesheet\" type=\"text/css\"/>",
+                        (config.template === true)
+                            ? `<style type="text/css">${vars.css}</style>`
+                            : "",
                         "<link rel=\"icon\" type=\"image/png\" href=\"data:image/png;base64,iVBORw0KGgo=\"/>",
                         "</head>",
                         "<body>",
@@ -152,7 +154,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                                 const list:directory_list = dir as directory_list,
                                     content:string[] = [
                                         `<h2>Directory List - ${decodeURI(index0[1])}</h2>`,
-                                        "<table><thead><tr><th>object <button>⇅</button></th><th>type <button>⇅</button></th><th>size <button>⇅</button></th><th>modified date <button>⇅</button></th><th>modified time <button>⇅</button></th><th>children <button>⇅</button></th></tr></thead><tbody>"
+                                        "<table class=\"file-list\"><thead><tr><th><button data-dir=\"1\">object</button></th><th><button data-dir=\"1\">type</button></th><th><button data-dir=\"1\">size</button></th><th><button data-dir=\"1\">modified date</button></th><th><button data-dir=\"1\">modified time</button></th><th><button data-dir=\"1\">children</button></th></tr></thead><tbody>"
                                     ],
                                     total:number = list.length,
                                     icon:store_string = {
@@ -190,7 +192,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                                     if (list[index_item][3] === 0 && list[index_item][0].indexOf(input) !== list[index_item][0].length - input.length) {
                                         address = `${scheme}://${host + index0[1].replace(/\/$/, "") + vars.sep + list[index_item][0]}`;
                                         dtg = list[index_item][5].mtimeMs.dateTime(true).split(", ");
-                                        content.push(`<tr class="${(index_item % 2 === 0) ? "even" : "odd"}"><td><span class="icon">${icon[list[index_item][1]]}</span> <a href="${address}">${list[index_item][0]}</a></td><td>${list[index_item][1]}</td><td data-raw="${list[index_item][5].size}">${commas(list[index_item][5].size)}</td><td data-raw="${list[index_item][5].mtimeMs}">${dtg[0]}</td><td>${dtg[1]}</td><td data-raw="${list[index_item][4]}">${commas(list[index_item][4])}</td></tr>`);
+                                        content.push(`<tr class="${(index_item % 2 === 0) ? "even" : "odd"}"><td><span class="icon">${icon[list[index_item][1]]}</span> <a href="${address}">${list[index_item][0]}</a></td><td>${list[index_item][1]}</td><td class="number" data-raw="${list[index_item][5].size}">${commas(list[index_item][5].size)}</td><td data-raw="${list[index_item][5].mtimeMs}">${dtg[0]}</td><td>${dtg[1]}</td><td class="number" data-raw="${list[index_item][4]}">${commas(list[index_item][4])}</td></tr>`);
                                     }
                                     index_item = index_item + 1;
                                 } while (index_item < total);

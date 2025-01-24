@@ -48,23 +48,44 @@ dt{font-size:1.4em}
 dd{margin:0 0 1em 2.5em}
 dd p{font-size:1em}
 li{margin:1em 0 0}
-#http textarea,
-#websocket textarea,
-code{display:block;font-family:monospace;font-size:0.9em;white-space:pre}
-fieldset{background:var(--background_fieldset);border-color:var(--border_color);border-style:solid;border-width:0.1em;margin:0 0 0 -2.8em;max-width:48.25em;padding:0 1em 1em;overflow:scroll}
 a{color:var(--fail_bright)}
-button{background:var(--background_button);border-color:var(--border_input);border-radius:0.75em;border-style:revert;border-width:0.1em;box-shadow:0.1em 0.1em 0.25em var(--black);color:var(--text_input);cursor:pointer;padding:0.25em 0.5em}
+button{background:var(--background_button);border-color:var(--border_input);border-style:revert;border-width:0.1em;box-shadow:0.1em 0.1em 0.25em var(--black);color:var(--text_input);cursor:pointer;padding:0.25em 0.5em}
 button:hover{background:var(--background)}
 button:active{border-style:inset;box-shadow:-0.1em -0.1em 0.25em var(--background_dark)}
 th{min-width:10em}
 strong,
 em{color:var(--text_yellow)}
+.clear{background:transparent;border-style:none;display:block;clear:both;float:none}
+td.number{text-align:right}
+th{background:var(--background_textarea);border-color:var(--border_input);border-style:solid;border-width:0.1em}
+#dashboard thead button,
+thead button{background:transparent;border-style:none;margin:0;padding:0.5em 1em;text-align:left;width:100%}
+
+table.data-table{margin:0 0 2em;min-width:120em}
+table.data-table td,
+table.data-table th{border:0.1em solid var(--black)}
+table.data-table th{background:var(--text_table_header);padding:0.5em}
+
+.odd{background:var(--text_row_odd)}
+.odd td{background:inherit}
+.even{background:var(--background)}
+table{border-collapse:collapse}
+td{background:var(--background);font-family:monospace}
+td .icon{display:inline-block;width:1.5em}
+td,
+th{border-color:var(--background_button);border-style:solid;border-width:0.1em;padding:0.2em 0.5em;text-align:left}
+
+/* end basic html */
+
+#http textarea,
+#websocket textarea,
+code{display:block;font-family:monospace;font-size:0.9em;white-space:pre}
+fieldset{background:var(--background_fieldset);border-color:var(--border_color);border-style:solid;border-width:0.1em;margin:0 0 0 -2.8em;max-width:48.25em;padding:0 1em 1em;overflow:scroll}
 #terminal .xterm,
 textarea{background:var(--background_textarea);border-style:solid;border-width:0.065em;color:var(--text)}
 #terminal .xterm{border-color:var(--border_input);overflow:hidden}
 #terminal .xterm-viewport{overflow:hidden}
 textarea{border-color:var(--textarea_border);box-shadow:0 0 0.1em var(--black)}
-.clear{background:transparent;border-style:none;display:block;clear:both;float:none}
 
 .delay{height:50%;width:50%}
 .delay svg{stroke:var(--text)}
@@ -81,7 +102,6 @@ label.radio{display:inline-block;width:45%}
 label.radio{cursor:pointer}
 label.radio input{display:inline}
 input{background:var(--background_textarea);border-color:var(--border_input);border-style:solid;border-width:0.065em;color:var(--text_input);font-family:monospace;margin:0.5em 0 0;padding:0.5em}
-th button{float:right;margin:0 1em}
 .controls p{margin:2em 0}
 .controls button{font-size:2em}
 label span{border-radius:50%;background:var(--border_color);border-color:var(--border_color);border-style:solid;border-width:0.065em;display:inline-block;height:0.8em;margin:0 0.5em 0 0;width:0.8em}
@@ -90,17 +110,6 @@ label span.checked{background:var(--background_dark)}
 .linux-options{margin:0;overflow:hidden}
 .linux-options select{display:block;width:20em}
 .linux-options legend{font-size:2em;font-weight:bold}
-
-table.data-table{margin:0 0 2em;min-width:120em}
-table.data-table td,
-table.data-table th{border:0.1em solid var(--black)}
-table.data-table th{background:var(--text_table_header);padding:0.5em}
-
-.odd{background:var(--text_row_odd)}
-.even{background:var(--background)}
-table{border-collapse:collapse}
-td{background:var(--background);font-family:monospace;padding:0.5em}
-td .icon{display:inline-block;width:1.5em}
 
 #dashboard #servers li,
 #dashboard #compose li{border-color:var(--border_color);border-style:solid;border-width:0.1em}
@@ -204,12 +213,8 @@ td .icon{display:inline-block;width:1.5em}
 #logs time{color:var(--text_cyan);display:inline-block;margin:0 1em 0 0}
 #logs code{color:var(--fail_bright)}
 #dashboard table{border-collapse:collapse;margin:0 0 4em}
-#dashboard td,
-#dashboard th{border-color:var(--border_input);border-style:solid;border-width:0.1em;padding:0.2em 0.5em;text-align:left}
-#dashboard th{background:var(--background_textarea)}
 #dashboard #compose textarea.compose-variables-edit{height:10em}
 #dashboard textarea.short{height:6em}
-#dashboard thead button{background:transparent;border-style:none;margin:0;padding:0.5em 1em;text-align:left;width:100%}
 #dashboard label input[type="radio"]{box-sizing:unset;display:inline-block;width:1em}
 #dashboard .definitions li{border-style:none;list-style:disc}
 #dashboard .http_response p{float:left;margin:0 2% 0 0;width:16%}
