@@ -7,6 +7,14 @@ type type_dashboard_list = "container" | "server";
 type type_dashboard_sections = "compose" | "help" | "log" | "port" | "servers" | "socket" | "terminal";
 type type_dashboard_status = "error" | "informational" | "success";
 type type_dashboard_type = "compose-containers" | "compose-variables" | "log" | "port" | "server" | "socket" | "terminal";
+// type_directory_type
+// 0 - absolute path
+// 1 - file system item type
+// 2 - hash
+// 3 - index of parent
+// 4 - child item count
+// 5 - stats
+// 6 - rename write path
 type type_directory_item = [string, type_file, string, number, number, directory_data, string];
 type type_directory_mode = "array" | "hash" | "list" | "read" | "search" | "type";
 type type_dns_records = node_dns_anyRecord[] | node_dns_mxRecord[] | node_dns_naptrRecord[] | node_dns_soaRecord | node_dns_srvRecord[] | string[] | string[][];
