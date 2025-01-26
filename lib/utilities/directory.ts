@@ -169,8 +169,11 @@ const directory = function utilities_directory(args:config_directory):void {
                         driveLetter = function utilities_directory_statWrapper_stat_driveLetter(input:string):string {
                             return `${input}\\`;
                         },
+                        path_start:string = (args.path === "/")
+                            ? "/"
+                            : args.path.replace(/(\/|\\)$/, "") + vars.sep,
                         relPath:string = (args.relative === true)
-                            ? filePath.replace(args.path + vars.sep, "")
+                            ? filePath.replace(path_start, "")
                             : filePath,
                         search = function utilities_directory_statWrapper_stat_search(searchItem:string):boolean {
                             const names:string = searchItem.split(vars.sep).pop(),
@@ -194,7 +197,9 @@ const directory = function utilities_directory(args:config_directory):void {
                                         ? fileList.length
                                         : list.length,
                                     relItem:string = (args.relative === true)
-                                        ? item.replace(args.path + vars.sep, "")
+                                        ? (item === "/")
+                                            ? "/"
+                                            : item.replace(path_start, "")
                                         : item;
                                 if (args.mode === "array") {
                                     fileList.push(relItem);

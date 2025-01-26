@@ -112,6 +112,7 @@ declare global {
         address: string;
         dirs: type_directory_item[];
         failures: string[];
+        file: string;
         parent: type_directory_item;
         sep: "/"|"\\";
     }

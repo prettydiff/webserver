@@ -64,7 +64,10 @@ em{color:var(--text_yellow)}
 .file-list td.file-name{text-align:left}
 #dashboard .file-list td button,
 .file-list td button{background:transparent;border-style:none;box-shadow:none;color:var(--text_yellow);text-align:left;text-shadow:none;width:auto}
+#dashboard .file-list td,
 .file-list td{padding:0.5em;text-align:right}
+#dashboard .file-list .file-name,
+.file-list .file-name{text-align:left}
 th{background:var(--background_textarea);border-color:var(--border_input);border-style:solid;border-width:0.1em}
 #dashboard thead button,
 thead button{background:transparent;border-style:none;margin:0;padding:0.5em 1em;text-align:left;width:100%}
