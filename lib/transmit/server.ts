@@ -1,4 +1,5 @@
 
+import dashboard_object from "../utilities/dashboard_object.js";
 import file from "../utilities/file.js";
 import get_address from "../utilities/getAddress.js";
 import hash from "../utilities/hash.js";
@@ -8,7 +9,6 @@ import message_handler from "./messageHandler.js";
 import node from "../utilities/node.js";
 import read_certs from "../utilities/read_certs.js";
 import redirection from "./redirection.js";
-import send from "./send.js";
 import server_halt from "../services/server_halt.js";
 import socket_extension from "./socketExtension.js";
 import terminal from "../services/terminal.js";
@@ -157,20 +157,7 @@ const server = function transmit_server(data:services_action_server, callback:(n
                                             if (terminalFlag === true) {
                                                 terminal(socket);
                                             } else if (server_name === "dashboard") {
-                                                const browser:transmit_dashboard = {
-                                                    compose: vars.compose,
-                                                    http_headers: vars.http_headers,
-                                                    logs: vars.logs,
-                                                    path: vars.path,
-                                                    ports: vars.system_ports,
-                                                    servers: vars.servers,
-                                                    terminal: vars.terminal,
-                                                    user: vars.user
-                                                };
-                                                send({
-                                                    data: browser,
-                                                    service: "dashboard-payload"
-                                                }, socket, 1);
+                                                dashboard_object(socket, vars.path.project, false);
                                             }
                                         },
                                         terminalFlag:boolean = (server_name === "dashboard" && type.indexOf("dashboard-terminal-") === 0),

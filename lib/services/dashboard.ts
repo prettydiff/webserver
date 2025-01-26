@@ -1,5 +1,5 @@
 
-import send from "../transmit/send.js";
+import dashboard_object from "../utilities/dashboard_object.js";
 import server from "../transmit/server.js";
 import server_create from "./server_create.js";
 import server_halt from "./server_halt.js";
@@ -7,7 +7,6 @@ import vars from "../utilities/vars.js";
 
 const dashboard = function services_dashboard(socketData:socket_data, transmit:transmit_socket):void {
     const data:services_action_server = socketData.data as services_action_server;
-
     if (socketData.service === "dashboard-server") {
         const action_map:services_dashboard = {
             "activate": server,
@@ -18,21 +17,7 @@ const dashboard = function services_dashboard(socketData:socket_data, transmit:t
         };
         action_map[data.action](data, null, data.action as type_halt_action);
     } else if (socketData.service === "dashboard-payload") {
-        const socket:websocket_client = transmit.socket as websocket_client,
-            browser:transmit_dashboard = {
-                compose: vars.compose,
-                http_headers: vars.http_headers,
-                logs: vars.logs,
-                path: vars.path,
-                ports: vars.system_ports,
-                servers: vars.servers,
-                terminal: vars.terminal,
-                user: vars.user
-            };
-        send({
-            data: browser,
-            service: "dashboard-payload"
-        }, socket, 1);
+        dashboard_object(transmit.socket as websocket_client, vars.path.project, false);
     }
 };
 

@@ -154,7 +154,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                                 const list:directory_list = dir as directory_list,
                                     content:string[] = [
                                         `<h2>Directory List - ${decodeURI(index0[1])}</h2>`,
-                                        "<table class=\"file-list\"><thead><tr><th><button data-dir=\"1\">object</button></th><th><button data-dir=\"1\">type</button></th><th><button data-dir=\"1\">size</button></th><th><button data-dir=\"1\">modified date</button></th><th><button data-dir=\"1\">modified time</button></th><th><buttom data-dir=\"1\">permissions</button></th><th><button data-dir=\"1\">children</button></th></tr></thead><tbody>"
+                                        "<table class=\"file-list\"><thead><tr><th><button data-dir=\"1\">object</button></th><th><button data-dir=\"1\">type</button></th><th><button data-dir=\"1\">size</button></th><th><button data-dir=\"1\">modified date</button></th><th><button data-dir=\"1\">modified time</button></th><th><button data-dir=\"1\">permissions</button></th><th><button data-dir=\"1\">children</button></th></tr></thead><tbody>"
                                     ],
                                     total:number = list.length,
                                     icon:store_string = {

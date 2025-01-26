@@ -174,7 +174,7 @@ interface vars {
     processes: {
         [key:string]: node_childProcess_ChildProcess;
     };
-    sep: string;
+    sep: "/" | "\\";
     server_meta: server_meta;
     servers: store_servers;
     shell: string;

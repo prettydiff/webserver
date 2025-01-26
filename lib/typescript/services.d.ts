@@ -108,6 +108,14 @@ declare global {
         };
     }
 
+    interface services_fileSystem {
+        address: string;
+        dirs: type_directory_item[];
+        failures: string[];
+        parent: type_directory_item;
+        sep: "/"|"\\";
+    }
+
     interface services_http {
         connect: http_action;
         delete: http_action;

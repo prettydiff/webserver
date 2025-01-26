@@ -234,7 +234,7 @@ const directory = function utilities_directory(args:config_directory):void {
                                 //cspell:disable-next-line
                                 node.child_process.exec("wmic logicaldisk get name", function utilities_directory_statWrapper_stat_dir_windowsRoot(erw:node_childProcess_ExecException, stdout:string, stderr:string):void {
                                     if (erw !== null || stderr !== "") {
-                                        list.failures.push(item);
+                                        list.failures.push(`${erw.code} - ${item}`);
                                         if (dirs > 0) {
                                             dirCounter(item);
                                         } else {
@@ -248,7 +248,7 @@ const directory = function utilities_directory(args:config_directory):void {
                             } else {
                                 node.fs.readdir(item, {encoding: "utf8"}, function utilities_directory_statWrapper_stat_dir_readDir(erd:node_error, files:string[]):void {
                                     if (erd !== null) {
-                                        list.failures.push(item);
+                                        list.failures.push(`${erd.code} - ${item}`);
                                         if (dirs > 0) {
                                             dirCounter(item);
                                         } else {
@@ -260,12 +260,12 @@ const directory = function utilities_directory(args:config_directory):void {
                                 });
                             }
                         },
-                        populate = function utilities_directory_statWrapper_stat_populate(type:"directory"|"error"|"file"|"symbolic_link"):void {
+                        populate = function utilities_directory_statWrapper_stat_populate(type:"block_device"|"character_device"|"directory"|"fifo_pipe"|"error"|"file"|"socket"|"symbolic_link"):void {
                             if (type === "error") {
                                 if (list[parent] !== undefined) {
                                     list[parent][4] = list[parent][4] - 1;
                                 }
-                                list.failures.push(filePath);
+                                list.failures.push(`${er.code} - ${filePath}`);
                             } else {
                                 if (args.mode === "search") {
                                     if (search(filePath) === true) {
@@ -388,22 +388,35 @@ const directory = function utilities_directory(args:config_directory):void {
                             node.fs.stat(filePath, linkCallback);
                         }
                     } else {
-                        if (args.mode === "type") {
-                            if (stats.isBlockDevice() === true) {
-                                args.callback(null);
-                            } else if (stats.isCharacterDevice() === true) {
-                                args.callback(null);
-                            } else if (stats.isFIFO() === true) {
-                                args.callback(null);
-                            } else if (stats.isSocket() === true) {
+                        if (stats.isBlockDevice() === true) {
+                            if (args.mode === "type") {
                                 args.callback(null);
                             } else {
-                                args.callback(null);
+                                populate("block_device");
                             }
-                            return;
+                        } else if (stats.isCharacterDevice() === true) {
+                            if (args.mode === "type") {
+                                args.callback(null);
+                            } else {
+                                populate("character_device");
+                            }
+                        } else if (stats.isFIFO() === true) {
+                            if (args.mode === "type") {
+                                args.callback(null);
+                            } else {
+                                populate("fifo_pipe");
+                            }
+                        } else if (stats.isSocket() === true) {
+                            if (args.mode === "type") {
+                                args.callback(null);
+                            } else {
+                                populate("socket");
+                            }
+                        } else {
+                            args.callback(null);
+                            size = size + stats.size;
+                            populate("file");
                         }
-                        size = size + stats.size;
-                        populate("file");
                     }
                 });
             };

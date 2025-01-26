@@ -1,4 +1,5 @@
 
+import commas from "./commas.js";
 import core from "../browser/core.js";
 import dashboard_script from "../dashboard/dashboard_script.js";
 import dateTime from "./dateTime.js";
@@ -120,7 +121,7 @@ const startup = function utilities_startup(callback:() => void):void {
                     vars.dashboard = fileContents.toString()
                         .replace("${payload.intervals.nmap}", (vars.intervals.nmap / 1000).toString())
                         .replace("${payload.intervals.compose}", (vars.intervals.compose / 1000).toString())
-                        .replace("replace_javascript", `${xterm}(${dashboard_script.toString().replace(/\(\s*\)/, "(core)")}(${core.toString()}));`);
+                        .replace("replace_javascript", `${xterm}const commas=${commas.toString()};(${dashboard_script.toString().replace(/\(\s*\)/, "(core)")}(${core.toString()}));`);
                     readComplete("html");
                 },
                 error_terminate: null,
