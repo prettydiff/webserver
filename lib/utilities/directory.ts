@@ -138,7 +138,6 @@ const directory = function utilities_directory(args:config_directory):void {
                     index = 0;
                 }
                 dirCount[index] = dirCount[index] - 1;
-                // 
                 if (dirNames.length === 0 && item === args.path) {
                     // empty directory, nothing to traverse
                     output();
@@ -413,9 +412,12 @@ const directory = function utilities_directory(args:config_directory):void {
                                 populate("socket");
                             }
                         } else {
-                            args.callback(null);
-                            size = size + stats.size;
-                            populate("file");
+                            if (args.mode === "type") {
+                                args.callback(null);
+                            } else {
+                                size = size + stats.size;
+                                populate("file");
+                            }
                         }
                     }
                 });
