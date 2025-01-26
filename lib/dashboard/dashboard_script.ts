@@ -1,4 +1,5 @@
 
+import commas from "../utilities/commas.js";
 import core from "../browser/core.js";
 // @ts-expect-error - TypeScript claims xterm has no default export, but this is how the documentation says to use it.
 import Terminal from "@xterm/xterm";
@@ -465,106 +466,93 @@ const dashboard = function dashboard():void {
                     textArea.focus();
                 }
             },
-            sort_html: function dashboard_commonSortHTML(event:MouseEvent):void {
-                const target:HTMLElement = event.target,
-                    tableElement:HTMLElement = target.getAncestor("table", "tag"),
-                    tbody:HTMLElement = tableElement.getElementsByTagName("tbody")[0],
-                    records:HTMLCollectionOf<HTMLElement> = tbody.getElementsByTagName("tr"),
-                    tr_length:number = records.length;
+            sort_html: function dashboard_commonSortHTML(event:MouseEvent, table:HTMLElement, heading_index:number):void {
+                const target:HTMLElement = (event === null)
+                        ? null
+                        : event.target,
+                    tableElement:HTMLElement = (event === null)
+                        ? table
+                        : target.getAncestor("table", "tag"),
+                    tbody_old:HTMLElement = tableElement.getElementsByTagName("tbody")[0],
+                    tbody_new:HTMLElement = document.createElement("tbody"),
+                    tr_list:HTMLCollectionOf<HTMLElement> = tbody_old.getElementsByTagName("tr"),
+                    records:HTMLElement[] = [],
+                    tr_length:number = tr_list.length;
                 if (tr_length > 0) {
-                    const th:HTMLElement = target.parentNode,
+                    const th:HTMLElement = (event === null)
+                            ? table.getElementsByTagName("th")[heading_index]
+                            : target.parentNode,
                         tr_head:HTMLElement = th.parentNode,
                         ths:HTMLCollectionOf<HTMLElement> = tr_head.getElementsByTagName("th"),
                         cells_length:number = ths.length,
-                        table:string[][] = [],
-                        column:number = Number(tableElement.dataset.column),
-                        button:HTMLElement = ths[column].getElementsByTagName("button")[0],
+                        button:HTMLElement = (event === null)
+                            ? th.getElementsByTagName("button")[0]
+                            : target,
                         direction:-1|1 = Number(button.dataset.dir) as -1;
-                    let index_td:number = 0,
-                        index_th:number = cells_length,
-                        index_tr:number = 0,
-                        tr:HTMLElement = null,
-                        tds:HTMLCollectionOf<HTMLElement> = null,
-                        record:string[] = null;
+                    let index_th:number = (event === null)
+                            ? heading_index
+                            : cells_length,
+                        index_tr:number = 0;
                     if (direction === -1) {
                         button.setAttribute("data-dir", "1");
                     } else {
                         button.setAttribute("data-dir", "-1");
                     }
 
-                    // find which column to sort by
-                    do {
-                        index_th = index_th - 1;
-                        if (ths[index_th] === th) {
-                            break;
-                        }
-                    } while (index_th > 0);
-
-                    // build a table of data from the HTML table
-                    do {
-                        record = [];
-                        tr = tbody.getElementsByTagName("tr")[index_tr];
-                        tds = tr.getElementsByTagName("td");
-                        index_td = 0;
+                    if (event !== null) {
+                        // find which column to sort by
                         do {
-                            record.push(tds[index_td].textContent);
-                            index_td = index_td + 1;
-                        } while (index_td < cells_length);
-                        table.push(record);
+                            index_th = index_th - 1;
+                            if (ths[index_th] === th) {
+                                break;
+                            }
+                        } while (index_th > 0);
+                        tableElement.setAttribute("data-column", String(index_th));
+                    }
+
+                    do {
+                        records.push(tr_list[index_tr]);
                         index_tr = index_tr + 1;
                     } while (index_tr < tr_length);
 
-                    tableElement.setAttribute("data-column", String(index_th));
-                    common.sort_records(tbody, table);
-                }
-            },
-            sort_records: function dashboard_commonSortRecords(tbody:HTMLElement, list:string[][]):void {
-                const table:HTMLElement = tbody.getAncestor("table", "tag"),
-                    tbody_new:HTMLElement = document.createElement("tbody"),
-                    ths:HTMLCollectionOf<HTMLElement> = table.getElementsByTagName("th"),
-                    cells_length:number = ths.length,
-                    column:number = Number(table.dataset.column),
-                    button:HTMLElement = ths[column].getElementsByTagName("button")[0],
-                    direction:-1|1 = Number(button.dataset.dir) as -1;
-                let index_td:number = 0,
-                    index_tr:number = 0,
-                    tr:HTMLElement = null,
-                    td:HTMLElement = null;
-                list.sort(function dashboard_table_sortColumn(a:string[], b:string[]):-1|0|1 {
-                    const numA:number = Number(a[column]),
-                        numB:number = Number(b[column]);
-                    if (isNaN(numA) === false && isNaN(numB) === false) {
-                        if (numA < numB) {
+                    records.sort(function dashboard_commonSortHTML(a:HTMLElement, b:HTMLElement):-1|0|1 {
+                        const td_a:HTMLElement = a.getElementsByTagName("td")[index_th],
+                            td_b:HTMLElement = b.getElementsByTagName("td")[index_th],
+                            text_a:string = (td_a.dataset.raw === undefined)
+                                ? td_a.textContent
+                                : td_a.dataset.raw,
+                            text_b:string = (td_b.dataset.raw === undefined)
+                                ? td_b.textContent
+                                : td_b.dataset.raw,
+                            numb_a:number = Number(text_a),
+                            numb_b:number = Number(text_b);
+                        if (isNaN(numb_a) === false && isNaN(numb_b) === false) {
+                            if (numb_a < numb_b) {
+                                return direction;
+                            }
+                            if (numb_a > numb_b) {
+                                return (direction * -1 as -1);
+                            }
+                            return 0;
+                        }
+                        if (text_a < text_b) {
                             return direction;
                         }
-                        if (numA > numB) {
+                        if (text_a > text_b) {
                             return (direction * -1 as -1);
                         }
                         return 0;
-                    }
-                    if (a[column] < b[column]) {
-                        return direction;
-                    }
-                    if (a[column] > b[column]) {
-                        return (direction * -1 as -1);
-                    }
-                    return 0;
-                });
-                index_tr = list.length;
-                do {
-                    index_tr = index_tr - 1;
-                    tr = document.createElement("tr");
-                    index_td = 0;
+                    });
+
+                    index_tr = 0;
                     do {
-                        td = document.createElement("td");
-                        td.appendText(list[index_tr][index_td].toString());
-                        tr.appendChild(td);
-                        index_td = index_td + 1;
-                    } while (index_td < cells_length);
-                    tbody_new.appendChild(tr);
-                } while (index_tr > 0);
-                tbody.parentNode.appendChild(tbody_new);
-                tbody.parentNode.removeChild(tbody);
+                        records[index_tr].setAttribute("class", (index_tr % 2 === 0) ? "even" : "odd");
+                        tbody_new.appendChild(records[index_tr]);
+                        index_tr = index_tr + 1;
+                    } while (index_tr < tr_length);
+                    tbody_old.parentNode.appendChild(tbody_new);
+                    tbody_old.parentNode.removeChild(tbody_old);
+                }
             },
             title: function dashboard_commonTitle(name_server:string, type:type_dashboard_list):HTMLElement {
                 const li:HTMLElement = document.createElement("li"),
@@ -1131,6 +1119,157 @@ const dashboard = function dashboard():void {
                 }
             }
         },
+        fileSystem:module_fileSystem = {
+            init: function dashboard_fileSystemInit():void {
+                fileSystem.nodes.input.onblur = fileSystem.send;
+                fileSystem.nodes.input.onkeyup = fileSystem.send;
+                fileSystem.receive(payload.fileSystem);
+                fileSystem.nodes.expand.onclick = common.definitions;
+            },
+            nodes: {
+                expand: document.getElementById("file-system").getElementsByClassName("expand")[0] as HTMLElement,
+                input: document.getElementById("file-system").getElementsByTagName("input")[0],
+                failures: document.getElementById("file-system").getElementsByClassName("file-system-failures")[0] as HTMLElement,
+                output: document.getElementById("file-system").getElementsByClassName("file-list")[0] as HTMLElement
+            },
+            receive: function dashboard_fileSystemReceive(fs:services_fileSystem):void {
+                const len:number = fs.dirs.length,
+                    len_fail:number = fs.failures.length,
+                    fails:HTMLElement = (len_fail > 0)
+                        ? document.createElement("ul")
+                        : document.createElement("p"),
+                    tbody_old:HTMLElement = fileSystem.nodes.output.getElementsByTagName("tbody")[0],
+                    tbody_new:HTMLElement = document.createElement("tbody"),
+                    icons:store_string = {
+                        "block_device": "\u2580",
+                        "character_device": "\u0258",
+                        "directory": "\ud83d\udcc1",
+                        "fifo_pipe": "\u275a",
+                        "file": "\ud83d\uddce",
+                        "socket": "\ud83d\udd0c",
+                        "symbolic_link": "\ud83d\udd17"
+                    },
+                    record = function dashboard_fileSystemReceive_record(index:number):void {
+                        const item:type_directory_item = (index < 0)
+                                ? fs.parent
+                                : fs.dirs[index],
+                            name:string = (index < 0)
+                                ? ".."
+                                : (index === 0)
+                                    ? "."
+                                    : item[0],
+                            name_raw:string = (index < 1)
+                                ? item[0]
+                                : fs.address.replace(/(\\|\/)\s*$/, "") + fs.sep + item[0];
+                        let tr:HTMLElement = null,
+                            td:HTMLElement = null,
+                            button:HTMLElement = null,
+                            span:HTMLElement = null,
+                            dtg:string[] = null;
+                        dtg = item[5].mtimeMs.dateTime(true).split(", ");
+                        button = document.createElement("button");
+                        tr = document.createElement("tr");
+                        span = document.createElement("span");
+                        tr.setAttribute("class", (index % 2 === 0) ? "even" : "odd");
+
+                        td = document.createElement("td");
+                        td.setAttribute("data-raw", name_raw);
+                        button.appendText(name);
+                        button.onclick = fileSystem.send;
+                        span.setAttribute("class", "icon");
+                        span.appendText(icons[item[1]]);
+                        td.appendChild(span);
+                        td.appendText(" ");
+                        td.appendChild(button);
+                        tr.appendChild(td);
+
+                        td = document.createElement("td");
+                        td.appendText(item[1]);
+                        tr.appendChild(td);
+
+                        td = document.createElement("td");
+                        td.setAttribute("data-raw", String(item[5].size));
+                        td.appendText(commas(item[5].size));
+                        tr.appendChild(td);
+
+                        td = document.createElement("td");
+                        td.setAttribute("data-raw", String(item[5].mtimeMs));
+                        td.appendText(dtg[0]);
+                        tr.appendChild(td);
+
+                        td = document.createElement("td");
+                        td.appendText(dtg[1]);
+                        tr.appendChild(td);
+
+                        td = document.createElement("td");
+                        td.appendText((item[5].mode & parseInt("777", 8)).toString(8));
+                        tr.appendChild(td);
+
+                        td = document.createElement("td");
+                        td.setAttribute("data-raw", String(item[4]));
+                        td.appendText(commas(item[4]));
+                        tr.appendChild(td);
+                        tbody_new.appendChild(tr);
+                    };
+                let index_record:number = 0;
+                fileSystem.nodes.input.value = fs.address;
+                // td[0] = icon name
+                // td[1] = type
+                // td[2] = size
+                // td[3] = modified date
+                // td[4] = modified time
+                // td[5] = permissions
+                // td[6] = children
+                if (fs.dirs[0] === null) {
+                    fileSystem.nodes.output.style.display = "none";
+                } else {
+                    fileSystem.nodes.output.style.display = "table";
+                    record(-1);
+                    if (len > 0) {
+                        do {
+                            record(index_record);
+                            index_record = index_record + 1;
+                        } while (index_record < len);
+                        tbody_old.parentNode.appendChild(tbody_new);
+                        tbody_old.parentNode.removeChild(tbody_old);
+                    }
+                }
+                if (len_fail > 0) {
+                    let index_fail:number = 0,
+                        li:HTMLElement = null;
+                    do {
+                        li = document.createElement("li");
+                        li.appendText(fs.failures[index_fail]);
+                        fails.appendChild(li);
+                        index_fail = index_fail + 1;
+                    } while (index_fail < len_fail);
+                } else {
+                    fails.appendText("0 artifacts failed accessing.");
+                }
+                fails.setAttribute("class", fileSystem.nodes.failures.getAttribute("class"));
+                fileSystem.nodes.failures.parentNode.appendChild(fails);
+                fileSystem.nodes.failures.parentNode.removeChild(fileSystem.nodes.failures);
+                fileSystem.nodes.failures = fails;
+            },
+            send: function dashboard_fileSystemSend(event:FocusEvent|KeyboardEvent):void {
+                const target:HTMLElement = event.target,
+                    keyEvent:KeyboardEvent = event as KeyboardEvent,
+                    name:string = target.nodeName.toLowerCase(),
+                    address:string = (name === "input")
+                        ? fileSystem.nodes.input.value.replace(/^\s+/, "").replace(/\s+$/, "")
+                        : target.parentNode.dataset.raw;
+                if (name === "button" || event.type === "blur" || (event.type === "keyup" && keyEvent.key.toLowerCase() === "enter")) {
+                    const payload:services_fileSystem = {
+                        address: address,
+                        dirs: null,
+                        failures: null,
+                        parent: null,
+                        sep: null
+                    };
+                    message.send(payload, "dashboard-fileSystem");
+                }
+            }
+        },
         http:module_http = {
             init: function dashboard_httpInit():void {
                 // populate a default HTTP test value
@@ -1194,6 +1333,8 @@ const dashboard = function dashboard():void {
                         compose.init();
                         // assign the dns events
                         dns.init();
+                        // generate file system output
+                        fileSystem.init();
                         // populate the http content
                         http.init();
                         // populate port data
@@ -1369,7 +1510,9 @@ const dashboard = function dashboard():void {
                                 } else if (data.action === "destroy") {
                                     socket_destroy(config.hash);
                                 }
-                                ports.internal();
+                                if (payload !== null) {
+                                    ports.internal();
+                                }
                             } else if (data.type === "port") {
                                 ports.external(data.configuration as external_ports);
                             } else if (data.type === "compose-containers") {
@@ -1385,6 +1528,8 @@ const dashboard = function dashboard():void {
                                 compose.list("variables");
                             }
                         }
+                    } else if (message_item.service === "dashboard-fileSystem") {
+                        fileSystem.receive(message_item.data as services_fileSystem);
                     } else if (message_item.service === "dashboard-http") {
                         http.response(message_item.data as services_http_test);
                     } else if (message_item.service === "dashboard-dns") {
@@ -1402,7 +1547,7 @@ const dashboard = function dashboard():void {
         },
         ports:module_port = {
             external: function dashboard_portsExternal(input:external_ports):void {
-                if (ports_external === true) {
+                if (ports_external === true || payload === null) {
                     return;
                 }
                 const servers:string[] = Object.keys(payload.servers),
@@ -1421,8 +1566,7 @@ const dashboard = function dashboard():void {
                         }
                     },
                     portElement:HTMLElement = document.getElementById("ports"),
-                    updated:HTMLElement = portElement.getElementsByClassName("updated")[0] as HTMLElement,
-                    tbody:HTMLElement = portElement.getElementsByTagName("tbody")[0];
+                    updated:HTMLElement = portElement.getElementsByClassName("updated")[0] as HTMLElement;
                 if (input.list[0] === null) {
                     if (updated.style.display !== "none") {
                         const ulNew:HTMLElement = document.createElement("ul"),
@@ -1456,7 +1600,7 @@ const dashboard = function dashboard():void {
                         li.appendChild(para);
                         ulNew.appendChild(li);
                         section.appendChild(ulNew);
-                        tbody.parentNode.style.display = "none";
+                        ports.nodes.external.style.display = "none";
                         updated.style.display = "none";
                         ports_external = true;
                     }
@@ -1517,8 +1661,43 @@ const dashboard = function dashboard():void {
                         }
                     } while (indexServers > 0);
                 }
-                common.sort_records(tbody, input.list as string[][]);
+                ports.html(ports.nodes.external, input.list);
                 updated.getElementsByTagName("em")[0].textContent = input.time.dateTime(true);
+            },
+            html: function dashboard_portsHTML(table:HTMLElement, list:type_external_port[]):void {
+                const len:number = list.length;
+                if (len > 0) {
+                    let tr:HTMLElement = null,
+                        td:HTMLElement = null,
+                        index:number = 0;
+                    const tbody_new:HTMLElement = document.createElement("tbody"),
+                        tbody_old:HTMLElement = table.getElementsByTagName("tbody")[0];
+                    do {
+                        tr = document.createElement("tr");
+
+                        td = document.createElement("td");
+                        td.appendText(String(list[index][0]));
+                        tr.appendChild(td);
+
+                        td = document.createElement("td");
+                        td.appendText(list[index][1]);
+                        tr.appendChild(td);
+
+                        td = document.createElement("td");
+                        td.appendText((table === ports.nodes.external) ? "external": list[index][2]);
+                        tr.appendChild(td);
+
+                        td = document.createElement("td");
+                        td.appendText(list[index][3]);
+                        tr.appendChild(td);
+
+                        tbody_new.appendChild(tr);
+                        index = index + 1;
+                    } while (index < len);
+                    tbody_old.parentNode.appendChild(tbody_new);
+                    tbody_old.parentNode.removeChild(tbody_old);
+                    common.sort_html(null, table, Number(table.dataset.column));
+                }
             },
             init: function dashboard_portsInit(port_list:external_ports):void {
                 ports.external(port_list);
@@ -1526,7 +1705,6 @@ const dashboard = function dashboard():void {
             },
             internal: function dashboard_portsInternal():void {
                 const output:type_external_port[] = [],
-                    tbody:HTMLElement = document.getElementById("ports").getElementsByTagName("tbody")[1],
                     servers:string[] = Object.keys(payload.servers),
                     compose:string[] = (payload.compose === null)
                         ? null
@@ -1572,7 +1750,11 @@ const dashboard = function dashboard():void {
                         }
                     } while (indexServers > 0);
                 }
-                common.sort_records(tbody, output as string[][]);
+                ports.html(ports.nodes.internal, output);
+            },
+            nodes: {
+                external: document.getElementById("ports").getElementsByTagName("table")[0],
+                internal: document.getElementById("ports").getElementsByTagName("table")[1]
             }
         },
         server:module_server = {
@@ -1691,45 +1873,54 @@ const dashboard = function dashboard():void {
             socket_add: function dashboard_serverSocketAdd(config:services_socket):void {
                 const table:HTMLElement = document.getElementById("sockets").getElementsByTagName("table")[0],
                     tbody:HTMLElement = table.getElementsByTagName("tbody")[0],
-                    trs:HTMLCollectionOf<HTMLElement> = tbody.getElementsByTagName("tr"),
-                    tr_len:number = trs.length,
-                    td_len:number = (tr_len < 1)
-                        ? 0
-                        : trs[0].getElementsByTagName("td").length,
-                    list:string[][] = [];
-                let record:string[] = null,
-                    index_tr:number = tr_len,
-                    index_td:number = 0;
+                    tr:HTMLElement = document.createElement("tr");
+                let td:HTMLElement = null;
                 if (config.address.local.port === undefined || config.address.remote.port === undefined) {
                     return;
                 }
-                if (tr_len > 0) {
-                    do {
-                        index_tr = index_tr - 1;
-                        index_td = 0;
-                        record = [];
-                        do {
-                            record.push(trs[index_tr].getElementsByTagName("td")[index_td].textContent);
-                            index_td = index_td + 1;
-                        } while (index_td < td_len);
-                        list.push(record);
-                    } while (index_tr > 0);
-                }
-                list.push([
-                    config.server,
-                    config.hash,
-                    config.type,
-                    config.role,
-                    (config.proxy === null)
-                        ? ""
-                        : config.proxy,
-                    String(config.encrypted),
-                    config.address.local.address,
-                    config.address.local.port.toString(),
-                    config.address.remote.address,
-                    config.address.remote.port.toString()
-                ]);
-                common.sort_records(tbody, list);
+
+                td = document.createElement("td");
+                td.appendText(config.server);
+                tr.appendChild(td);
+
+                td = document.createElement("td");
+                td.appendText(config.hash);
+                tr.appendChild(td);
+
+                td = document.createElement("td");
+                td.appendText(config.type);
+                tr.appendChild(td);
+
+                td = document.createElement("td");
+                td.appendText(config.role);
+                tr.appendChild(td);
+
+                td = document.createElement("td");
+                td.appendText((config.proxy === null) ? "" : config.proxy);
+                tr.appendChild(td);
+
+                td = document.createElement("td");
+                td.appendText(String(config.encrypted));
+                tr.appendChild(td);
+
+                td = document.createElement("td");
+                td.appendText(config.address.local.address);
+                tr.appendChild(td);
+
+                td = document.createElement("td");
+                td.appendText(String(config.address.local.port));
+                tr.appendChild(td);
+
+                td = document.createElement("td");
+                td.appendText(config.address.remote.address);
+                tr.appendChild(td);
+
+                td = document.createElement("td");
+                td.appendText(String(config.address.remote.port));
+                tr.appendChild(td);
+
+                tbody.appendChild(tr);
+                common.sort_html(null, table, Number(table.dataset.column));
             },
             validate: function dashboard_serverValidate(event:FocusEvent|KeyboardEvent):void {
                 const target:HTMLTextAreaElement = event.target as HTMLTextAreaElement,

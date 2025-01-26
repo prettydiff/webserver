@@ -55,8 +55,7 @@ declare global {
         definitions: (event:MouseEvent) => void;
         details: (event:MouseEvent) => void;
         edit: (event:MouseEvent) => void;
-        sort_html: (event:MouseEvent) => void;
-        sort_records: (tbody:HTMLElement, list:string[][]) => void;
+        sort_html: (event:MouseEvent, table?:HTMLElement, heading_index?:number) => void;
         title: (name_server:string, type:type_dashboard_list) => HTMLElement;
     }
 
@@ -94,6 +93,18 @@ declare global {
         response: (result:services_dns_output) => void;
     }
 
+    interface module_fileSystem {
+        init: () => void;
+        nodes: {
+            expand: HTMLElement;
+            failures: HTMLElement;
+            input: HTMLInputElement;
+            output: HTMLElement;
+        };
+        receive: (fs:services_fileSystem) => void;
+        send: (event:FocusEvent|KeyboardEvent) => void;
+    }
+
     interface module_http {
         init: () => void;
         nodes: {
@@ -116,8 +127,13 @@ declare global {
 
     interface module_port {
         external: (input:external_ports) => void;
+        html: (table:HTMLElement, list:type_external_port[]) => void;
         init: (port_list:external_ports) => void;
         internal: () => void;
+        nodes: {
+            external: HTMLElement;
+            internal: HTMLElement;
+        };
     }
 
     interface module_server {

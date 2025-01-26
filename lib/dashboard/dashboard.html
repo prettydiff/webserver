@@ -24,7 +24,7 @@
     <h1>Server Management Dashboard</h1>
     <p id="connection-status" class="connection-offline">Dashboard Connection: <strong>Offline</strong></p>
     <nav><ul>
-        <li><button class="nav-focus" data-section="servers">Servers</button></li><li><button data-section="compose">Docker Compose</button></li><li><button data-section="logs">Logs</button></li><li><button data-section="terminal">Terminal</button></li><li><button data-section="ports">Port Summary</button></li><li><button data-section="sockets">Socket Summary</button></li><li><button data-section="http">HTTP Test</button></li><li><button data-section="dns">DNS Resolve</button></li><li><button data-section="help">Help</button></li><li><button data-section="faq">FAQ</button></li>
+        <li><button class="nav-focus" data-section="servers">Servers</button></li><li><button data-section="compose">Docker Compose</button></li><li><button data-section="terminal">Terminal</button></li><li><button data-section="file-system">File System</button></li><li><button data-section="ports">Port Summary</button></li><li><button data-section="sockets">Socket Summary</button></li><li><button data-section="http">HTTP Test</button></li><li><button data-section="dns">DNS Resolve</button></li><li><button data-section="logs">Logs</button></li><li><button data-section="help">Help</button></li><li><button data-section="faq">FAQ</button></li>
     </ul></nav>
     <main></main>
         <div class="tab" id="dns">
@@ -176,6 +176,55 @@
                         If NMap is installed then modify the <em>vars.commands.nmap</em> value of <em>/lib/utilities/vars.ts</em> to fit the NMap command on your machine and rebuild the application.
                     </p>
                 </div>
+            </div>
+        </div>
+        <div class="tab" id="file-system">
+            <h2>File System</h2>
+            <p class="tab-description">This tool allows navigating the hosting machine's file system.</p>
+            <div class="section">
+                <h3>File System Information <button class="expand" data-tag="div">Expand</button></h3>
+                <div class="definitions">
+                    <h4>File System Objects</h4>
+                    <dl>
+                        <dt>block device</dt>
+                        <dd>A block device refers to an artifact representing a hardware device written to fixed-sized blocks, such as optical disks or flash memory.</dd>
+                        <dt>character device</dt>
+                        <dd>A character device is a simulated file that provides written access to hardware via streams, which allows direct access without buffering or fixed-size block segmentation. The typical use provides access to hardware via file system operations where performance is more important than storage integrity such as with serial ports, keyboards, cameras.</dd>
+                        <dt>directory</dt>
+                        <dd>A directory serves as a grouping mechanism allowing containing of child file system artifacts, which thereby provides a tree structure with organizational depth.</dd>
+                        <dt>FIFO device</dt>
+                        <dd>FIFO, or first in and first out, provides for pipe functionality. A pipe is an inter-rocess communication stream whereby one process sends its output directly to a different process as streamed input without help from an intermediary, such as a shell or user interaction. A FIFO allows for such interprocess communication via file system operations.</dd>
+                        <dt>file</dt>
+                        <dd>Files are the typical storage unit of file systems whereby text or binary is stored directly as opposed to a grouping or communication structure.</dd>
+                        <dt>socket</dt>
+                        <dd>File system sockets are similar to network sockets and FIFO devices.  File system sockets exist at a low level in the kernel like network sockets and provide streamed interprocess communication like FIFO devices.  File system sockets initiate using file system operations, but unlike FIFO devices are not necessarily subject to file system operations for transmitting data.  Nonetheless file system sockets respect access and permission limitations inherited from their location on the file system.</dd>
+                        <dt>symbolic link</dt>
+                        <dd>A symbolic link is a virtual file that provides redirection within a file system.  A symbolic link points to a file system artifact elsewhere on the file system and takes the identity of that artifact so as to function as a shortcut but yet appear exactly as the type of thing it points to.  Since a symbolic link looks exactly like the thing it points to in both identity and function it cannot be discerned from a different file system type unless intentionally traversing and scanning for symbolic links.</dd>
+                    </dl>
+                    <h4>Permissions</h4>
+                    <p>File system permission follow a 4 digit model. The digits follow this definition:</p>
+                    <ol>
+                        <li>The first digit determines whether to apply one of setuid, setgid, or sticky bit.</li>
+                        <li>The second digit provides a permission value for artifact owner.</li>
+                        <li>The third digit provides a permission value for assigned group of the artifact owner.</li>
+                        <li>The final digit provides a permission value for users that are not owners and not members of the owner's group(s).</li>
+                    </ol>
+                    <p>Permission values for the final 3 digits follow a combination of these values:</p>
+                    <ul>
+                        <li>4 = read permissions (r)</li>
+                        <li>2 = write permissions (w)</li>
+                        <li>1 = execute permissions (x)</li>
+                        <li>0 = no permissions</li>
+                    </ul>
+                    <p>So, for example, a value of 5 means 4 + 1, or read and execute permissions and a value of 7 means read, write, and execute permissions. A complete permission value of <em>0755</em> means owners have complete permissions but users and members of the owner's group(s) can only read and execute to that artifact.</p>
+                </div>
+            </div>
+            <div class="section">
+                <h3>File List At Specififed Address</h3>
+                <p><label>Absolute File System Path</label> <input spellcheck="false" type="text"/></p>
+                <table class="file-list" data-column="1"><thead><tr><th><button data-dir="1">object</button></th><th><button data-dir="1">type</button></th><th><button data-dir="1">size</button></th><th><button data-dir="1">modified date</button></th><th><button data-dir="1">modified time</button></th><th><button data-dir="1">permissions</button></th><th><button data-dir="1">children</button></th></tr></thead><tbody></tbody></table>
+                <h3>Items in current directory that could not be read</h3>
+                <ul class="file-system-failures"></ul>
             </div>
         </div>
         <div class="tab" id="help">
