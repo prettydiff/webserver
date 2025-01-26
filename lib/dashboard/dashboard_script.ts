@@ -1252,9 +1252,13 @@ const dashboard = function dashboard():void {
                     }
                     fails.setAttribute("class", fileSystem.nodes.failures.getAttribute("class"));
                 } else {
+                    const strong:HTMLElement = document.createElement("strong");
+                    strong.appendText(fs.failures[0]);
                     fileSystem.nodes.content.style.display = "block";
                     fileSystem.nodes.content.getElementsByTagName("textarea")[0].value = fs.file;
-                    fails.appendText(`Actual file encoding is ${fs.failures[0]}.`);
+                    fails.appendText("Actual file encoding is ");
+                    fails.appendChild(strong);
+                    fails.appendText(".");
                 }
                 fileSystem.nodes.failures.parentNode.appendChild(fails);
                 fileSystem.nodes.failures.parentNode.removeChild(fileSystem.nodes.failures);

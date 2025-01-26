@@ -197,18 +197,18 @@ const directory = function utilities_directory(args:config_directory):void {
                                         ? fileList.length
                                         : list.length,
                                     relItem:string = (args.relative === true)
-                                        ? (item === "/")
-                                            ? "/"
+                                        ? (item === "/" || (/^\w:(\\)?$/).test(item) === true)
+                                            ? item
                                             : item.replace(path_start, "")
                                         : item;
                                 if (args.mode === "array") {
                                     fileList.push(relItem);
                                 } else if (args.mode === "list") {
-                                    fileList.push(`directory  0  ${relPath}`);
+                                    fileList.push(`directory  0  ${relItem}`);
                                 } else {
                                     if (args.mode === "search") {
                                         if (search(item) === true) {
-                                            list.push([relPath, "directory", "", parent, files.length, statData, ""]);
+                                            list.push([relItem, "directory", "", parent, files.length, statData, ""]);
                                         }
                                     } else {
                                         list.push([relItem, "directory", "", parent, files.length, statData, ""]);
