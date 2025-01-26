@@ -1159,9 +1159,11 @@ const dashboard = function dashboard():void {
                                 : (index === 0)
                                     ? "."
                                     : item[0],
-                            name_raw:string = (index < 1)
-                                ? item[0]
-                                : fs.address.replace(/(\\|\/)\s*$/, "") + fs.sep + item[0];
+                            name_raw:string = ((/^\w:(\\)?$/).test(fs.address) === true)
+                                ? "\\"
+                                : ((/^\w:(\\)?$/).test(name) === true || index < 1)
+                                    ? item[0]
+                                    : fs.address.replace(/(\\|\/)\s*$/, "") + fs.sep + item[0];
                         let tr:HTMLElement = null,
                             td:HTMLElement = null,
                             button:HTMLElement = null,
@@ -1204,7 +1206,7 @@ const dashboard = function dashboard():void {
                         tr.appendChild(td);
 
                         td = document.createElement("td");
-                        td.appendText((item[5].mode & parseInt("777", 8)).toString(8));
+                        td.appendText(item[5].mode === null ? "" : (item[5].mode & parseInt("777", 8)).toString(8));
                         tr.appendChild(td);
 
                         td = document.createElement("td");

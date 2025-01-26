@@ -133,7 +133,7 @@ const dashboard_object = function utilities_dashboardObject(socket:websocket_cli
             let index:number = list.length,
                 last_path:string = "";
             parent = list[0];
-            if (path_name === "/" || windows_root.test(path_name) === true) {
+            if (path_name === "/" || path_name === "\\" || windows_root.test(path_name) === true) {
                 dirCallback(list);
                 return;
             }
@@ -155,7 +155,7 @@ const dashboard_object = function utilities_dashboardObject(socket:websocket_cli
             } while (index > 0);
         },
         parent_path:string = (function utilities_dashboardObject_parentPath():string {
-            if (path_name === "/" || (windows_root.test(path_name) === true && vars.sep === "\\")) {
+            if (path_name === "/" || path_name === "\\" || (windows_root.test(path_name) === true && vars.sep === "\\")) {
                 return path_name;
             }
             const paths:string[] = path_name.split(vars.sep);
