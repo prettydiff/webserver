@@ -187,3 +187,9 @@ interface vars {
         uid: number;
     };
 }
+
+interface windows_drives {
+    DriveLetter: string;
+    Size: number;
+    SizeRemaining: number;
+}

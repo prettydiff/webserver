@@ -1127,6 +1127,7 @@ const dashboard = function dashboard():void {
                 fileSystem.nodes.expand.onclick = common.definitions;
             },
             nodes: {
+                content: document.getElementById("file-system").getElementsByClassName("file-system-content")[0] as HTMLElement,
                 expand: document.getElementById("file-system").getElementsByClassName("expand")[0] as HTMLElement,
                 input: document.getElementById("file-system").getElementsByTagName("input")[0],
                 failures: document.getElementById("file-system").getElementsByClassName("file-system-failures")[0] as HTMLElement,
@@ -1135,7 +1136,7 @@ const dashboard = function dashboard():void {
             receive: function dashboard_fileSystemReceive(fs:services_fileSystem):void {
                 const len:number = fs.dirs.length,
                     len_fail:number = fs.failures.length,
-                    fails:HTMLElement = (len_fail > 0)
+                    fails:HTMLElement = (len_fail > 0 && fs.dirs[0][1] === "directory")
                         ? document.createElement("ul")
                         : document.createElement("p"),
                     tbody_old:HTMLElement = fileSystem.nodes.output.getElementsByTagName("tbody")[0],
@@ -1158,9 +1159,11 @@ const dashboard = function dashboard():void {
                                 : (index === 0)
                                     ? "."
                                     : item[0],
-                            name_raw:string = (index < 1 || fs.address === "/")
-                                ? item[0]
-                                : fs.address.replace(/(\\|\/)\s*$/, "") + fs.sep + item[0];
+                            name_raw:string = ((/^\w:(\\)?$/).test(fs.address) === true)
+                                ? "\\"
+                                : ((/^\w:(\\)?$/).test(name) === true || index < 1)
+                                    ? item[0]
+                                    : fs.address.replace(/(\\|\/)\s*$/, "") + fs.sep + item[0];
                         let tr:HTMLElement = null,
                             td:HTMLElement = null,
                             button:HTMLElement = null,
@@ -1174,6 +1177,7 @@ const dashboard = function dashboard():void {
 
                         td = document.createElement("td");
                         td.setAttribute("data-raw", name_raw);
+                        td.setAttribute("class", "file-name");
                         button.appendText(name);
                         button.onclick = fileSystem.send;
                         span.setAttribute("class", "icon");
@@ -1202,7 +1206,7 @@ const dashboard = function dashboard():void {
                         tr.appendChild(td);
 
                         td = document.createElement("td");
-                        td.appendText((item[5].mode & parseInt("777", 8)).toString(8));
+                        td.appendText(item[5].mode === null ? "" : (item[5].mode & parseInt("777", 8)).toString(8));
                         tr.appendChild(td);
 
                         td = document.createElement("td");
@@ -1234,19 +1238,30 @@ const dashboard = function dashboard():void {
                         tbody_old.parentNode.removeChild(tbody_old);
                     }
                 }
-                if (len_fail > 0) {
-                    let index_fail:number = 0,
-                        li:HTMLElement = null;
-                    do {
-                        li = document.createElement("li");
-                        li.appendText(fs.failures[index_fail]);
-                        fails.appendChild(li);
-                        index_fail = index_fail + 1;
-                    } while (index_fail < len_fail);
+                if (fs.file === null) {
+                    fileSystem.nodes.content.style.display = "none";
+                    if (len_fail > 0) {
+                        let index_fail:number = 0,
+                            li:HTMLElement = null;
+                        do {
+                            li = document.createElement("li");
+                            li.appendText(fs.failures[index_fail]);
+                            fails.appendChild(li);
+                            index_fail = index_fail + 1;
+                        } while (index_fail < len_fail);
+                    } else {
+                        fails.appendText("0 artifacts failed accessing.");
+                    }
+                    fails.setAttribute("class", fileSystem.nodes.failures.getAttribute("class"));
                 } else {
-                    fails.appendText("0 artifacts failed accessing.");
+                    const strong:HTMLElement = document.createElement("strong");
+                    strong.appendText(fs.failures[0]);
+                    fileSystem.nodes.content.style.display = "block";
+                    fileSystem.nodes.content.getElementsByTagName("textarea")[0].value = fs.file;
+                    fails.appendText("Actual file encoding is ");
+                    fails.appendChild(strong);
+                    fails.appendText(".");
                 }
-                fails.setAttribute("class", fileSystem.nodes.failures.getAttribute("class"));
                 fileSystem.nodes.failures.parentNode.appendChild(fails);
                 fileSystem.nodes.failures.parentNode.removeChild(fileSystem.nodes.failures);
                 fileSystem.nodes.failures = fails;
@@ -1263,6 +1278,7 @@ const dashboard = function dashboard():void {
                         address: address,
                         dirs: null,
                         failures: null,
+                        file: null,
                         parent: null,
                         sep: null
                     };

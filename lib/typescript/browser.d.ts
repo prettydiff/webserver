@@ -96,6 +96,7 @@ declare global {
     interface module_fileSystem {
         init: () => void;
         nodes: {
+            content: HTMLElement;
             expand: HTMLElement;
             failures: HTMLElement;
             input: HTMLInputElement;

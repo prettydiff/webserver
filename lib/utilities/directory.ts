@@ -153,24 +153,28 @@ const directory = function utilities_directory(args:config_directory):void {
                     }
                 }
             },
+            driveSize:store_number = {},
             statWrapper = function utilities_directory_statWrapper(filePath:string, parent:number):void {
                 method(filePath, function utilities_directory_statWrapper_stat(er:node_error, stats:node_fs_Stats):void {
                     const statData:directory_data = (stats === undefined)
-                        ? null
-                        : {
-                            atimeMs: stats.atimeMs,
-                            ctimeMs: stats.ctimeMs,
-                            linkPath: "",
-                            linkType: "",
-                            mode: stats.mode,
-                            mtimeMs: stats.mtimeMs,
-                            size: stats.size
-                        },
+                            ? null
+                            : {
+                                atimeMs: stats.atimeMs,
+                                ctimeMs: stats.ctimeMs,
+                                linkPath: "",
+                                linkType: "",
+                                mode: stats.mode,
+                                mtimeMs: stats.mtimeMs,
+                                size: stats.size
+                            },
                         driveLetter = function utilities_directory_statWrapper_stat_driveLetter(input:string):string {
                             return `${input}\\`;
                         },
+                        path_start:string = (args.path === "/")
+                            ? "/"
+                            : args.path.replace(/(\/|\\)$/, "") + vars.sep,
                         relPath:string = (args.relative === true)
-                            ? filePath.replace(args.path + vars.sep, "")
+                            ? filePath.replace(path_start, "")
                             : filePath,
                         search = function utilities_directory_statWrapper_stat_search(searchItem:string):boolean {
                             const names:string = searchItem.split(vars.sep).pop(),
@@ -194,16 +198,21 @@ const directory = function utilities_directory(args:config_directory):void {
                                         ? fileList.length
                                         : list.length,
                                     relItem:string = (args.relative === true)
-                                        ? item.replace(args.path + vars.sep, "")
+                                        ? (item === "/" || (/^\w:(\\)?$/).test(item) === true)
+                                            ? item
+                                            : item.replace(path_start, "")
                                         : item;
+                                if (args.path === "\\" && driveSize[item] !== undefined) {
+                                    statData.size = driveSize[item];
+                                }
                                 if (args.mode === "array") {
                                     fileList.push(relItem);
                                 } else if (args.mode === "list") {
-                                    fileList.push(`directory  0  ${relPath}`);
+                                    fileList.push(`directory  0  ${relItem}`);
                                 } else {
                                     if (args.mode === "search") {
                                         if (search(item) === true) {
-                                            list.push([relPath, "directory", "", parent, files.length, statData, ""]);
+                                            list.push([relItem, "directory", "", parent, files.length, statData, ""]);
                                         }
                                     } else {
                                         list.push([relItem, "directory", "", parent, files.length, statData, ""]);
@@ -231,17 +240,30 @@ const directory = function utilities_directory(args:config_directory):void {
                             };
                             if (item === "\\") {
                                 //cspell:disable-next-line
-                                node.child_process.exec("wmic logicaldisk get name", function utilities_directory_statWrapper_stat_dir_windowsRoot(erw:node_childProcess_ExecException, stdout:string, stderr:string):void {
-                                    if (erw !== null || stderr !== "") {
+                                node.child_process.exec("get-volume | convertto-json", {
+                                    shell: "powershell"
+                                }, function utilities_directory_statWrapper_stat_dir_windowsRoot(erw:node_childProcess_ExecException, stdout:string, stderr:string):void {
+                                    if (erw === null && stderr === "") {
+                                        const drives:windows_drives[] = JSON.parse(stdout),
+                                            files:string[] = [];
+                                        let index:number = drives.length;
+                                        if (index > 0) {
+                                            do {
+                                                index = index - 1;
+                                                if (drives[index].DriveLetter !== null) {
+                                                    driveSize[`${drives[index].DriveLetter}:\\`] = drives[index].Size;
+                                                    files.push(`${drives[index].DriveLetter}:\\`);
+                                                }
+                                            } while (index > 0);
+                                        }
+                                        dirBody(files);
+                                    } else {
                                         list.failures.push(`${erw.code} - ${item}`);
                                         if (dirs > 0) {
                                             dirCounter(item);
                                         } else {
                                             output();
                                         }
-                                    } else {
-                                        const drives:string[] = stdout.replace(/Name\s+/, "").replace(/\s+$/, "").replace(/\s+/g, " ").split(" ");
-                                        dirBody(drives);
                                     }
                                 });
                             } else {
@@ -371,9 +393,11 @@ const directory = function utilities_directory(args:config_directory):void {
                             args.callback(null);
                             return;
                         }
-                        const dirs:number = (args.path === "\\" && (/\w:$/).test(filePath) === false)
-                            ? `\\${filePath.replace(startItem, "")}`.split(vars.sep).length
-                            : filePath.replace(startItem, "").split(vars.sep).length;
+                        const dirs:number = (args.path === "\\" && (/^\w:(\\)?$/).test(filePath) === true)
+                            ? 1
+                            : (args.path === "\\")
+                                ? `\\${filePath.replace(startItem, "")}`.split(vars.sep).length
+                                : filePath.replace(startItem, "").split(vars.sep).length;
                         if (args.depth < 1 || dirs < args.depth || dirTest === false) {
                             dirTest = true;
                             dir(filePath.replace(/^\w:$/, driveLetter));
