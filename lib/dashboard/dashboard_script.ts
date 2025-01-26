@@ -1158,7 +1158,7 @@ const dashboard = function dashboard():void {
                                 : (index === 0)
                                     ? "."
                                     : item[0],
-                            name_raw:string = (index < 1)
+                            name_raw:string = (index < 1 || fs.address === "/")
                                 ? item[0]
                                 : fs.address.replace(/(\\|\/)\s*$/, "") + fs.sep + item[0];
                         let tr:HTMLElement = null,

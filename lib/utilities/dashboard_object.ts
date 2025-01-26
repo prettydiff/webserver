@@ -102,6 +102,9 @@ const dashboard_object = function utilities_dashboardObject(socket:websocket_cli
             } else {
                 paths.pop();
             }
+            if (paths[0] === "" && paths[1] === "" && paths.length === 2 && vars.sep === "/") {
+                return "/";
+            }
             return paths.join(vars.sep) + vars.sep;
         }()),
         config_parent:config_directory = {
