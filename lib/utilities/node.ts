@@ -1,5 +1,6 @@
 /* lib/terminal/utilities/node - All the Node APIs used in the project stored in a single location. */
 
+import { isAscii, isUtf8 } from "node:buffer";
 import { exec, spawn } from "node:child_process";
 import { constants as constantsCrypto, createHash, createPrivateKey, createPublicKey, generateKeyPair, Hash, privateDecrypt, publicEncrypt } from "node:crypto";
 import { resolve as resolveDNS } from "node:dns";
@@ -16,6 +17,10 @@ import { connect as tlsConnect, createServer as tlsCreateServer } from "node:tls
 import { brotliDecompress, constants as constantsZlib, createBrotliCompress, createBrotliDecompress, createGunzip, gunzip, inflate, unzip } from "node:zlib";
 
 const node = {
+    buffer: {
+        isAscii: isAscii,
+        isUtf8: isUtf8
+    },
     child_process: {
         exec: exec,
         spawn: spawn

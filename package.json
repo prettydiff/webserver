@@ -8,7 +8,8 @@
     "description": "WebSocket first web server, HTTP over WebSockets.",
     "dependencies": {
         "@lydell/node-pty": "1.0.2",
-        "@xterm/xterm": "^5.5.0"
+        "@xterm/xterm": "^5.5.0",
+        "jschardet": "^3.1.4"
     },
     "devDependencies": {
         "@eslint/eslintrc": "^3.1.0",

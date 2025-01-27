@@ -1159,9 +1159,11 @@ const dashboard = function dashboard():void {
                                 : (index === 0)
                                     ? "."
                                     : item[0],
-                            name_raw:string = ((/^\w:(\\)?$/).test(fs.address) === true)
-                                ? "\\"
-                                : ((/^\w:(\\)?$/).test(name) === true || index < 1)
+                            name_raw:string = (index < 1)
+                                ? ((/^\w:(\\)?$/).test(fs.address) === true)
+                                    ? "\\"
+                                    : item[0]
+                                : (fs.address === "\\")
                                     ? item[0]
                                     : fs.address.replace(/(\\|\/)\s*$/, "") + fs.sep + item[0];
                         let tr:HTMLElement = null,
@@ -1257,10 +1259,14 @@ const dashboard = function dashboard():void {
                     const strong:HTMLElement = document.createElement("strong");
                     strong.appendText(fs.failures[0]);
                     fileSystem.nodes.content.style.display = "block";
-                    fileSystem.nodes.content.getElementsByTagName("textarea")[0].value = fs.file;
-                    fails.appendText("Actual file encoding is ");
-                    fails.appendChild(strong);
-                    fails.appendText(".");
+                    fileSystem.nodes.content.getElementsByTagName("textarea")[0].value = fs.file.replace(/\u0000/g, "");
+                    if (fs.failures[0] === "binary") {
+                        fails.appendText("File is either binary or uses a text encoding larger than utf8.");
+                    } else {
+                        fails.appendText("File limited to ");
+                        fails.appendChild(strong);
+                        fails.appendText(" encoded characters.");
+                    }
                 }
                 fileSystem.nodes.failures.parentNode.appendChild(fails);
                 fileSystem.nodes.failures.parentNode.removeChild(fileSystem.nodes.failures);

@@ -4,6 +4,8 @@ import node from "./node.js";
 import send from "../transmit/send.js";
 import vars from "./vars.js";
 
+import { detectAll } from "jschardet";
+
 const dashboard_object = function utilities_dashboardObject(socket:websocket_client, path_name:string, fileSystem:boolean):void {
     let parent:type_directory_item = null,
         failures:string[] = [],
@@ -85,36 +87,29 @@ const dashboard_object = function utilities_dashboardObject(socket:websocket_cli
             complete();
         },
         readCallback = function utilities_dashboardObject_readCallback(err:node_error, fileContents:Buffer):void {
-            const encodings:string[] = [
-                "ascii",
-                "base64",
-                "base64url",
-                "hex",
-                "latin1",
-                "ucs2",
-                "utf16le"
-            ];
-            let index:number = encodings.length;
+            const detect:string_detect[] = detectAll(fileContents),
+                decoder:node_stringDecoder_StringDecoder = new node.stringDecoder.StringDecoder("utf8");
+            let index:number = detect.length;
+            detect.sort(function utilities_dashboardObject_readCallback_sort(a:string_detect, b:string_detect):-1|1 {
+                if (a.confidence > b.confidence) {
+                    return -1;
+                }
+                return 1;
+            });
             if (err === null) {
-                if (Buffer.isEncoding("utf8") === true) {
-                    file = fileContents.toString();
-                    failures[0] = "utf8";
+                if (detect[0].confidence > 0.6) {
+                    file = decoder.write(fileContents);
+                    failures[0] = detect[0].encoding;
                     complete();
                     return;
                 }
-                do {
-                    index = index - 1;
-                    if (Buffer.isEncoding(encodings[index]) === true) {
-                        file = Buffer.from(fileContents).toString("utf8");
-                        failures[0] = encodings[index];
-                        complete();
-                        return;
-                    }
-                } while (index > 0);
-                file = `File ${path_name} is binary.`;
-            } else {
-                file = `Error, ${err.code}, reading file at ${path_name}. ${err.message}`;
+                failures[0] = "binary";
+                file = "Text encoding cannot be determined with confidence. File is most likely binary.";
+                complete();
+                return;
             }
+            failures[0] = "unknown";
+            file = `Error, ${err.code}, reading file at ${path_name}. ${err.message}`;
             complete();
         },
         parentCallback = function utilities_dashboardObject_parentCallback(dir:directory_list|string[]):void {
