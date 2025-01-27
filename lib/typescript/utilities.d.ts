@@ -152,6 +152,11 @@ interface store_string {
     [key:string]: string;
 }
 
+interface string_detect {
+    confidence: number;
+    encoding: string;
+}
+
 interface terminal_size {
     cols: number;
     rows: number;
