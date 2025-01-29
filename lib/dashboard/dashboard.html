@@ -26,13 +26,27 @@
     <nav><ul>
         <li><button class="nav-focus" data-section="servers">Servers</button></li><li><button data-section="compose">Docker Compose</button></li><li><button data-section="terminal">Terminal</button></li><li><button data-section="file-system">File System</button></li><li><button data-section="ports">Port Summary</button></li><li><button data-section="sockets">Socket Summary</button></li><li><button data-section="http">HTTP Test</button></li><li><button data-section="dns">DNS Resolve</button></li><li><button data-section="logs">Logs</button></li><li><button data-section="help">Help</button></li><li><button data-section="faq">FAQ</button></li>
     </ul></nav>
-    <main></main>
+    <main>
+        <div class="tab" id="compose">
+            <h2>Docker Compose</h2>
+            <p class="tab-description">A list of configured Docker containers and their status. Container status refreshes every ${payload.intervals.compose} seconds. All containers run under the Docker daemon detached from this application.</p>
+            <div class="section">
+                <h3>Environmental Variables</h3>
+                <p class="buttons"><button class="compose-variable-new">Edit Variables</button></p>
+                <ul class="compose-variable-list"></ul>
+            </div>
+            <div class="section">
+                <h3>Containers</h3>
+                <p class="buttons"><button class="compose-container-new">New Container</button></p>
+                <ul class="compose-container-list"></ul>
+            </div>
+        </div>
         <div class="tab" id="dns">
             <h2>DNS Resolve</h2>
             <p class="tab-description">Test DNS name resolution from the application's location.</p>
             <div class="section">
-                <h3>DNS Type Definitions <button class="expand" data-tag="dl">Expand</button></h3>
-                <dl>
+                <h3>DNS Type Definitions <button class="expand">Expand</button></h3>
+                <dl class="definitions">
                     <dt>A</dt>
                     <dd>IPv4 addresses</dd>
                     <dt>AAAA</dt>
@@ -57,12 +71,16 @@
                     <dd>text records</dd>
                 </dl>
             </div>
-            <h3>Input</h3>
-            <p class="buttons"><button>Resolve</button></p>
-            <p><label>Comma separated list of domains and/or hostname entries</label> <input type="text"/></p>
-            <p><label>Comma separated list of record types. Leave blank for all types. Supported types: A, AAAA, CAA, CNAME, MX, NAPTR, NS, PTR, SOA, SRV, TXT</label> <input type="text"/></p>
-            <h3>Output</h3>
-            <p><label>List of DNS resolutions in beautified JSON format</label> <textarea readonly="readonly" spellcheck="false"></textarea></p>
+            <div class="section">
+                <h3>Input</h3>
+                <p class="buttons"><button>Resolve</button></p>
+                <p><label>Comma separated list of domains and/or hostname entries</label> <input type="text"/></p>
+                <p><label>Comma separated list of record types. Leave blank for all types. Supported types: A, AAAA, CAA, CNAME, MX, NAPTR, NS, PTR, SOA, SRV, TXT</label> <input type="text"/></p>
+            </div>
+            <div class="section">
+                <h3>Output</h3>
+                <p><label>List of DNS resolutions in beautified JSON format</label> <textarea readonly="readonly" spellcheck="false"></textarea></p>
+            </div>
         </div>
         <div class="tab" id="faq">
             <h2>Frequently Asked Questions</h2>
@@ -180,7 +198,7 @@
             <h2>File System</h2>
             <p class="tab-description">This tool allows navigating the hosting machine's file system.</p>
             <div class="section">
-                <h3>File System Information <button class="expand" data-tag="div">Expand</button></h3>
+                <h3>File System Information <button class="expand">Expand</button></h3>
                 <div class="definitions">
                     <h4>File System Objects</h4>
                     <dl>
@@ -218,15 +236,35 @@
                 </div>
             </div>
             <div class="section">
-                <h3>File List At Specififed Address</h3>
-                <p><label>Absolute File System Path</label> <input spellcheck="false" type="text"/></p>
+                <h3>Input Controls</h3>
+                <p><label>Absolute file system path address. SMB shares not supported. Executes on press of 'Enter' key or loss of focus.</label> <input spellcheck="false" type="text"/></p>
+                <p><label>Search token. Ignored if empty. Executes on press of 'Enter' key or loss of focus.</label> <input spellcheck="false" type="text"/></p>
+            </div>
+            <div class="file-list">
+                <h3>File List</h3>
                 <table class="file-list" data-column="1"><thead><tr><th><button data-dir="1">object</button></th><th><button data-dir="1">type</button></th><th><button data-dir="1">size</button></th><th><button data-dir="1">modified date</button></th><th><button data-dir="1">modified time</button></th><th><button data-dir="1">permissions</button></th><th><button data-dir="1">children</button></th></tr></thead><tbody></tbody></table>
+            </div>
+            <div class="file-system-content">
+                <h3>File Contents</h3>
+                <p><label>File contents of a string encoded file in UTF8 encoding <textarea spellcheck="false"></textarea></label></p>
+            </div>
+            <div class="file-system-summary">
+                <h3>Summary of Results</h3>
+                <ul>
+                    <li><span>Displayed Artifact Size:</span> <strong></strong></li>
+                    <li><span>Total Items:</span> <strong></strong></li>
+                    <li><span>Block Devices:</span> <strong></strong></li>
+                    <li><span>Character Devices:</span> <strong></strong></li>
+                    <li><span>Directories:</span> <strong></strong></li>
+                    <li><span>FIFO Pipes:</span> <strong></strong></li>
+                    <li><span>Files:</span> <strong></strong></li>
+                    <li><span>Sockets:</span> <strong></strong></li>
+                    <li><span>Symbolic Links:</span> <strong></strong></li>
+                </ul>
+            </div>
+            <div class="section">
                 <h3>Items in current directory that could not be read</h3>
                 <ul class="file-system-failures"></ul>
-                <div class="file-system-content">
-                    <h3>File Contents</h3>
-                    <p><label>File contents of a string encoded file in UTF8 encoding <textarea spellcheck="false"></textarea></label></p>
-                </div>
             </div>
         </div>
         <div class="tab" id="help">
@@ -341,7 +379,7 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
             <h2>HTTP Test</h2>
             <p class="tab-description">A means to write arbitrary HTTP requests and read the raw response.</p>
             <div class="section">
-                <h3>HTTP Format <button class="expand" data-tag="div">Expand</button></h3>
+                <h3>HTTP Format <button class="expand">Expand</button></h3>
                 <div class="definitions">
                     <p>HTTP is a text-based application layer transmission protocol defined as <a href="https://datatracker.ietf.org/doc/html/rfc2616">RFC 2616</a>.</p>
                     <p>The first line of an HTTP request a space separated list of method, resource path (also known as <em>end point</em>), and protocol.
@@ -371,31 +409,21 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
                     </ul>
                 </div>
             </div>
-            <h3>Request Scheme</h3>
-            <p><label class="radio">Plain text (http) <input name="http_scheme" type="radio" value="false"/></label> <label class="radio">Encrypted (https) <input checked="checked" name="http_scheme" type="radio" value="true"/></label></p>
-            <h3>Raw Request</h3>
-            <p><label>Complete raw HTTP request including header <textarea class="test-input" spellcheck="false"></textarea></label></p>
-            <p class="buttons"><button class="send_request">Send Request</button></p>
-            <h3>Response</h3>
-            <div class="http_response">
-                <p><label>URI <textarea readonly="readonly" spellcheck="false"></textarea></label></p>
-                <p><label>Response Headers <textarea readonly="readonly" spellcheck="false"></textarea></label></p>
-                <p class="float-last"><label>Response Body <textarea readonly="readonly" spellcheck="false"></textarea></label></p>
-                <span class="clear"></span>
-            </div>
-        </div>
-        <div class="tab" id="compose">
-            <h2>Docker Compose</h2>
-            <p class="tab-description">A list of configured Docker containers and their status. Container status refreshes every ${payload.intervals.compose} seconds. All containers run under the Docker daemon detached from this application.</p>
             <div class="section">
-                <h3>Environmental Variables</h3>
-                <p class="buttons"><button class="compose-variable-new">Edit Variables</button></p>
-                <ul class="compose-variable-list"></ul>
+                <h3>Request Scheme</h3>
+                <p><label class="radio">Plain text (http) <input name="http_scheme" type="radio" value="false"/></label> <label class="radio">Encrypted (https) <input checked="checked" name="http_scheme" type="radio" value="true"/></label></p>
+                <h3>Raw Request</h3>
+                <p><label>Complete raw HTTP request including header <textarea class="test-input" spellcheck="false"></textarea></label></p>
+                <p class="buttons"><button class="send_request">Send Request</button></p>
             </div>
             <div class="section">
-                <h3>Containers</h3>
-                <p class="buttons"><button class="compose-container-new">New Container</button></p>
-                <ul class="compose-container-list"></ul>
+                <h3>Response</h3>
+                <div class="http_response">
+                    <p><label>URI <textarea readonly="readonly" spellcheck="false"></textarea></label></p>
+                    <p><label>Response Headers <textarea readonly="readonly" spellcheck="false"></textarea></label></p>
+                    <p class="float-last"><label>Response Body <textarea readonly="readonly" spellcheck="false"></textarea></label></p>
+                    <span class="clear"></span>
+                </div>
             </div>
         </div>
         <div class="tab" id="logs">
@@ -436,8 +464,8 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
             <h2>Servers</h2>
             <p class="tab-description">A list of configured HTTP/WS servers hosted by this application and their respective status.</p>
             <div class="section">
-                <h3>Definitions of Server Object Properties <button class="expand" data-tag="dl">Expand</button></h3>
-                <dl>
+                <h3>Definitions of Server Object Properties <button class="expand">Expand</button></h3>
+                <dl class="definitions">
                     <dt><em>activate</em> (string)</dt>
                     <dd><p>
                         Instructs the application to bring the server online automatically at application start and server creation.

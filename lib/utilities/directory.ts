@@ -281,7 +281,7 @@ const directory = function utilities_directory(args:config_directory):void {
                                 });
                             }
                         },
-                        populate = function utilities_directory_statWrapper_stat_populate(type:"block_device"|"character_device"|"directory"|"fifo_pipe"|"error"|"file"|"socket"|"symbolic_link"):void {
+                        populate = function utilities_directory_statWrapper_stat_populate(type:"block_device"|"character_device"|"directory"|"error"|"fifo_pipe"|"file"|"socket"|"symbolic_link"):void {
                             if (type === "error") {
                                 if (list[parent] !== undefined) {
                                     list[parent][4] = list[parent][4] - 1;

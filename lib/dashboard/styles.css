@@ -31,6 +31,9 @@
 
 html{font-size:10px}
 body{background:var(--background);color:var(--text);font-family:sans-serif;max-width:180em}
+#dashboard .file-list,
+#dashboard .file-system-content,
+#dashboard .file-system-summary,
 div.section{border-color:var(--border_color);border-style:solid;border-width:0.1em;margin:2em;padding:2em}
 h1{font-size:3em}
 h2{font-size:2em}
@@ -48,7 +51,7 @@ li h4,
 li h5,
 li li{font-size:1em}
 label input{display:block}
-dt em{color:var(--text_input);font-size:1.4em;font-style:normal;font-weight:bold;text-decoration:underline}
+dt em{color:var(--text_input);font-style:normal;font-weight:bold;text-decoration:underline}
 dt{font-size:1.4em}
 dd{margin:0 0 1em 2.5em}
 dd p{font-size:1em}
@@ -57,18 +60,14 @@ a{color:var(--fail_bright)}
 button{background:var(--background_button);border-color:var(--border_input);border-style:revert;border-width:0.1em;box-shadow:0.1em 0.1em 0.25em var(--black);color:var(--text_input);cursor:pointer;padding:0.25em 0.5em}
 button:hover{background:var(--background)}
 button:active{border-style:inset;box-shadow:-0.1em -0.1em 0.25em var(--background_dark)}
-th{min-width:10em}
 strong,
 em{color:var(--text_yellow)}
 .clear{background:transparent;border-style:none;display:block;clear:both;float:none}
 .file-list td.file-name{text-align:left}
 #dashboard .file-list td button,
 .file-list td button{background:transparent;border-style:none;box-shadow:none;color:var(--text_yellow);text-align:left;text-shadow:none;width:auto}
-#dashboard .file-list td,
-.file-list td{padding:0.5em;text-align:right}
 #dashboard .file-list .file-name,
 .file-list .file-name{text-align:left}
-th{background:var(--background_textarea);border-color:var(--border_input);border-style:solid;border-width:0.1em}
 #dashboard thead button,
 thead button{background:transparent;border-style:none;margin:0;padding:0.5em 1em;text-align:left;width:100%}
 
@@ -84,7 +83,10 @@ table{border-collapse:collapse}
 td{background:var(--background);font-family:monospace}
 td .icon{display:inline-block;width:1.5em}
 #dashboard td,
+td{padding:0.5em;text-align:right}
 th{border-color:var(--background_button);border-style:solid;border-width:0.1em;padding:0.2em 0.5em;text-align:left}
+th{background:var(--background_textarea);min-width:10em}
+td button{padding:0}
 
 /* end basic html */
 
@@ -156,18 +158,14 @@ label span.checked{background:var(--background_dark)}
 #dashboard .edit .summary h5{font-size:1em;margin:0}
 #dashboard div.edit{padding:0 0.694em}
 #dashboard div > .edit{border-color:var(--border_input);border-style:solid;border-width:0.1em;padding:1em}
-#http .section div,
-#dns .section dl,
-#file-system .section div,
-#servers .section dl,
-#websocket .section div{display:none}
+#dashboard .definitions{display:none}
 #dashboard .section > .buttons{margin:0 0 2em}
 #dashboard .compose-container-list h4 button,
-#dashboard .server-list h4 button{background:none;border-style:none;box-shadow:none;display:block;font-size:1em;padding:0.595em;text-align:left;width:100%}
+#dashboard .server-list h4 button{background:none;border-style:none;box-shadow:none;display:block;font-size:0.834em;padding:0.595em;text-align:left;width:100%}
 #dashboard h3 .expand,
 #dashboard h4 .expand{display:block;float:right;font-size:0.6em}
 #dashboard .edit .summary ul{font-size:1em;margin:1em 0 0;padding:0}
-#dashboard main li{border-color:var(--border_color);border-style:solid;border-width:0.1em;font-size:1em;list-style:none;padding:1em 1em 0}
+#dashboard main li{border-color:var(--border_color);border-style:solid;border-width:0.1em;list-style:none}
 #help ul{padding:0}
 #compose li,
 #servers li{list-style:none}
@@ -200,7 +198,9 @@ label span.checked{background:var(--background_dark)}
 #dashboard button.server-cancel{color:var(--text_yellow)}
 #dashboard button.server-destroy{color:var(--fail_dark)}
 #dashboard input,
-#dashboard textarea{box-sizing:border-box;display:block;font-size:1em;margin:0 0 1em;width:100%}
+#dashboard textarea{box-sizing:border-box;display:block;font-family:monospace;font-size:1em;margin:0 0 1em;width:100%}
+#dashboard .file-list{max-height:85em;overflow:scroll}
+#dashboard .file-list table{border-style:none}
 #dashboard textarea{height:35em;overflow:scroll}
 #dashboard .active-ports h5{font-size:1.2em}
 #dashboard .active-ports,
@@ -210,6 +210,7 @@ label span.checked{background:var(--background_dark)}
 #dashboard .edit label span{display:block}
 #dashboard .edit label span{height:2em}
 #dashboard .edit h4{font-size:1.2em}
+#dashboard .file-system-summary li,
 #dashboard #servers .edit li,
 #dashboard #compose .edit li{border-style:none;list-style-type:disc;margin:0.5em 0 0 1em;padding:0}
 #dashboard .edit dt,
@@ -232,6 +233,7 @@ label span.checked{background:var(--background_dark)}
 #dashboard .http_response p{float:left;margin:0 2% 0 0;width:16%}
 #dashboard .http_response p.float-last{margin:0;width:64%}
 #dashboard textarea.test-input{height:20em}
+#dashboard .file-system-summary span{display:inline-block;width:12em}
 
 #dashboard *::-webkit-scrollbar{background-color:var(--background-dark);border-color:var(--background)}
 #dashboard textarea::-webkit-scrollbar{background-color:black}

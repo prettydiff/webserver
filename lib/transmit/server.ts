@@ -157,7 +157,12 @@ const server = function transmit_server(data:services_action_server, callback:(n
                                             if (terminalFlag === true) {
                                                 terminal(socket);
                                             } else if (server_name === "dashboard") {
-                                                dashboard_object(socket, vars.path.project, false);
+                                                dashboard_object({
+                                                    fileSystem_only: false,
+                                                    path: vars.path.project,
+                                                    search: null,
+                                                    socket: socket
+                                                });
                                             }
                                         },
                                         terminalFlag:boolean = (server_name === "dashboard" && type.indexOf("dashboard-terminal-") === 0),

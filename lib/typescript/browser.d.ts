@@ -49,16 +49,6 @@ declare global {
         target: HTMLElement;
     }
 
-    interface module_common {
-        cancel: (event:MouseEvent) => void;
-        color: (name_server:string, type:type_dashboard_list) => type_activation_status;
-        definitions: (event:MouseEvent) => void;
-        details: (event:MouseEvent) => void;
-        edit: (event:MouseEvent) => void;
-        sort_html: (event:MouseEvent, table?:HTMLElement, heading_index?:number) => void;
-        title: (name_server:string, type:type_dashboard_list) => HTMLElement;
-    }
-
     interface module_compose {
         activePorts: (name_server:string) => HTMLElement;
         cancelVariables: (event:MouseEvent) => void;
@@ -83,7 +73,6 @@ declare global {
     interface module_dns {
         init: () => void;
         nodes: {
-            expand: HTMLButtonElement;
             input: HTMLInputElement;
             output: HTMLTextAreaElement;
             resolve: HTMLButtonElement;
@@ -97,10 +86,11 @@ declare global {
         init: () => void;
         nodes: {
             content: HTMLElement;
-            expand: HTMLElement;
             failures: HTMLElement;
             input: HTMLInputElement;
             output: HTMLElement;
+            search: HTMLInputElement;
+            summary: HTMLElement;
         };
         receive: (fs:services_fileSystem) => void;
         send: (event:FocusEvent|KeyboardEvent) => void;
@@ -110,7 +100,6 @@ declare global {
         init: () => void;
         nodes: {
             encryption: HTMLInputElement;
-            http_definitions: HTMLElement;
             http_request: HTMLElement;
             request: HTMLTextAreaElement;
             responseBody: HTMLTextAreaElement;
@@ -144,11 +133,18 @@ declare global {
         message: (event:MouseEvent) => void;
         nodes: {
             list: HTMLElement;
-            server_definitions: HTMLElement;
             server_new: HTMLButtonElement;
         };
         socket_add: (config:services_socket) => void;
         validate: (event:FocusEvent|KeyboardEvent) => void;
+    }
+
+    interface module_serviceItems {
+        cancel: (event:MouseEvent) => void;
+        color: (name_server:string, type:type_dashboard_list) => type_activation_status;
+        details: (event:MouseEvent) => void;
+        edit: (event:MouseEvent) => void;
+        title: (name_server:string, type:type_dashboard_list) => HTMLElement;
     }
 
     interface module_terminal {

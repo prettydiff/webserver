@@ -6,35 +6,37 @@ import vars from "./vars.js";
 
 import { detectAll } from "jschardet";
 
-const dashboard_object = function utilities_dashboardObject(socket:websocket_client, path_name:string, fileSystem:boolean):void {
+const dashboard_object = function utilities_dashboardObject(config:config_dashboardObject):void {
     let parent:type_directory_item = null,
         failures:string[] = [],
-        file:string = null;
-    const list_local:directory_list = [],
-        windows_root:RegExp = (/^\w:(\\)?$/),
+        file:string = null,
+        list_local:directory_list = [];
+    const windows_root:RegExp = (/^\w:(\\)?$/),
         complete = function utilities_dashboardObject_complete():void {
-            if (fileSystem === true) {
+            if (config.fileSystem_only === true) {
                 const service:services_fileSystem = {
-                    address: path_name,
+                    address: config.path,
                     dirs: list_local,
                     failures: failures,
                     file: file,
                     parent: parent,
+                    search: config.search,
                     sep: vars.sep
                 };
                 send({
                     data: service,
                     service: "dashboard-fileSystem"
-                }, socket, 1);
+                }, config.socket, 1);
             } else {
                 const browser:transmit_dashboard = {
                     compose: vars.compose,
                     fileSystem: {
-                        address: path_name,
+                        address: config.path,
                         dirs: list_local,
                         failures: failures,
                         file: file,
                         parent: parent,
+                        search: config.search,
                         sep: vars.sep
                     },
                     http_headers: vars.http_headers,
@@ -48,7 +50,7 @@ const dashboard_object = function utilities_dashboardObject(socket:websocket_cli
                 send({
                     data: browser,
                     service: "dashboard-payload"
-                }, socket, 1);
+                }, config.socket, 1);
             }
         },
         dirCallback = function utitiles_dashboardObject_dirCallback(dir:directory_list|string[]):void {
@@ -57,13 +59,17 @@ const dashboard_object = function utilities_dashboardObject(socket:websocket_cli
                 self:type_directory_item = list[0];
             let index:number = 0;
             list.splice(0, 1);
-            if (len > 1) {
-                do {
-                    if (list[index][3] === 0) {
-                        list_local.push(list[index]);
-                    }
-                    index = index + 1;
-                } while (index < len);
+            if (config.search === null) {
+                if (len > 1) {
+                    do {
+                        if (list[index][3] === 0) {
+                            list_local.push(list[index]);
+                        }
+                        index = index + 1;
+                    } while (index < len);
+                }
+            } else {
+                list_local = list;
             }
             list_local.sort(function utilities_dashboardObject_dirCallback_sort(a:type_directory_item, b:type_directory_item):-1|0|1 {
                 if (a[1] < b[1]) {
@@ -82,21 +88,22 @@ const dashboard_object = function utilities_dashboardObject(socket:websocket_cli
                 }
                 return 0;
             });
-            list_local.splice(0, 0, self);
+            if (config.search === null) {
+                list_local.splice(0, 0, self);
+            }
             failures = list.failures;
             complete();
         },
         readCallback = function utilities_dashboardObject_readCallback(err:node_error, fileContents:Buffer):void {
-            const detect:string_detect[] = detectAll(fileContents),
-                decoder:node_stringDecoder_StringDecoder = new node.stringDecoder.StringDecoder("utf8");
-            let index:number = detect.length;
-            detect.sort(function utilities_dashboardObject_readCallback_sort(a:string_detect, b:string_detect):-1|1 {
-                if (a.confidence > b.confidence) {
-                    return -1;
-                }
-                return 1;
-            });
             if (err === null) {
+                const detect:string_detect[] = detectAll(fileContents),
+                    decoder:node_stringDecoder_StringDecoder = new node.stringDecoder.StringDecoder("utf8");
+                detect.sort(function utilities_dashboardObject_readCallback_sort(a:string_detect, b:string_detect):-1|1 {
+                    if (a.confidence > b.confidence) {
+                        return -1;
+                    }
+                    return 1;
+                });
                 if (detect[0].confidence > 0.6) {
                     file = decoder.write(fileContents);
                     failures[0] = detect[0].encoding;
@@ -109,51 +116,67 @@ const dashboard_object = function utilities_dashboardObject(socket:websocket_cli
                 return;
             }
             failures[0] = "unknown";
-            file = `Error, ${err.code}, reading file at ${path_name}. ${err.message}`;
+            file = `Error, ${err.code}, reading file at ${config.path}. ${err.message}`;
             complete();
         },
         parentCallback = function utilities_dashboardObject_parentCallback(dir:directory_list|string[]):void {
             const list:directory_list = dir as directory_list,
-                paths:string[] = path_name.split(vars.sep),
-                config:config_directory = {
+                paths:string[] = config.path.split(vars.sep),
+                config_dir:config_directory = {
                     callback: dirCallback,
-                    depth: 2,
+                    depth: (config.search === null)
+                        ? 2
+                        : 0,
                     exclusions: [],
-                    mode: "read",
-                    path: path_name,
-                    relative: true,
-                    search: "",
+                    mode: (config.search === null)
+                        ? "read"
+                        : "search",
+                    path: config.path,
+                    relative: (config.search === null),
+                    search: (config.search === null)
+                        ? ""
+                        : config.search,
                     symbolic: true
                 };
-            let index:number = list.length,
+            let index:number = (dir === null)
+                    ? 0
+                    : list.length,
                 last_path:string = "";
-            parent = list[0];
-            if (path_name === "/" || path_name === "\\" || windows_root.test(path_name) === true) {
+            if (config.search === null && (config.path === "/" || config.path === "\\" || windows_root.test(config.path) === true)) {
                 dirCallback(list);
                 return;
             }
-            if (paths[paths.length - 1] === "") {
-                paths.pop();
-            }
-            last_path = paths[paths.length - 1];
-            do {
-                index = index - 1;
-                if (list[index][0] === last_path) {
-                    if (list[index][1] === "directory") {
-                        directory(config);
-                    } else {
-                        list_local.push(list[index]);
-                        node.fs.readFile(path_name, readCallback);
-                    }
-                    return;
+            if (index > 0) {
+                if (paths[paths.length - 1] === "") {
+                    paths.pop();
                 }
-            } while (index > 0);
+                last_path = paths[paths.length - 1];
+                parent = list[0];
+                do {
+                    index = index - 1;
+                    if (list[index][0] === last_path) {
+                        if (list[index][1] === "directory") {
+                            directory(config_dir);
+                        } else {
+                            list_local.push(list[index]);
+                            node.fs.readFile(config.path, readCallback);
+                        }
+                        return;
+                    }
+                } while (index > 0);
+            } else {
+                directory(config_dir);
+            }
         },
         parent_path:string = (function utilities_dashboardObject_parentPath():string {
-            if (path_name === "/" || path_name === "\\" || (windows_root.test(path_name) === true && vars.sep === "\\")) {
-                return path_name;
+            if (config.path === "/" || config.path === "\\" || (windows_root.test(config.path) === true && vars.sep === "\\")) {
+                return config.path;
             }
-            const paths:string[] = path_name.split(vars.sep);
+            const paths:string[] = config.path.split(vars.sep);
+            // smb
+            // if ((/^\\\\\[?(\w+\.?)+\]?/).test(config.path) === true && paths.length < 4) {
+            //     return config.path;
+            // }
             if (paths[paths.length - 1] === "" && paths.length > 2) {
                 paths.pop();
             }
@@ -173,7 +196,11 @@ const dashboard_object = function utilities_dashboardObject(socket:websocket_cli
             search: "",
             symbolic: true
         };
-    directory(config_parent);
+    if (config.search === null) {
+        directory(config_parent);
+    } else {
+        parentCallback(null);
+    }
 };
 
 export default dashboard_object;
