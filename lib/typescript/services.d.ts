@@ -114,6 +114,7 @@ declare global {
         failures: string[];
         file: string;
         parent: type_directory_item;
+        search: string;
         sep: "/"|"\\";
     }
 

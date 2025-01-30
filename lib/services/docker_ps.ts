@@ -76,11 +76,14 @@ const docker_ps = function services_dockerPS(callback:() => void):void {
                     recurse: vars.intervals.compose
                 });
             } else {
+                const lines = function services_dockerPS_callbackFirst_lines(input:string):string {
+                    return input.replace(" ", "\n");
+                };
                 log({
                     action: "activate",
                     config: error,
                     message: (error === null)
-                        ? "When executing 'docker ps'. The command returned an empty string. Perhaps the command requires higher privlege."
+                        ? stderr.replace(/(\w|"|')(\.|:|,) /g, lines)
                         : "Exeucting command 'docker ps' returned an error.",
                     status: "error",
                     type: "compose-containers"

@@ -13,6 +13,13 @@ interface config_core {
     type: string;
 }
 
+interface config_dashboardObject {
+    fileSystem_only: boolean;
+    path: string;
+    search: string;
+    socket: websocket_client;
+}
+
 interface config_directory {
     callback: (dir:directory_list | string[]) => void;
     depth: number;
