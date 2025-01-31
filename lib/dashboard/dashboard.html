@@ -23,9 +23,22 @@
 <body id="dashboard">
     <h1>Server Management Dashboard</h1>
     <p id="connection-status" class="connection-offline">Dashboard Connection: <strong>Offline</strong></p>
-    <nav><ul>
-        <li><button class="nav-focus" data-section="servers">Servers</button></li><li><button data-section="compose">Docker Compose</button></li><li><button data-section="terminal">Terminal</button></li><li><button data-section="file-system">File System</button></li><li><button data-section="ports">Port Summary</button></li><li><button data-section="sockets">Socket Summary</button></li><li><button data-section="http">HTTP Test</button></li><li><button data-section="dns">DNS Resolve</button></li><li><button data-section="os">OS/Machine</button></li><li><button data-section="logs">Logs</button></li><li><button data-section="help">Help</button></li><li><button data-section="faq">FAQ</button></li>
-    </ul></nav>
+    <nav>
+        <h2>Navigation</h2>
+        <div>
+            <h3>Services</h3>
+            <ul><li><button class="nav-focus" data-section="servers">Servers</button></li><li><button data-section="compose">Docker Compose</button></li><li><button data-section="terminal">Terminal</button></li><li><button data-section="file-system">File System</button></li></ul>
+        </div>
+        <div>
+            <h3>Tools</h3>
+            <ul><li><button data-section="http">HTTP Test</button></li><li><button data-section="dns">DNS Resolve</button></li></ul>
+        </div>
+        <div>
+            <h3>Informational</h3>
+            <ul><li><button data-section="ports">Port Summary</button></li><li><button data-section="sockets">Socket Summary</button></li><li><button data-section="os">OS/Machine</button></li><li><button data-section="logs">Logs</button></li><li><button data-section="help">Help</button></li><li><button data-section="faq">FAQ</button></li></ul>
+        </div>
+    </nav>
+    <span class="clear"></span>
     <main>
         <div class="tab" id="compose">
             <h2>Docker Compose</h2>
@@ -250,9 +263,11 @@
             </div>
             <div class="file-system-summary">
                 <h3>Summary of Results</h3>
-                <ul>
+                <ul class="file-system-summary-list">
                     <li><span>Displayed Artifact Size:</span> <strong></strong></li>
                     <li><span>Total Items:</span> <strong></strong></li>
+                </ul>
+                <ul>
                     <li><span>Block Devices:</span> <strong></strong></li>
                     <li><span>Character Devices:</span> <strong></strong></li>
                     <li><span>Directories:</span> <strong></strong></li>

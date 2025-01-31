@@ -830,7 +830,7 @@ const dashboard = function dashboard():void {
                 if (fs.dirs[0] === null) {
                     fileSystem.nodes.output.style.display = "none";
                 } else {
-                    fileSystem.nodes.output.style.display = "block";
+                    fileSystem.nodes.output.style.display = "block";console.log(fs.parent);
                     if (fs.parent !== null) {
                         record(-1);
                     }

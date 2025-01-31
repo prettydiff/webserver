@@ -132,8 +132,13 @@ label span.checked{background:var(--background_dark)}
 #dashboard button:hover:disabled{background:var(--background_button);color:var(--border_input);cursor:auto}
 #dashboard .buttons button:disabled{color:var(--border_input)}
 #dashboard code {background:var(--background_textarea);border-color:var(--border_soft);border-style:solid;border-width:0.1em;margin:0.5em 2em;padding:0.5em}
-#dashboard nav ul{border-color:var(--border_color);border-style:none none solid;border-width:0.1em;margin:0 0 4em;padding:0 0 1em}
+#dashboard nav div{border-color:var(--border_color);border-style:none solid none none;border-width:0.1em;float:left;margin:0 0 4em}
+#dashboard nav div:last-child{border-style:none}
+#dashboard nav h2{font-size:0.01em;position:absolute;left:-1000em}
+#dashboard nav h3{color:var(--border_color);padding:0 0 0 0.5em;margin:0}
+#dashboard nav ul{border-color:var(--border_color);border-style:none none solid;border-width:0.1em;margin:0;padding:0 0 1em}
 #dashboard nav li{border-color:var(--border_color);border-style:none solid none none;border-width:0.1em;display:inline-block;padding:0 0.5em}
+#dashboard nav li:last-child{border-style:none}
 #dashboard nav button{background:transparent;border-style:none;box-shadow:none;color:var(--text)}
 #dashboard nav .nav-focus{background:var(--background_dark);color:var(--text_input)}
 #dashboard nav button:hover{color:var(--text)}
@@ -212,7 +217,7 @@ label span.checked{background:var(--background_dark)}
 #dashboard .edit label span{display:block}
 #dashboard .edit label span{height:2em}
 #dashboard .edit h4{font-size:1.2em}
-#dashboard .file-system-summary li,
+#dashboard #file-system li,
 #dashboard #servers .edit li,
 #dashboard #compose .edit li{border-style:none;list-style-type:disc;margin:0.5em 0 0 1em;padding:0}
 #dashboard .edit dt,
@@ -236,6 +241,8 @@ label span.checked{background:var(--background_dark)}
 #dashboard .http_response p.float-last{margin:0;width:64%}
 #dashboard textarea.test-input{height:20em}
 #dashboard .file-system-summary span{display:inline-block;width:12em}
+#dashboard #file-system ul{margin:0 0 0 4em;padding:0}
+#dashboard .file-system-summary .file-system-summary-list{border-color:var(--border_color);border-style:none none solid;border-width:0.1em;margin:0 0 2em 4em;padding:0 0 0.5em;width:30em}
 #dashboard #os li{border-style:none;list-style:none}
 #dashboard #os strong{display:inline-block;width:18em}
 #dashboard #os .os-interface{border-color:var(--border_soft);border-style:solid;border-width:0.1em}

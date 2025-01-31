@@ -143,6 +143,9 @@ const dashboard_object = function utilities_dashboardObject(config:config_dashbo
                     : list.length,
                 last_path:string = "";
             if (config.search === null && (config.path === "/" || config.path === "\\" || windows_root.test(config.path) === true)) {
+                if (index > 0) {
+                    parent = list[0];
+                }
                 dirCallback(list);
                 return;
             }

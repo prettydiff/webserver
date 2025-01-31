@@ -410,7 +410,7 @@ const core = function core(config:config_core):socket_object {
                                 : str;
                         },
                         // eslint-disable-next-line no-restricted-syntax
-                        elapsed:bigint     = BigInt(this * 1e9),
+                        elapsed:bigint     = BigInt(Math.floor(this * 1e9)),
                         factorSec:bigint   = BigInt(1e9),
                         factorMin:bigint   = (60n * factorSec),
                         factorHour:bigint  = (3600n * factorSec),
@@ -438,8 +438,8 @@ const core = function core(config:config_core):socket_object {
                         minuteString:string = numberString(minutes),
                         hourString:string = numberString(hours),
                         dayString:string = (days === 1n)
-                            ? "1 day "
-                            : `${days.toString()} days `;
+                            ? "1 day, "
+                            : `${days.toString()} days, `;
                     return `${dayString}${hourString}:${minuteString}:${secondString}`;
                 };
         
