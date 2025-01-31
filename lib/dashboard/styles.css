@@ -163,7 +163,9 @@ label span.checked{background:var(--background_dark)}
 #dashboard .compose-container-list h4 button,
 #dashboard .server-list h4 button{background:none;border-style:none;box-shadow:none;display:block;font-size:0.834em;padding:0.595em;text-align:left;width:100%}
 #dashboard h3 .expand,
-#dashboard h4 .expand{display:block;float:right;font-size:0.6em}
+#dashboard h4 .expand{display:block;float:right}
+#dashboard h3 .expand{font-size:0.6em}
+#dashboard h4 .expand{font-size:0.675em}
 #dashboard .edit .summary ul{font-size:1em;margin:1em 0 0;padding:0}
 #dashboard main li{border-color:var(--border_color);border-style:solid;border-width:0.1em;list-style:none}
 #help ul{padding:0}
@@ -234,6 +236,11 @@ label span.checked{background:var(--background_dark)}
 #dashboard .http_response p.float-last{margin:0;width:64%}
 #dashboard textarea.test-input{height:20em}
 #dashboard .file-system-summary span{display:inline-block;width:12em}
+#dashboard #os li{border-style:none;list-style:none}
+#dashboard #os strong{display:inline-block;width:18em}
+#dashboard #os .os-interface{border-color:var(--border_soft);border-style:solid;border-width:0.1em}
+#dashboard #os ul{margin:0 0 1em 2em;padding:0 1em 1em}
+#dashboard #os .section{padding-bottom:0}
 
 #dashboard *::-webkit-scrollbar{background-color:var(--background-dark);border-color:var(--background)}
 #dashboard textarea::-webkit-scrollbar{background-color:black}

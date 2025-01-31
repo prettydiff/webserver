@@ -13,8 +13,7 @@ import { exec } from "child_process";
         start = process.hrtime.bigint(),
         steps = [
             "npm install",
-            "npx swc ./lib -d ./js --ignore servers, compose", // build
-            "node js/lib/index.js create_server default_server", // config file
+            "npx swc ./lib -d ./js --ignore servers, compose" // build
         ],
         text = {
             angry    : "\u001b[1m\u001b[31m",

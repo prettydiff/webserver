@@ -24,7 +24,7 @@
     <h1>Server Management Dashboard</h1>
     <p id="connection-status" class="connection-offline">Dashboard Connection: <strong>Offline</strong></p>
     <nav><ul>
-        <li><button class="nav-focus" data-section="servers">Servers</button></li><li><button data-section="compose">Docker Compose</button></li><li><button data-section="terminal">Terminal</button></li><li><button data-section="file-system">File System</button></li><li><button data-section="ports">Port Summary</button></li><li><button data-section="sockets">Socket Summary</button></li><li><button data-section="http">HTTP Test</button></li><li><button data-section="dns">DNS Resolve</button></li><li><button data-section="logs">Logs</button></li><li><button data-section="help">Help</button></li><li><button data-section="faq">FAQ</button></li>
+        <li><button class="nav-focus" data-section="servers">Servers</button></li><li><button data-section="compose">Docker Compose</button></li><li><button data-section="terminal">Terminal</button></li><li><button data-section="file-system">File System</button></li><li><button data-section="ports">Port Summary</button></li><li><button data-section="sockets">Socket Summary</button></li><li><button data-section="http">HTTP Test</button></li><li><button data-section="dns">DNS Resolve</button></li><li><button data-section="os">OS/Machine</button></li><li><button data-section="logs">Logs</button></li><li><button data-section="help">Help</button></li><li><button data-section="faq">FAQ</button></li>
     </ul></nav>
     <main>
         <div class="tab" id="compose">
@@ -430,6 +430,73 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
             <h2>Logs</h2>
             <p class="tab-description">At this time logs are not saved outside the application, but do persist for the life of the application runtime.</p>
             <ul></ul>
+        </div>
+        <div class="tab" id="os">
+            <h2>OS/Machine</h2>
+            <p class="tab-description">A list of descriptive and statistical data about the application's executing environment.</p>
+            <div class="section">
+                <h3>Machine</h3>
+                <h4>CPU</h4>
+                <ul>
+                    <li data-name="name"><strong>Name</strong><span></span></li>
+                    <li data-name="frequency"><strong>Frequency</strong><span></span></li>
+                    <li data-name="arch"><strong>Architecture</strong><span></span></li>
+                    <li data-name="endianness"><strong>Endianness</strong><span></span></li>
+                </ul>
+                <h4>Memory</h4>
+                <ul>
+                    <li data-name="memoryFree"><strong>Free</strong><span></span></li>
+                    <li><strong>Used</strong><span></span></li>
+                    <li data-name="memoryFree"><strong>Total</strong><span></span></li>
+                </ul>
+                <h4>Network Interfaces <button class="expand">Expand</button></h4>
+                <ul class="definitions" data-name="interfaces"></ul>
+            </div>
+            <div class="section">
+                <h3>Operating System</h3>
+                <ul>
+                    <li data-name="version"><strong>Name</strong><span></span></li>
+                    <li data-name="platform"><strong>Platform</strong><span></span></li>
+                    <li data-name="release"><strong>Release</strong><span></span></li>
+                    <li data-name="hostname"><strong>Hostname</strong><span></span></li>
+                    <li data-name="uptime"><strong>Up Time</strong><span></span></li>
+                </ul>
+                <div>
+                    <h3>Path <button class="expand">Expand</button></h3>
+                    <ul class="definitions" data-name="path"></ul>
+                </div>
+                <div>
+                    <h3>Environmental Variables <button class="expand">Expand</button></h3>
+                    <ul class="definitions" data-name="env"></ul>
+                </div>
+            </div>
+            <div class="section">
+                <h3>Application Process</h3>
+                <ul>
+                    <li data-name="arch"><strong>Architecture</strong><span></span></li>
+                    <li data-name="platform"><strong>Platform</strong><span></span></li>
+                    <li data-name="argv"><strong>Command Arguments</strong><span></span></li>
+                    <li data-name="cpuSystem"><strong>System CPU Time</strong><span></span></li>
+                    <li data-name="cpuUser"><strong>User CPU Time</strong><span></span></li>
+                    <li data-name="cwd"><strong>Current Working Directory</strong><span></span></li>
+                    <li data-name="pid"><strong>Process ID</strong><span></span></li>
+                    <li data-name="ppid"><strong>Parent Process ID</strong><span></span></li>
+                    <li data-name="uptime"><strong>Up Time</strong><span></span></li>
+                </ul>
+                <div>
+                    <h4>Node.js Dependency Versions <button class="expand">Expand</button></h4>
+                    <ul class="definitions" data-name="versions"></ul>
+                </div>
+            </div>
+            <div class="section">
+                <h3>User</h3>
+                <ul>
+                    <li data-name="gid"><strong>Group ID</strong><span></span></li>
+                    <li data-name="uid"><strong>User ID</strong><span></span></li>
+                    <li data-name="homedir"><strong>Home Directory</strong><span></span></li>
+                </ul>
+            </div>
+            <p>Last updated: <em></em></p>
         </div>
         <div class="tab" id="ports">
             <h2>Port Summary</h2>

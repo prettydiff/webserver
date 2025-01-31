@@ -981,6 +981,8 @@ const dashboard = function dashboard():void {
                         fileSystem.init();
                         // populate the http content
                         http.init();
+                        // populate the OS content
+                        os.init();
                         // populate port data
                         ports.init(payload.ports);
                         // populate server list
@@ -1178,6 +1180,8 @@ const dashboard = function dashboard():void {
                         http.response(message_item.data as services_http_test);
                     } else if (message_item.service === "dashboard-dns") {
                         dns.response(message_item.data as services_dns_output);
+                    } else if (message_item.service === "dashboard-os") {
+                        os.service(message_item.data as services_os);
                     }
                 }
             },
@@ -1187,6 +1191,188 @@ const dashboard = function dashboard():void {
                         service: service
                     };
                 socket.queue(JSON.stringify(message));
+            }
+        },
+        os:module_os = {
+            init: function dashboard_osInit():void {
+                const section:HTMLElement = document.getElementById("os"),
+                    sections:HTMLCollectionOf<HTMLElement> = section.getElementsByClassName("section") as HTMLCollectionOf<HTMLElement>,
+                    user:HTMLElement = sections[3],
+                    machines:HTMLCollectionOf<HTMLElement> = sections[0].getElementsByTagName("ul"),
+                    os_sections:HTMLCollectionOf<HTMLElement> = sections[1].getElementsByTagName("ul"),
+                    processes:HTMLCollectionOf<HTMLElement> = sections[2].getElementsByTagName("ul"),
+                    populate = function dashboard_osInit_populate(list:HTMLElement, listItem:number, value:string):void {
+                        list.getElementsByTagName("li")[listItem].getElementsByTagName("span")[0].textContent = value;
+                    },
+                    update:HTMLElement = document.getElementById("os").getElementsByTagName("p")[1].getElementsByTagName("em")[0];
+                let keys:string[] = null,
+                    li:HTMLElement = null,
+                    strong:HTMLElement = null,
+                    span:HTMLElement = null,
+                    len:number = 0,
+                    index:number = 0;
+                update.textContent = Date.now().dateTime(true);
+                populate(machines[0], 0, payload.os.machine.cpu.name);
+                populate(machines[0], 1, `${commas(payload.os.machine.cpu.frequency)}mhz`);
+                populate(machines[0], 2, payload.os.machine.cpu.arch);
+                populate(machines[0], 3, payload.os.machine.cpu.endianness);
+                populate(machines[1], 0, commas(payload.os.machine.memory.free));
+                populate(machines[1], 1, commas(payload.os.machine.memory.total - payload.os.machine.memory.free));
+                populate(machines[1], 2, commas(payload.os.machine.memory.total));
+                os.interfaces(payload.os.machine.interfaces);
+                populate(os_sections[0], 0, payload.os.os.version);
+                populate(os_sections[0], 1, payload.os.os.platform);
+                populate(os_sections[0], 2, payload.os.os.release);
+                populate(os_sections[0], 3, payload.os.os.hostname);
+                populate(os_sections[0], 4, payload.os.os.uptime.time());
+                populate(os_sections[0], 0, payload.os.os.version);
+                len = payload.os.os.path.length;
+                if (len > 0) {
+                    index = 0;
+                    do {
+                        li = document.createElement("li");
+                        li.textContent = payload.os.os.path[index];
+                        os_sections[1].appendChild(li);
+                        index = index + 1;
+                    } while (index < len);
+                }
+                delete payload.os.os.env.Path;
+                delete payload.os.os.env.PATH;
+                keys = Object.keys(payload.os.os.env);
+                len = keys.length;
+                if (len > 0) {
+                    do {
+                        li = document.createElement("li");
+                        strong = document.createElement("strong");
+                        strong.textContent = keys[index];
+                        span = document.createElement("span");
+                        span.textContent = payload.os.os.env[keys[index]];
+                        li.appendChild(strong);
+                        li.appendChild(span);
+                        os_sections[2].appendChild(li);
+                        index = index + 1;
+                    } while (index < len);
+                }
+                populate(processes[0], 0, payload.os.process.arch);
+                populate(processes[0], 1, payload.os.process.platform);
+                populate(processes[0], 2, JSON.stringify(payload.os.process.argv));
+                populate(processes[0], 3, commas(payload.os.process.cpuSystem / 1e6));
+                populate(processes[0], 4, commas(payload.os.process.cpuUser / 1e6));
+                populate(processes[0], 5, payload.os.process.cwd);
+                populate(processes[0], 6, String(payload.os.process.pid));
+                populate(processes[0], 7, String(payload.os.process.ppid));
+                populate(processes[0], 8, payload.os.process.uptime.time());
+                keys = Object.keys(payload.os.process.versions);
+                len = keys.length;
+                if (len > 0) {
+                    index = 0;
+                    do {
+                        li = document.createElement("li");
+                        strong = document.createElement("strong");
+                        strong.textContent = keys[index];
+                        span = document.createElement("span");
+                        span.textContent = payload.os.process.versions[keys[index]];
+                        li.appendChild(strong);
+                        li.appendChild(span);
+                        processes[1].appendChild(li);
+                        index = index + 1;
+                    } while (index < len);
+                }
+                if (payload.os.process.platform === "win32") {
+                    user.getElementsByTagName("li")[0].style.display = "none";
+                    user.getElementsByTagName("li")[1].style.display = "none";
+                } else {
+                    populate(user, 0, String(payload.os.user.gid));
+                    populate(user, 1, String(payload.os.user.uid));
+                }
+                populate(user, 2, payload.os.user.homedir);
+            },
+            interfaces: function dashboard_osInterfaces(data:NodeJS.Dict<node_os_NetworkInterfaceInfo[]>):void {
+                const output_old:HTMLElement = document.getElementById("os").getElementsByTagName("div")[0].getElementsByTagName("ul")[2],
+                    output_new:HTMLElement = document.createElement("ul"),
+                    keys:string[] = Object.keys(data),
+                    len:number = keys.length,
+                    data_item = function dashboard_osInterfaces_dataItem(ul:HTMLElement, item:node_os_NetworkInterfaceInfo, key:"address"|"cidr"|"family"|"internal"|"mac"|"netmask"|"scopeid"):void {
+                        if (item[key] !== undefined) {
+                            const li:HTMLElement = document.createElement("li"),
+                                strong:HTMLElement = document.createElement("strong"),
+                                span:HTMLElement = document.createElement("span");
+                            strong.textContent = key;
+                            span.textContent = String(item[key]);
+                            li.appendChild(strong);
+                            li.appendChild(span);
+                            ul.appendChild(li);
+                        }
+                    },
+                    property = function dashboard_osInterfaces_property():void {
+                        const ul:HTMLElement = document.createElement("ul");
+                        ul.setAttribute("class", "os-interface");
+                        data_item(ul, payload.os.machine.interfaces[keys[index]][index_child], "address");
+                        data_item(ul, payload.os.machine.interfaces[keys[index]][index_child], "netmask");
+                        data_item(ul, payload.os.machine.interfaces[keys[index]][index_child], "family");
+                        data_item(ul, payload.os.machine.interfaces[keys[index]][index_child], "mac");
+                        data_item(ul, payload.os.machine.interfaces[keys[index]][index_child], "internal");
+                        data_item(ul, payload.os.machine.interfaces[keys[index]][index_child], "cidr");
+                        data_item(ul, payload.os.machine.interfaces[keys[index]][index_child], "scopeid");
+                        li.appendChild(ul);
+                    };
+                let index:number = 0,
+                    index_child:number = 0,
+                    len_child:number = 0,
+                    li:HTMLElement = null,
+                    h5:HTMLElement = null;
+                output_new.setAttribute("class", "definitions");
+                output_new.setAttribute("data-name", output_old.dataset.name);
+                if (output_old.style.display === "block") {
+                    output_new.style.display = "block";
+                } else {
+                    output_new.style.display = "none";
+                }
+                if (len > 0) {
+                    do {
+                        li = document.createElement("li");
+                        h5 = document.createElement("h5");
+                        h5.textContent = keys[index];
+                        li.appendChild(h5);
+                        len_child = payload.os.machine.interfaces[keys[index]].length;
+                        if (len_child > 0) {
+                            index_child = 0;
+                            do {
+                                property();
+                                index_child = index_child + 1;
+                            } while (index_child < len_child);
+                        }
+                        output_new.appendChild(li);
+                        index = index + 1;
+                    } while (index < len);
+                }
+                output_old.parentNode.appendChild(output_new);
+                output_old.parentNode.removeChild(output_old);
+            },
+            service: function dashboard_osService(data:services_os):void {
+                const section:HTMLElement = document.getElementById("os"),
+                    sections:HTMLCollectionOf<HTMLElement> = section.getElementsByClassName("section") as HTMLCollectionOf<HTMLElement>,
+                    update:HTMLElement = document.getElementById("os").getElementsByTagName("p")[1].getElementsByTagName("em")[0],
+                    machines:HTMLCollectionOf<HTMLElement> = sections[0].getElementsByTagName("ul"),
+                    os_sections:HTMLCollectionOf<HTMLElement> = sections[1].getElementsByTagName("ul"),
+                    processes:HTMLCollectionOf<HTMLElement> = sections[2].getElementsByTagName("ul"),
+                    populate = function dashboard_osService_populate(list:HTMLElement, listItem:number, value:string):void {
+                        list.getElementsByTagName("li")[listItem].getElementsByTagName("span")[0].textContent = value;
+                    };
+                update.textContent = data.time.dateTime(true);
+                payload.os.machine.interfaces = data.machine.interfaces;
+                payload.os.machine.memory = data.machine.memory;
+                payload.os.os.uptime = data.os.uptime;
+                payload.os.process.cpuSystem = data.process.cpuSystem;
+                payload.os.process.cpuUser = data.process.cpuUser;
+                payload.os.process.uptime = data.process.uptime;
+                os.interfaces(data.machine.interfaces);
+                populate(machines[1], 0, commas(payload.os.machine.memory.free));
+                populate(machines[1], 1, commas(payload.os.machine.memory.total - payload.os.machine.memory.free));
+                populate(machines[1], 2, commas(payload.os.machine.memory.total));
+                populate(os_sections[0], 4, payload.os.os.uptime.time());
+                populate(processes[0], 3, commas(payload.os.process.cpuSystem / 1e6));
+                populate(processes[0], 4, commas(payload.os.process.cpuUser / 1e6));
             }
         },
         ports:module_port = {
@@ -2241,7 +2427,7 @@ const dashboard = function dashboard():void {
                     p.parentNode.appendChild(note);
                 } else if (dashboard === false) {
                     note.textContent = (section === "compose")
-                        ? `Changing the container name of an existing container will create a new container. Ensure the compose file mentions PUID and PGID with values ${payload.user.uid} and ${payload.user.gid} to prevent writing files as root.`
+                        ? `Changing the container name of an existing container will create a new container. Ensure the compose file mentions PUID and PGID with values ${payload.os.user.uid} and ${payload.os.user.gid} to prevent writing files as root.`
                         : "Destroying a server will delete all associated file system artifacts. Back up your data first.";
                     note.setAttribute("class", "note");
                     p.parentNode.appendChild(note);
@@ -2440,7 +2626,7 @@ const dashboard = function dashboard():void {
             }()),
             definitions = function dashboard_commonDefinitions(event:MouseEvent):void {
                 const target:HTMLElement = event.target,
-                    parent:HTMLElement = target.getAncestor("section", "class") as HTMLElement,
+                    parent:HTMLElement = target.getAncestor("div", "tag") as HTMLElement,
                     child:HTMLElement = parent.getElementsByClassName("definitions")[0] as HTMLElement;
                 if (target.textContent === "Expand") {
                     child.style.display = "block";
@@ -2467,11 +2653,12 @@ const dashboard = function dashboard():void {
             }
         } while (index > 0);
 
+        // expand buttons
         index = expand.length;
         if (index > 0) {
             do {
                 index = index - 1;
-                if (expand[index].lowName() === "button" && expand[index].parentNode.lowName() === "h3") {
+                if (expand[index].lowName() === "button" && (expand[index].parentNode.lowName() === "h3" || expand[index].parentNode.lowName() === "h4")) {
                     expand[index].onclick = definitions;
                 }
             } while (index > 0);

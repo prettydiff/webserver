@@ -134,6 +134,25 @@ declare global {
         uri: string;
     }
 
+    interface services_os {
+        machine: {
+            interfaces: NodeJS.Dict<node_os_NetworkInterfaceInfo[]>;
+            memory: {
+                free: number;
+                total: number;
+            };
+        };
+        os: {
+            uptime: number;
+        };
+        process: {
+            cpuSystem: number;
+            cpuUser: number;
+            uptime: number;
+        };
+        time: number;
+    }
+
     interface services_processKill {
         process: number;
     }

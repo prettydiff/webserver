@@ -39,8 +39,8 @@ type type_server_property = "block_list" | "domain_local" | "encryption" | "http
 // * dashboard-payload           - transmit_dashboard        - Contains all dynamic data for populating a browser page
 // * dashboard-server            - services_dashboard_status - A single server's configuration data plus an action to perform
 // * dashboard-status            - services_dashboard_status - Typically conveys log entries
-type type_service = "dashboard-compose-container" | "dashboard-compose-variables" | "dashboard-dns" | "dashboard-fileSystem" | "dashboard-http" | "dashboard-payload" | "dashboard-server" | "dashboard-status" | "youtube-download-status";
-type type_socket_data = services_action_compose | services_action_server | services_dashboard_status | services_dashboard_terminal | services_dns_input | services_dns_output | services_docker_compose | services_fileSystem | services_http_test | services_processKill | services_youtubeDownload | services_youtubeStatus | store_string | string[] | transmit_dashboard;
+type type_service = "dashboard-compose-container" | "dashboard-compose-variables" | "dashboard-dns" | "dashboard-fileSystem" | "dashboard-http" | "dashboard-os" | "dashboard-payload" | "dashboard-server" | "dashboard-status" | "youtube-download-status";
+type type_socket_data = services_action_compose | services_action_server | services_dashboard_status | services_dashboard_terminal | services_dns_input | services_dns_output | services_docker_compose | services_fileSystem | services_http_test | services_os | services_processKill | services_youtubeDownload | services_youtubeStatus | store_string | string[] | transmit_dashboard;
 type type_socket_status = "closed" | "end" | "open" | "pending";
 type type_ui_control = "select" | "text";
 type type_vars = "block_list" | "domain_local" | "ports" | "redirect_asset" | "redirect_domain" | "server_name";

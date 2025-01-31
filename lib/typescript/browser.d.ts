@@ -34,6 +34,7 @@ declare global {
 
     interface Number {
         dateTime: (date:boolean) => string;
+        time: () => string;
     }
 
     interface FocusEvent {
@@ -124,6 +125,12 @@ declare global {
             external: HTMLElement;
             internal: HTMLElement;
         };
+    }
+
+    interface module_os {
+        init: () => void;
+        interfaces: (data:NodeJS.Dict<node_os_NetworkInterfaceInfo[]>) => void;
+        service: (data:services_os) => void;
     }
 
     interface module_server {

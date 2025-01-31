@@ -1,4 +1,5 @@
 
+import broadcast from "../transmit/broadcast.js";
 import commas from "./commas.js";
 import core from "../browser/core.js";
 import dashboard_script from "../dashboard/dashboard_script.js";
@@ -37,6 +38,7 @@ const startup = function utilities_startup(callback:() => void):void {
             }
             flags.compose = true;
             commandsCallback();
+            osUpdate();
         },
         readCSS = function utilities_startup_readCSS(fileContents:Buffer):void {
             const css:string = fileContents.toString();
@@ -179,6 +181,38 @@ const startup = function utilities_startup(callback:() => void):void {
         },
         dockerCallback = function utilities_startup_dockerCallback():void {
             readComplete("docker");
+        },
+        osUpdate = function utilities_startup_osUpdate():void {
+            const os:services_os = {
+                machine: {
+                    interfaces: node.os.networkInterfaces(),
+                    memory: {
+                        free: node.os.freemem(),
+                        total: node.os.totalmem()
+                    }
+                },
+                os: {
+                    uptime: node.os.uptime()
+                },
+                process: {
+                    cpuSystem: process.cpuUsage().system,
+                    cpuUser: process.cpuUsage().user,
+                    uptime: process.uptime()
+                },
+                time: Date.now()
+            };
+            vars.os.machine.interfaces = os.machine.interfaces;
+            vars.os.machine.memory.free = os.machine.memory.free;
+            vars.os.machine.memory.total = os.machine.memory.total;
+            vars.os.os.uptime = os.os.uptime;
+            vars.os.process.cpuSystem = os.process.cpuSystem;
+            vars.os.process.cpuUser = os.process.cpuUser;
+            vars.os.process.uptime = os.process.uptime;
+            broadcast("dashboard", "dashboard", {
+                data: os,
+                service: "dashboard-os"
+            });
+            setTimeout(utilities_startup_osUpdate, 60000);
         };
 
     String.prototype.capitalize = capitalize;
