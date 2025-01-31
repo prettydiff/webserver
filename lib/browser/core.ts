@@ -414,12 +414,15 @@ const core = function core(config:config_core):socket_object {
                         factorSec:bigint   = BigInt(1e9),
                         factorMin:bigint   = (60n * factorSec),
                         factorHour:bigint  = (3600n * factorSec),
-                        hours:bigint       = (elapsed / factorHour),
+                        factorDay:bigint   = (86400n * factorSec),
+                        days:bigint        = (elapsed / factorDay),
+                        elapsedDay:bigint  = (days * factorDay),
+                        hours:bigint       = ((elapsed - elapsedDay) / factorHour),
                         elapsedHour:bigint = (hours * factorHour),
-                        minutes:bigint     = ((elapsed - elapsedHour) / factorMin),
+                        minutes:bigint     = ((elapsed - (elapsedDay + elapsedHour)) / factorMin),
                         elapsedMin:bigint  = (minutes * factorMin),
-                        seconds:bigint     = ((elapsed - (elapsedHour + elapsedMin)) / factorSec),
-                        nanosecond:bigint  = (elapsed - (elapsedHour + elapsedMin + (seconds * factorSec))),
+                        seconds:bigint     = ((elapsed - (elapsedDay + elapsedHour + elapsedMin)) / factorSec),
+                        nanosecond:bigint  = (elapsed - (elapsedDay + elapsedHour + elapsedMin + (seconds * factorSec))),
                         nanoString:string  = (function utilities_humanTime_nanoString():string {
                             let nano:string = nanosecond.toString(),
                                 a:number = nano.length;
@@ -433,8 +436,11 @@ const core = function core(config:config_core):socket_object {
                         }()),
                         secondString:string = `${numberString(seconds)}.${nanoString}`,
                         minuteString:string = numberString(minutes),
-                        hourString:string = numberString(hours);
-                    return `${hourString}:${minuteString}:${secondString}`;
+                        hourString:string = numberString(hours),
+                        dayString:string = (days === 1n)
+                            ? "1 day "
+                            : `${days.toString()} days `;
+                    return `${dayString}${hourString}:${minuteString}:${secondString}`;
                 };
         
             // Create a document method

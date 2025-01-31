@@ -1373,6 +1373,7 @@ const dashboard = function dashboard():void {
                 populate(os_sections[0], 4, payload.os.os.uptime.time());
                 populate(processes[0], 3, commas(payload.os.process.cpuSystem / 1e6));
                 populate(processes[0], 4, commas(payload.os.process.cpuUser / 1e6));
+                populate(processes[0], 8, payload.os.process.uptime.time());
             }
         },
         ports:module_port = {
