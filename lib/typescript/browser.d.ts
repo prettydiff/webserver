@@ -34,6 +34,7 @@ declare global {
 
     interface Number {
         dateTime: (date:boolean) => string;
+        time: () => string;
     }
 
     interface FocusEvent {

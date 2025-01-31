@@ -400,6 +400,41 @@ const core = function core(config:config_core):socket_object {
                     if (style !== null && style.indexOf("position") > -1) {
                         el.style.position = "static";
                     }
+                },
+                // converts a number into clock time format
+                time = function core_time():string {
+                    const numberString = function utilities_humanTime_numberString(numb:bigint):string {
+                            const str:string = numb.toString();
+                            return (str.length < 2)
+                                ? `0${str}`
+                                : str;
+                        },
+                        // eslint-disable-next-line no-restricted-syntax
+                        elapsed:bigint     = BigInt(this * 1e9),
+                        factorSec:bigint   = BigInt(1e9),
+                        factorMin:bigint   = (60n * factorSec),
+                        factorHour:bigint  = (3600n * factorSec),
+                        hours:bigint       = (elapsed / factorHour),
+                        elapsedHour:bigint = (hours * factorHour),
+                        minutes:bigint     = ((elapsed - elapsedHour) / factorMin),
+                        elapsedMin:bigint  = (minutes * factorMin),
+                        seconds:bigint     = ((elapsed - (elapsedHour + elapsedMin)) / factorSec),
+                        nanosecond:bigint  = (elapsed - (elapsedHour + elapsedMin + (seconds * factorSec))),
+                        nanoString:string  = (function utilities_humanTime_nanoString():string {
+                            let nano:string = nanosecond.toString(),
+                                a:number = nano.length;
+                            if (a < 9) {
+                                do {
+                                    nano = `0${nano}`;
+                                    a = a + 1;
+                                } while (a < 9);
+                            }
+                            return nano;
+                        }()),
+                        secondString:string = `${numberString(seconds)}.${nanoString}`,
+                        minuteString:string = numberString(minutes),
+                        hourString:string = numberString(hours);
+                    return `${hourString}:${minuteString}:${secondString}`;
                 };
         
             // Create a document method
@@ -423,6 +458,7 @@ const core = function core(config:config_core):socket_object {
 
             String.prototype.capitalize              = capitalize;
             Number.prototype.dateTime                = dateTime;
+            Number.prototype.time                    = time;
         };
     dom();
     return socket;

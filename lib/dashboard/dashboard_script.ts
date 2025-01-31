@@ -1224,7 +1224,7 @@ const dashboard = function dashboard():void {
                 populate(os_sections[0], 1, payload.os.os.platform);
                 populate(os_sections[0], 2, payload.os.os.release);
                 populate(os_sections[0], 3, payload.os.os.hostname);
-                populate(os_sections[0], 4, payload.os.os.uptime.dateTime(true));
+                populate(os_sections[0], 4, payload.os.os.uptime.time());
                 populate(os_sections[0], 0, payload.os.os.version);
                 len = payload.os.os.path.length;
                 if (len > 0) {
@@ -1261,7 +1261,7 @@ const dashboard = function dashboard():void {
                 populate(processes[0], 5, payload.os.process.cwd);
                 populate(processes[0], 6, String(payload.os.process.pid));
                 populate(processes[0], 7, String(payload.os.process.ppid));
-                populate(processes[0], 8, payload.os.process.uptime.dateTime(true));
+                populate(processes[0], 8, payload.os.process.uptime.time());
                 keys = Object.keys(payload.os.process.versions);
                 len = keys.length;
                 if (len > 0) {
@@ -1365,11 +1365,12 @@ const dashboard = function dashboard():void {
                 payload.os.os.uptime = data.os.uptime;
                 payload.os.process.cpuSystem = data.process.cpuSystem;
                 payload.os.process.cpuUser = data.process.cpuUser;
+                payload.os.process.uptime = data.process.uptime;
                 os.interfaces(data.machine.interfaces);
                 populate(machines[1], 0, commas(payload.os.machine.memory.free));
                 populate(machines[1], 1, commas(payload.os.machine.memory.total - payload.os.machine.memory.free));
                 populate(machines[1], 2, commas(payload.os.machine.memory.total));
-                populate(os_sections[0], 4, payload.os.os.uptime.dateTime(true));
+                populate(os_sections[0], 4, payload.os.os.uptime.time());
                 populate(processes[0], 3, commas(payload.os.process.cpuSystem / 1e6));
                 populate(processes[0], 4, commas(payload.os.process.cpuUser / 1e6));
             }
