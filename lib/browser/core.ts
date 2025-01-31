@@ -438,7 +438,7 @@ const core = function core(config:config_core):socket_object {
                         minuteString:string = numberString(minutes),
                         hourString:string = numberString(hours),
                         dayString:string = (days === 1n)
-                            ? `1 day `
+                            ? "1 day "
                             : `${days.toString()} days `;
                     return `${dayString}${hourString}:${minuteString}:${secondString}`;
                 };
