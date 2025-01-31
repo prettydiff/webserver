@@ -126,6 +126,12 @@ declare global {
         };
     }
 
+    interface module_os {
+        init: () => void;
+        interfaces: (data:NodeJS.Dict<node_os_NetworkInterfaceInfo[]>) => void;
+        service: (data:services_os) => void;
+    }
+
     interface module_server {
         activePorts: (name_server:string) => HTMLElement;
         create: (event:MouseEvent) => void;

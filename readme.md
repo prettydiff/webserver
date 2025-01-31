@@ -8,6 +8,8 @@ Serves and proxies HTTP over WebSockets for both TCP and TLS.
 * Easy management of multiple web servers
 * Easy management of multiple docker containers
 * Provides a command terminal in the browser
+* Provides a HTTP test tool for sending arbitrary requests and receiving responses.
+* Provides a DNS lookup tool that can check a custom variety of record types.
 
 ### Local Servers
 * Built in proxy and redirection of both internally served assets and externally available locations
@@ -29,24 +31,14 @@ Serves and proxies HTTP over WebSockets for both TCP and TLS.
 3. Execute `git clone https://github.com/prettydiff/webserver.git`
 4. Execute `cd webserver`
 5. Execute `node install.js`
-6. Build the application: `npm run build`.
 7. Run the application: `npm run server`.
 6. Access the dashboard in a browser on the specified random port.
 
-## Planned Enhancements
-* Server detachment.
-  Current docker containers are fully detatched from this application as separate processes.
-  If this application goes down the applications running in the docker containers will continue to be available.
-  A future enhancement will include detatchment as an option for servers, which will require more advanced messaging for management and real time status
-* Component features.
-  The application is currently built around a central architecture.
-  A future enhancement will refactor the organization of the application's architecture such that capabilities can be added or removed without impact to other features.
-* Process management and file system tools.
-  A future enhacnement will include process management and file system tools to better manage operations between services and containers as optional component features.
-* DNS service support.
-  A future enhancement will include DNS services for the creation of local domains.
-  In the meantime I strongly recommend running [PiHole](https://pi-hole.net/) via docker compose image *pihole/pihole:latest* from Docker Hub.
-  I use this image: 
+## Optional steps to reduce the dependency count to 3:
+1. Delete the `node_modules` directory.
+2. Delete the `devDependencies` object from the file `package.json`.
+3. Execute `npm install`.
+4. Restart the application with `npm run server` or your favorite OS service management tool.
 
 ## Limitations
 ### HTTP Methods

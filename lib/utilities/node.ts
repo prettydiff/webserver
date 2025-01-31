@@ -8,7 +8,7 @@ import { cp, createReadStream, createWriteStream, lstat, mkdir, open, read, read
 import { createServer as httpServer, get as httpGet, request as httpRequest, STATUS_CODES } from "node:http";
 import { createServer as httpsServer, get as httpsGet, request as httpsRequest } from "node:https";
 import { connect as netConnect, createServer as netCreateServer, isIPv4, isIPv6 } from "node:net";
-import { arch, cpus, EOL, freemem, hostname, networkInterfaces, platform, release, totalmem, type } from "node:os";
+import { arch, cpus, endianness, EOL, freemem, homedir, hostname, networkInterfaces, platform, release, totalmem, type, uptime, userInfo, version } from "node:os";
 import { isAbsolute, resolve as resolvePath, sep } from "node:path";
 import { clearScreenDown, cursorTo } from "node:readline";
 import { Readable } from "node:stream";
@@ -80,14 +80,19 @@ const node = {
     os: {
         arch: arch,
         cpus: cpus,
+        endianness: endianness,
         EOL: EOL,
         freemem: freemem,
+        homedir: homedir,
         hostname: hostname,
         networkInterfaces: networkInterfaces,
         platform: platform,
         release: release,
         totalmem: totalmem,
-        type: type
+        type: type,
+        uptime: uptime,
+        userInfo: userInfo,
+        version: version
     },
     path: {
         isAbsolute: isAbsolute,

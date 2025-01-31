@@ -7,7 +7,7 @@ import { BigIntStats, ReadStream, Stats, WriteStream } from "node:fs";
 import { ClientRequest, IncomingMessage, OutgoingHttpHeaders, Server as httpServer, ServerResponse } from "node:http";
 import { RequestOptions } from "node:https";
 import { AddressInfo, NetConnectOpts, Server, Socket } from "node:net";
-import { NetworkInterfaceInfo, NetworkInterfaceInfoIPv4, NetworkInterfaceInfoIPv6 } from "node:os";
+import { CpuInfo, NetworkInterfaceInfo, NetworkInterfaceInfoIPv4, NetworkInterfaceInfoIPv6 } from "node:os";
 import { Readable } from "node:stream";
 import { StringDecoder } from "node:string_decoder";
 import { TLSSocket, TLSSocketOptions } from "node:tls";
@@ -44,6 +44,7 @@ declare global {
     type node_net_NetConnectOpts = NetConnectOpts;
     type node_net_Server = Server;
     type node_net_Socket = Socket;
+    type node_os_CpuInfo = CpuInfo;
     type node_os_NetworkInterfaceInfo = NetworkInterfaceInfo;
     type node_os_NetworkInterfaceInfoIPv4 = NetworkInterfaceInfoIPv4;
     type node_os_NetworkInterfaceInfoIPv6 = NetworkInterfaceInfoIPv6;

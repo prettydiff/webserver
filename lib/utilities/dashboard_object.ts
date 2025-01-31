@@ -41,11 +41,11 @@ const dashboard_object = function utilities_dashboardObject(config:config_dashbo
                     },
                     http_headers: vars.http_headers,
                     logs: vars.logs,
+                    os: vars.os,
                     path: vars.path,
                     ports: vars.system_ports,
                     servers: vars.servers,
-                    terminal: vars.terminal,
-                    user: vars.user
+                    terminal: vars.terminal
                 };
                 send({
                     data: browser,

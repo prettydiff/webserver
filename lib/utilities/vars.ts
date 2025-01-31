@@ -35,6 +35,56 @@ const gid:number = (typeof process.getgid === "undefined")
             nmap: 60000
         },
         logs: [],
+        os: {
+            machine: {
+                cpu: {
+                    arch: node.os.arch(),
+                    endianness: node.os.endianness(),
+                    frequency: node.os.cpus()[0].speed,
+                    name: node.os.cpus()[0].model,
+                },
+                interfaces: node.os.networkInterfaces(),
+                memory: {
+                    free: node.os.freemem(),
+                    total: node.os.totalmem()
+                }
+            },
+            os: {
+                env: process.env,
+                hostname: node.os.hostname(),
+                path: (process.platform === "win32")
+                    ? process.env.Path.split(";")
+                    : (process.env.PATH === undefined)
+                        ? []
+                        : process.env.PATH.split(":"),
+                platform: node.os.platform(),
+                release: node.os.release(),
+                type: node.os.type(),
+                uptime: node.os.uptime(),
+                version: node.os.version()
+            },
+            process: {
+                arch: process.arch,
+                argv: process.argv,
+                cpuSystem: process.cpuUsage().system,
+                cpuUser: process.cpuUsage().user,
+                cwd: process.cwd(),
+                pid: process.pid,
+                platform: process.platform,
+                ppid: process.ppid,
+                uptime: process.uptime(),
+                versions: process.versions
+            },
+            user: {
+                gid: (gid === 0)
+                    ? 1000
+                    : gid,
+                homedir: node.os.homedir(),
+                uid: (gid === 0)
+                    ? 1000
+                    : uid
+            }
+        },
         path: {
             compose: "",
             project: "",
@@ -70,14 +120,6 @@ const gid:number = (typeof process.getgid === "undefined")
             red      : "\u001b[31m",
             underline: "\u001b[4m",
             yellow   : "\u001b[33m"
-        },
-        user: {
-            gid: (gid === 0)
-                ? 1000
-                : gid,
-            uid: (uid === 0)
-                ? 1000
-                : uid
         }
     };
 

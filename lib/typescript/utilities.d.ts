@@ -115,6 +115,49 @@ interface server_meta_item {
     };
 }
 
+interface server_os {
+    machine: {
+        cpu: {
+            arch: string;
+            endianness: string;
+            frequency: number;
+            name: string;
+        };
+        interfaces: NodeJS.Dict<node_os_NetworkInterfaceInfo[]>;
+        memory: {
+            free: number;
+            total: number;
+        };
+    };
+    os: {
+        env: store_string;
+        hostname: string;
+        path: string[];
+        platform: string;
+        release: string;
+        type: string;
+        uptime: number;
+        version: string;
+    };
+    process: {
+        arch: string;
+        argv: string[];
+        cpuSystem: number;
+        cpuUser: number;
+        cwd: string;
+        pid: number;
+        platform: string;
+        ppid: number;
+        uptime: number;
+        versions: store_string;
+    };
+    user: {
+        gid: number;
+        homedir: string;
+        uid: number;
+    };
+}
+
 interface server_ports {
     open?: number;
     secure?: number;
@@ -171,6 +214,7 @@ interface vars {
     interfaces: string[];
     intervals: store_number;
     logs: services_dashboard_status[];
+    os: server_os;
     path: {
         compose: string;
         project: string;
@@ -187,10 +231,6 @@ interface vars {
     system_ports: external_ports;
     terminal: terminal_size;
     text: store_string;
-    user: {
-        gid: number;
-        uid: number;
-    };
 }
 
 interface windows_drives {

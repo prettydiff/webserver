@@ -29,6 +29,7 @@ interface transmit_dashboard {
     fileSystem: services_fileSystem;
     http_headers: string;
     logs: services_dashboard_status[];
+    os: server_os;
     path: {
         compose: string;
         project: string;
@@ -40,10 +41,6 @@ interface transmit_dashboard {
     };
     servers: store_servers;
     terminal: terminal_size;
-    user: {
-        gid: number;
-        uid: number;
-    };
 }
 
 interface transmit_receiver {
