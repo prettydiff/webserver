@@ -31,15 +31,20 @@
         </div>
         <div>
             <h3>Tools</h3>
-            <ul><li><button data-section="http">HTTP Test</button></li><li><button data-section="dns">DNS Resolve</button></li></ul>
+            <ul><li><button data-section="http">HTTP Test</button></li><li><button data-section="dns">DNS Resolve</button></li><li><button data-section="hash">Hash</button></li></ul>
         </div>
         <div>
             <h3>Informational</h3>
-            <ul><li><button data-section="ports">Port Summary</button></li><li><button data-section="sockets">Socket Summary</button></li><li><button data-section="os">OS/Machine</button></li><li><button data-section="logs">Logs</button></li><li><button data-section="help">Help</button></li><li><button data-section="faq">FAQ</button></li></ul>
+            <ul><li><button data-section="ports">Port Summary</button></li><li><button data-section="sockets">Socket Summary</button></li><li><button data-section="os">OS/Machine</button></li><li><button data-section="application-logs">Application Logs</button></li><li><button data-section="help">Help</button></li><li><button data-section="faq">FAQ</button></li></ul>
         </div>
     </nav>
     <span class="clear"></span>
     <main>
+        <div class="tab" id="application-logs">
+            <h2>Logs</h2>
+            <p class="tab-description">At this time logs are not saved outside the application, but do persist for the life of the application runtime.</p>
+            <ul></ul>
+        </div>
         <div class="tab" id="compose">
             <h2>Docker Compose</h2>
             <p class="tab-description">A list of configured Docker containers and their status. Container status refreshes every ${payload.intervals.compose} seconds. All containers run under the Docker daemon detached from this application.</p>
@@ -282,6 +287,47 @@
                 <ul class="file-system-failures"></ul>
             </div>
         </div>
+        <div class="tab" id="hash">
+            <h2>Hash</h2>
+            <p class="tab-description">Generate a hash tokens from custom input or the file system.</p>
+            <div class="section">
+                <h3>Hash Algorithms Explained <button class="expand">Expand</button></h3>
+                <div class="definitions">
+                    <p>
+                        Hash functions allow for generation of a predictable but challenging to reverse string token from a given string or binary input.
+                        Hashes are typically used as a form of identity or integrity check.
+                        A hash function provides a means of accepting input, whether string or binary, and returns a short randomly generated string token.
+                        The same input must always produce the same output, however.
+                    </p>
+                    <p>
+                        The strength of a hash function is the amount of work required to generate a collision.
+                        A collision occurs when two different forms of input generate the same output.
+                        MD5 and SHA1 hash algorithms, and all hash algorithms based upon them, are considered broken because there now exists several forms of known collisions and the work to generate new collisions against MD5 is trivial.
+                    </p>
+                    <p>
+                        One of the stronger modern hash algorithms is SHA3-512, which generates a fixed length 512bit token.
+                        The actual key space of that algorithm, the number of maximum potential values, is not known.
+                        The maximum possible key space based upon token size, 128 hexadecimal characters or 16^128, is larger than the number of atoms in the observed universe containing billions of galaxies each comprising billions of star systems each comprising billions of objects each comprising billions of atoms and so on.
+                    </p>
+                </div>
+            </div>
+            <div class="section">
+                <h3>Input Source Type</h3>
+                <p>
+                    <label class="radio">String <input name="hash_type" type="radio" value="false"/></label>
+                    <label class="radio">File <input name="hash_type" type="radio" value="true"/></label>
+                </p>
+                <h3>Hash Algorithm</h3>
+                <p><label>Choose one of all supported hash algorithms <select></select></label></p>
+                <h3>Input Value</h3>
+                <p><label>Input must be a local absolute file system path if input type is <em>file</em>, otherwise provide any text value. <textarea spellcheck="spellcheck"></textarea></label></p>
+                <p class="buttons"><button>Generate Hash</button></p>
+            </div>
+            <div class="section">
+                <h3>Output</h3>
+                <p><label>Generated hash token</label> <input spellcheck="false" type="text"/></p>
+            </div>
+        </div>
         <div class="tab" id="help">
             <h2>Help</h2>
             <p class="tab-description">Helpful information about this application.</p>
@@ -440,11 +486,6 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
                     <span class="clear"></span>
                 </div>
             </div>
-        </div>
-        <div class="tab" id="logs">
-            <h2>Logs</h2>
-            <p class="tab-description">At this time logs are not saved outside the application, but do persist for the life of the application runtime.</p>
-            <ul></ul>
         </div>
         <div class="tab" id="os">
             <h2>OS/Machine</h2>

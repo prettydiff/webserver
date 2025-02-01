@@ -23,6 +23,7 @@ const gid:number = (typeof process.getgid === "undefined")
         },
         css: "",
         dashboard: "",
+        hashes: node.crypto.getHashes(),
         http_headers: "",
         interfaces: [
             "localhost",

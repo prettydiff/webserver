@@ -39,6 +39,7 @@ const dashboard_object = function utilities_dashboardObject(config:config_dashbo
                         search: config.search,
                         sep: vars.sep
                     },
+                    hashes: vars.hashes,
                     http_headers: vars.http_headers,
                     logs: vars.logs,
                     os: vars.os,

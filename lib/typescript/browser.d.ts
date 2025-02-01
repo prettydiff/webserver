@@ -97,6 +97,13 @@ declare global {
         send: (event:FocusEvent|KeyboardEvent) => void;
     }
 
+    interface module_hash {
+        init: () => void;
+        nodes: {};
+        request: (event:MouseEvent) => void;
+        response: (hash:services_hash) => void;
+    }
+
     interface module_http {
         init: () => void;
         nodes: {

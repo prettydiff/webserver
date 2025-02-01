@@ -210,6 +210,7 @@ interface vars {
     compose: configuration_compose;
     css: string;
     dashboard: string;
+    hashes: string[];
     http_headers: string;
     interfaces: string[];
     intervals: store_number;

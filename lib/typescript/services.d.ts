@@ -118,6 +118,13 @@ declare global {
         sep: "/"|"\\";
     }
 
+    interface services_hash {
+        algorithm: string;
+        size: number;
+        type: "file" | "string";
+        value: string;
+    }
+
     interface services_http {
         connect: http_action;
         delete: http_action;

@@ -13,7 +13,7 @@ const dashboard = function dashboard():void {
     const log = function dashboard_log(item:services_dashboard_status):void {
             const li:HTMLElement = document.createElement("li"),
                 timeElement:HTMLElement = document.createElement("time"),
-                ul:HTMLElement = document.getElementById("logs").getElementsByTagName("ul")[0],
+                ul:HTMLElement = document.getElementById("application-logs").getElementsByTagName("ul")[0],
                 strong:HTMLElement = document.createElement("strong"),
                 code:HTMLElement = document.createElement("code"),
                 time:string = item.time.dateTime(false);
@@ -35,7 +35,7 @@ const dashboard = function dashboard():void {
         },
         baseline = function dashboard_baseline():void {
             const serverList:HTMLElement = document.getElementById("servers").getElementsByClassName("server-list")[0] as HTMLElement,
-                logs_old:HTMLElement = document.getElementById("logs").getElementsByTagName("ul")[0],
+                logs_old:HTMLElement = document.getElementById("application-logs").getElementsByTagName("ul")[0],
                 ports_old:HTMLCollectionOf<HTMLElement> = document.getElementById("ports").getElementsByTagName("tbody"),
                 sockets_old:HTMLElement = document.getElementById("sockets").getElementsByTagName("tbody")[0],
                 status:HTMLElement = document.getElementById("connection-status"),
@@ -915,6 +915,12 @@ const dashboard = function dashboard():void {
                     message.send(payload, "dashboard-fileSystem");
                 }
             }
+        },
+        hash:module_hash = {
+            init: function dashboard_hashInit():void {},
+            nodes: {},
+            request: function dashboard_hashRequest(event:MouseEvent):void {},
+            response: function dashboard_hashResponse():void {}
         },
         http:module_http = {
             init: function dashboard_httpInit():void {
