@@ -22,7 +22,8 @@ const certificate = function services_certificate(config:config_certificate):voi
                             services_certificate_cert_crypto();
                         } else {
                             let count:number = 0;
-                            const store_cert:supplemental_certificate_client = {
+                            const path:string = `${cert_path + client}.pfx`,
+                                store_cert:supplemental_certificate_client = {
                                     crt: null,
                                     pfx: null
                                 },
@@ -42,13 +43,13 @@ const certificate = function services_certificate(config:config_certificate):voi
                                 };
                             file.read({
                                 callback: read_certificates,
-                                location: `${cert_path + domain}.crt`,
+                                location: path.replace(/\.pfx$/, ".crt"),
                                 no_file: null,
                                 section: "certificate"
                             });
                             file.read({
                                 callback: read_certificates,
-                                location: `${cert_path + domain}.pfx`,
+                                location: path,
                                 no_file: null,
                                 section: "certificate"
                             });

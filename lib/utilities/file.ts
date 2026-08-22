@@ -132,89 +132,38 @@ const file:core_module_file = {
         });
     },
     remove: function utilities_fileRemove(config:config_file_remove):void {
-        const removeItems = function utilities_fileRemove_removeItems(list:core_directory_list):void {
-                // core_directory_list: [].failures
-                // 0. absolute path (string)
-                // 1. type (fileType)
-                // 2. hash (string), empty string unless fileType is "file" and args.hash === true and be aware this is exceedingly slow on large directory trees
-                // 3. parent index (number)
-                // 4. child item count (number)
-                // 5. selected properties from fs.Stat plus some link resolution data
-                // 6. write path from the lib/utilities/rename library for file copy
-                let a:number = 0;
-                const len:number = list.length,
-                    destroy = function utilities_fileRemove_removeItems_destroy(item:type_directory_item):void {
-                        let b:number = (config.exclusions === null)
-                            ? 0
-                            : config.exclusions.length;
-                        const destruction = function utilities_fileRemove_removeItems_destroy_destruction(er:node_error):void {
-                            // error handling
-                            if (er !== null && er.toString().indexOf("no such file or directory") < 0) {
-                                if (er.code === "ENOTEMPTY") {
-                                    utilities_fileRemove_removeItems_destroy(item);
-                                    return;
-                                }
-                                log.application({
-                                    error: er,
-                                    message: `Error removing file system artifact ${item[0]}`,
-                                    origin: "utilities/file.ts",
-                                    section: config.section,
-                                    status: "error",
-                                    time: Date.now()
-                                });
-                                return;
-                            }
-
-                            if (item[0] === list[0][0]) {
-                                // done
-                                if (config.callback !== null) {
-                                    config.callback(config.location, config.identifier);
-                                }
-                            } else {
-                                // decrement the number of child items in a directory
-                                list[item[3]][3] = list[item[3]][3] - 1;
-                                // once a directory is empty, process the directory for removal
-                                if (list[item[3]][3] < 1) {
-                                    utilities_fileRemove_removeItems_destroy(list[item[3]]);
-                                }
-                            }
-                        };
-                        if (item[1] === "directory") {
-                            // do not remove directories that contain exclusions
-                            if (config.exclusions !== null && config.exclusions.length > 0) {
-                                do {
-                                    b = b - 1;
-                                    if (config.exclusions[b].indexOf(item[0]) === 0) {
-                                        destruction(null);
-                                        return;
-                                    }
-                                } while (b > 0);
-                                node.fs.rmdir(item[0], destruction);
-                            } else {
-                                node.fs.rmdir(item[0], destruction);
-                            }
-                        } else if (config.exclusions === null || (config.exclusions !== null && config.exclusions.indexOf(item[0]) < 0)) {
-                            if (item[1] === "symbolic_link") {
-                                node.fs.rm(item[0], destruction);
-                            } else {
-                                node.fs.unlink(item[0], destruction);
-                            }
-                        } else {
-                            destruction(null);
-                        }
-                    };
-                if (list.length < 1) {
+        let count:number = 0;
+        const complete = function utilities_fileRemove_complete():void {
+                count = count - 1;
+                if (count < 1) {
                     if (config.callback !== null) {
                         config.callback(config.location, config.identifier);
                     }
-                    return;
                 }
-                do {
-                    if ((list[a][1] === "directory" && list[a][3] === 0) || list[a][1] !== "directory") {
-                        destroy(list[a]);
-                    }
-                    a = a + 1;
-                } while (a < len);
+            },
+            removeItems = function utilities_fileRemove_removeItems(list:core_directory_list):void {
+                let index_list:number = list.length;
+                count = index_list;
+                if (index_list > 0) {
+                    do {
+                        index_list = index_list - 1;
+                        if (config.exclusions.indexOf(list[index_list][0]) > -1) {
+                            count = count - 1;
+                            list.splice(index_list, 1);
+                        }
+                    } while (index_list > 0);
+                }
+                index_list = list.length;
+                if (index_list > 0) {
+                    do {
+                        index_list = index_list - 1;
+                        if (list[index_list][1] === "directory") {
+                            node.fs.unlink(list[index_list][0], complete);
+                        } else {
+                            node.fs.rm(list[index_list][1], complete);
+                        }
+                    } while (index_list > 0);
+                }
             },
             dirConfig:config_directory = {
                 callback: removeItems,
@@ -227,7 +176,15 @@ const file:core_module_file = {
                 search: "",
                 symbolic: true
             };
-        directory(dirConfig);
+        if (config.exclusions === null || config.exclusions.length === 0) {
+            count = 1;
+            node.fs.rm(config.location, {
+                force: true,
+                recursive: true
+            }, complete);
+        } else {
+            directory(dirConfig);
+        }
     },
     stat: function utilities_fileStat(config:config_file_stat):void {
         node.fs.stat(config.location, {
