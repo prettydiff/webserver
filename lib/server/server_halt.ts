@@ -96,7 +96,36 @@ const server_halt = function services_serverHalt(data:services_server_action, ca
                         sockets[index].destroy();
                     } while (index > 0);
                 }
+            },
+            close_server = function servers_serverHalt_closeServer():void {
+                count_server = count_server + 1;
+                if (count_server > 1) {
+                    if (data.action === "destroy" || data.action === "modify") {
+                        if (data.action === "modify") {
+                            vars.data.server[id].config = data.server;
+                            vars.data.server[id].ports = {
+                                open: 0,
+                                secure: 0
+                            };
+                            save(write_callback, "servers-web");
+                        } else {
+                            delete vars.data.server[id];
+                            delete vars.data_store.server[id];
+                            file.remove({
+                                callback: function server_serverHalt_delete():void {
+                                    save(write_callback, "servers-web");
+                                },
+                                exclusions: null,
+                                location: vars.path.servers + id,
+                                section: "servers-web"
+                            });
+                        }
+                    } else {
+                        write_callback();
+                    }
+                }
             };
+        let count_server:number = 0;
         
         if (single_socket === true || temporary === true) {
             data.action = "destroy";
@@ -105,42 +134,20 @@ const server_halt = function services_serverHalt(data:services_server_action, ca
         // 1. Disable the servers and kill their sockets
         if (encryption === "both") {
             if (vars.data_store.server[id].server_object.open !== null) {
-                vars.data_store.server[id].server_object.open.close();
                 vars.data.server[id].ports.open = 0;
                 kill_sockets(vars.data_store.server[id].sockets_tcp.open);
+                vars.data_store.server[id].server_object.open.close(close_server);
             }
             if (vars.data_store.server[id].server_object.secure !== null) {
-                vars.data_store.server[id].server_object.secure.close();
                 vars.data.server[id].ports.secure = 0;
                 kill_sockets(vars.data_store.server[id].sockets_tcp.secure);
+                vars.data_store.server[id].server_object.secure.close(close_server);
             }
         } else {
-            vars.data_store.server[id].server_object[encryption].close();
+            count_server = 1;
             vars.data.server[id].ports[encryption] = 0;
             kill_sockets(vars.data_store.server[id].sockets_tcp[encryption]);
-        }
-        if (data.action === "destroy" || data.action === "modify") {
-            if (data.action === "modify") {
-                vars.data.server[id].config = data.server;
-                vars.data.server[id].ports = {
-                    open: 0,
-                    secure: 0
-                };
-                save(write_callback, "servers-web");
-            } else {
-                delete vars.data.server[id];
-                delete vars.data_store.server[id];
-                file.remove({
-                    callback: function server_serverHalt_delete():void {
-                        save(write_callback, "servers-web");
-                    },
-                    exclusions: null,
-                    location: vars.path.servers + id,
-                    section: "servers-web"
-                });
-            }
-        } else {
-            write_callback();
+            vars.data_store.server[id].server_object[encryption].close(close_server);
         }
     }
 };

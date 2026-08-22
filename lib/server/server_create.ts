@@ -90,11 +90,14 @@ const server_create = function services_serverCreate(data:services_server_action
                             config.ports.secure = 0;
                         }
                     }
-                    vars.data.server[config.id].ports = {
-                        open: 0,
-                        secure: 0
+                    vars.data.server[config.id] = {
+                        certificates_client: {
+                            crt: "",
+                            pfx: ""
+                        },
+                        config: config,
+                        ports: config.ports
                     };
-                    vars.data.server[config.id].config = config;
                     vars.data_store.server[config.id] = {
                         server_certs: null,
                         server_object: {
