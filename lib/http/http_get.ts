@@ -234,7 +234,6 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                                 "",
                                 `server: prettydiff/${vars.environment.name}`,
                                 "accept-ranges: bytes",
-                                "",
                                 ""
                             ];
                             if (method === "HEAD") {
@@ -289,7 +288,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                                     headerText[0] = status;
                                     headerText[2] = "transfer-encoding: chunked";
                                     stream.on("close", function http_get_stat_statTest_fileItem_close():void {
-                                        write("0\r\n\r\n", true);
+                                        write("\r\n0\r\n\r\n", true);
                                     });
                                     write(headerText.join("\r\n"), false);
                                     stream.on("data", function http_get_stat_statTest_fileItem_data(chunk:Buffer|string):void {
