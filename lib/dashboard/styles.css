@@ -246,7 +246,10 @@ select{background:var(--background_textarea);border-color:var(--border_input);bo
     }
     #connection-status{margin:0 0 1.8em}
     #file-system ul{margin:0 0 0 4em;padding:0}
-    #hash .output{height:15em}
+    #hash {
+        .output{height:15em}
+        p{float:none;width:100%}
+    }
     #help ul{padding:0}
     #test-http .from p,
     #test-websocket .form p{float:none;width:100%}
