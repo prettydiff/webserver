@@ -293,8 +293,8 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                                     });
                                     write(headerText.join("\r\n"), false);
                                     stream.on("data", function http_get_stat_statTest_fileItem_data(chunk:Buffer|string):void {
-                                        write(`${Buffer.byteLength(chunk).toString(16)}`, false);
-                                        write(`\r\n${chunk}\r\n`, false);
+                                        write(`\r\n${Buffer.byteLength(chunk).toString(16)}\r\n`, false);
+                                        write(chunk, false);
                                     });
                                 }
                             }
