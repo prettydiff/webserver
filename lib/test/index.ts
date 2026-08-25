@@ -1,4 +1,5 @@
 
+import file from "../utilities/file.ts";
 import log from "../core/log.ts";
 import test_listLocalBrowserApplicationLogs from "./list_local_browser_applicationLogs.ts";
 import test_listLocalBrowserCompose from "./list_local_browser_compose.ts";
@@ -59,8 +60,26 @@ const test_index = function test_index():void {
         callback = function test_index_callback(name:string):void {
             total_lists = total_lists + 1;
             if (total_lists === len_list || (vars.options["stop-on-fail"] === true && vars.test.counts[name].assertions_fail > 0)) {
-                vars.test.total_time_end = process.hrtime.bigint();
-                test_summary(name, true);
+                let count:number = 0;
+                const removed = function test_index_callback_removed():void {
+                    count = count + 1;
+                    if (count > 1) {
+                        vars.test.total_time_end = process.hrtime.bigint();
+                        test_summary(name, true);
+                    }
+                };
+                file.remove({
+                    callback: removed,
+                    exclusions: [],
+                    location: `${vars.path.project}servers`,
+                    section: "startup"
+                });
+                file.remove({
+                    callback: removed,
+                    exclusions: [],
+                    location: `${vars.path.project}servers.json`,
+                    section: "startup"
+                });
             } else {
                 test_summary(name, false);
                 test_runner.list(list[total_lists], test_index_callback);
