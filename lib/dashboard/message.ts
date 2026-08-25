@@ -153,12 +153,12 @@ const ui_message = function ui_message():void {
                     "services_udp_status": (dashboard.sections["udp-socket"] === undefined)
                         ? null
                         : dashboard.sections["udp-socket"].receive,
-                    "services_websocket_message": (dashboard.sections["test-websocket"] === undefined)
-                        ? null
-                        : dashboard.sections["test-websocket"].transmit.message_receive,
                     "services_websocket_status": (dashboard.sections["test-websocket"] === undefined)
                         ? null
-                        : dashboard.sections["test-websocket"].transmit.status
+                        : dashboard.sections["test-websocket"].transmit.status,
+                    "services_websocket_message": (dashboard.sections["test-websocket"] === undefined)
+                        ? null
+                        : dashboard.sections["test-websocket"].transmit.message_receive
                 };
             if (message_item.service === "services_os_all") {
                 const data:services_os_all = message_item.data as services_os_all;

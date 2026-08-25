@@ -450,7 +450,9 @@ const ui_file_system = function ui_file_system():void {
                         index_record = index_record + 1;
                     } while (index_record < len);
                 }
-                dashboard.tables.sort(null, dashboard.sections["file-system"].nodes.tbody.parentNode, Number(dashboard.sections["file-system"].nodes.tbody.parentNode.dataset["column"]));
+                if (dashboard.sections["file-system"].sort === true) {
+                    dashboard.tables.sort(null, dashboard.sections["file-system"].nodes.tbody.parentNode, Number(dashboard.sections["file-system"].nodes.tbody.parentNode.dataset["column"]));
+                }
             }
 
             // no results
@@ -577,6 +579,7 @@ const ui_file_system = function ui_file_system():void {
             dashboard.sections["file-system"].nodes.failures = fails;
             dashboard.sections["file-system"].block = false;
         },
+        sort: false,
         time: 0,
         tools: {
             media_time: function dashboard_sections_fileSystem_mediaTime(input:boolean|number|string):string {

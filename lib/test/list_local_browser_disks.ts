@@ -18,7 +18,7 @@ const test_listLocalBrowserDisks = function test_listLocalBrowserDisks():test_li
                     event: "click",
                     node: [
                         ["getElementsByTagName", "nav", 0],
-                        ["getElementsByTagName", "div", 2],
+                        ["getElementsByTagName", "div", 3],
                         ["getElementsByTagName", "button", 2]
                     ]
                 }

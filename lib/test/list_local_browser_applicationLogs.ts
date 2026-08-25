@@ -1,6 +1,4 @@
 
-import vars from "../core/vars.ts";
-
 const test_listLocalBrowserApplicationLogs = function test_listLocalBrowserApplicationLogs():test_list {
     const list:test_list = [
         {
@@ -19,7 +17,7 @@ const test_listLocalBrowserApplicationLogs = function test_listLocalBrowserAppli
                     event: "click",
                     node: [
                         ["getElementsByTagName", "nav", 0],
-                        ["getElementsByTagName", "div", 5],
+                        ["getElementsByTagName", "div", 6],
                         ["getElementsByTagName", "button", 0]
                     ]
                 }
@@ -44,12 +42,43 @@ const test_listLocalBrowserApplicationLogs = function test_listLocalBrowserAppli
                         ["getElementsByTagName", "li", 0],
                         ["childNodes", null, 0]
                     ],
-                    qualifier: (vars.environment.compose_status === null)
-                        ? "begins"
-                        : "is",
+                    qualifier: "is",
                     target: ["lowName()"],
                     type: "property",
                     value: "time"
+                },
+                {
+                    node: [
+                        ["getElementById", "application-logs", null],
+                        ["getElementsByTagName", "li", 0],
+                        ["childNodes", null, 1]
+                    ],
+                    qualifier: "is",
+                    target: ["lowName()"],
+                    type: "property",
+                    value: "strong"
+                },
+                {
+                    node: [
+                        ["getElementById", "application-logs", null],
+                        ["getElementsByTagName", "li", 0],
+                        ["childNodes", null, 2]
+                    ],
+                    qualifier: "is",
+                    target: ["lowName()"],
+                    type: "property",
+                    value: "span"
+                },
+                {
+                    node: [
+                        ["getElementById", "application-logs", null],
+                        ["getElementsByTagName", "li", 0],
+                        ["childNodes", null, 3]
+                    ],
+                    qualifier: "is",
+                    target: ["lowName()"],
+                    type: "property",
+                    value: "p"
                 }
             ]
         }

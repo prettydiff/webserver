@@ -413,6 +413,7 @@ declare global {
             summary: HTMLElement;
             tbody: HTMLElement;
         };
+        sort: boolean;
         time: number;
         tools: {
             media_time: (input:boolean|number|string) => string;

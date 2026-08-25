@@ -19,7 +19,7 @@ const test_listLocalBrowserDevices = function test_listLocalBrowserDevices():tes
                     event: "click",
                     node: [
                         ["getElementsByTagName", "nav", 0],
-                        ["getElementsByTagName", "div", 2],
+                        ["getElementsByTagName", "div", 3],
                         ["getElementsByTagName", "button", 1]
                     ]
                 }

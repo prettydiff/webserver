@@ -19,8 +19,8 @@ const test_listLocalSocketsOS_UDP = function test_listLocalSocketsOS_UDP():test_
                     event: "click",
                     node: [
                         ["getElementsByTagName", "nav", 0],
-                        ["getElementsByTagName", "div", 1],
-                        ["getElementsByTagName", "button", 5]
+                        ["getElementsByTagName", "div", 2],
+                        ["getElementsByTagName", "button", 2]
                     ]
                 }
             ],

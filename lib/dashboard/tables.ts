@@ -296,6 +296,9 @@ const ui_tables = function ui_tables():void {
                     };
                     dashboard.utility.setState();
                 }
+                if (dashboard.sections["file-system"] !== undefined && dashboard.sections["file-system"].nodes.tbody === tbody) {
+                    dashboard.sections["file-system"].sort = true;
+                }
                 do {
                     records.push(tr_list[index_tr]);
                     index_tr = index_tr + 1;

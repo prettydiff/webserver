@@ -18,7 +18,7 @@ const test_listLocalBrowserDNSQuery = function test_listLocalBrowserDNSQuery():t
                     event: "click",
                     node: [
                         ["getElementsByTagName", "nav", 0],
-                        ["getElementsByTagName", "div", 3],
+                        ["getElementsByTagName", "div", 4],
                         ["getElementsByTagName", "button", 2]
                     ]
                 }

@@ -19,7 +19,7 @@ const test_listLocalBrowserServices = function test_listLocalBrowserServices():t
                     event: "click",
                     node: [
                         ["getElementsByTagName", "nav", 0],
-                        ["getElementsByTagName", "div", 2],
+                        ["getElementsByTagName", "div", 3],
                         ["getElementsByTagName", "button", 4]
                     ]
                 }

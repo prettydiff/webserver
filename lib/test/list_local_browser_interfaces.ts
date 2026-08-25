@@ -19,7 +19,7 @@ const test_listLocalBrowserInterfaces = function test_listLocalBrowserInterfaces
                     event: "click",
                     node: [
                         ["getElementsByTagName", "nav", 0],
-                        ["getElementsByTagName", "div", 1],
+                        ["getElementsByTagName", "div", 2],
                         ["getElementsByTagName", "button", 0]
                     ]
                 }

@@ -19,7 +19,7 @@ const test_listLocalBrowserFileSystem = function test_listLocalBrowserFileSystem
                     event: "click",
                     node: [
                         ["getElementsByTagName", "nav", 0],
-                        ["getElementsByTagName", "div", 3],
+                        ["getElementsByTagName", "div", 4],
                         ["getElementsByTagName", "button", 1]
                     ]
                 }
@@ -78,7 +78,7 @@ const test_listLocalBrowserFileSystem = function test_listLocalBrowserFileSystem
                     value: "Enter"
                 }
             ],
-            name: "Navigate to file-system",
+            name: "Navigate to project path",
             type: "dom",
             unit: [
                 {

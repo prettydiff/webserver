@@ -18,7 +18,7 @@ const test_listLocalBrowserWebSocket = function test_listLocalBrowserWebSocket()
                     event: "click",
                     node: [
                         ["getElementsByTagName", "nav", 0],
-                        ["getElementsByTagName", "div", 4],
+                        ["getElementsByTagName", "div", 5],
                         ["getElementsByTagName", "button", 1]
                     ]
                 }
@@ -36,7 +36,7 @@ const test_listLocalBrowserWebSocket = function test_listLocalBrowserWebSocket()
                 qualifier: "is",
                 target: ["textContent"],
                 type: "property",
-                value: "Online (Insecure)"
+                value: "Online (Encrypted)"
             },
             interaction: [
                 {

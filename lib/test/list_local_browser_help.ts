@@ -18,8 +18,8 @@ const test_listLocalBrowserHelp = function test_listLocalBrowserHelp():test_list
                     event: "click",
                     node: [
                         ["getElementsByTagName", "nav", 0],
-                        ["getElementsByTagName", "div", 5],
-                        ["getElementsByTagName", "button", 2]
+                        ["getElementsByTagName", "div", 6],
+                        ["getElementsByTagName", "button", 3]
                     ]
                 }
             ],

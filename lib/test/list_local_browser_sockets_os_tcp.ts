@@ -19,8 +19,8 @@ const test_listLocalSocketsOS_TCP = function test_listLocalSocketsOS_TCP():test_
                     event: "click",
                     node: [
                         ["getElementsByTagName", "nav", 0],
-                        ["getElementsByTagName", "div", 1],
-                        ["getElementsByTagName", "button", 4]
+                        ["getElementsByTagName", "div", 2],
+                        ["getElementsByTagName", "button", 1]
                     ]
                 }
             ],

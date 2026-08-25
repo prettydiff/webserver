@@ -19,7 +19,7 @@ const test_listLocalBrowserOS = function test_listLocalBrowserOS():test_list {
                     event: "click",
                     node: [
                         ["getElementsByTagName", "nav", 0],
-                        ["getElementsByTagName", "div", 2],
+                        ["getElementsByTagName", "div", 3],
                         ["getElementsByTagName", "button", 0]
                     ]
                 }
