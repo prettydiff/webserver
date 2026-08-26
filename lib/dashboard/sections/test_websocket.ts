@@ -103,16 +103,9 @@ const ui_test_websocket = function ui_test_websocket():void {
                 if (frame.mask === true) {
                     frame.startByte = frame.startByte + 4;
                 }
-                if ((event === null || event.target === dashboard.sections["test-websocket"].nodes.message_send_frame) && frame.mask === true) {
-                    const encodeKey:TextEncoder = new TextEncoder;
-                    frame.maskKey = encodeKey.encode(window.btoa(Math.random().toString() + Math.random().toString() + Math.random().toString()).replace(/0\./g, "").slice(0, 32)) as Buffer;
-                }
                 if (frame.fin === false) {
                     dashboard.sections["test-websocket"].nodes.frame_validate.style.display = "block";
                     dashboard.sections["test-websocket"].nodes.frame_validate.getElementsByTagName("em")[0].textContent = "Warning: Frame fin flag is set to false.";
-                } else if (frame.mask === true && frame.maskKey === null) {
-                    dashboard.sections["test-websocket"].nodes.frame_validate.style.display = "block";
-                    dashboard.sections["test-websocket"].nodes.frame_validate.getElementsByTagName("em")[0].textContent = "Warning: Frame mask flag is set to true but no mask key is provided.";
                 } else if ((frame.opcode > 2 && frame.opcode < 8) || frame.opcode > 10) {
                     dashboard.sections["test-websocket"].nodes.frame_validate.style.display = "block";
                     dashboard.sections["test-websocket"].nodes.frame_validate.getElementsByTagName("em")[0].textContent = "Warning: Frame opcode value is a valid but non-standard value.";
@@ -194,7 +187,26 @@ const ui_test_websocket = function ui_test_websocket():void {
                 };
             } else {
                 dashboard.sections["test-websocket"].nodes.handshake_timeout.value = dashboard.global.state.test_websocket.request_timeout;
-                dashboard.sections["test-websocket"].nodes.message_send_frame.value = dashboard.global.state.test_websocket.send_frame;
+                if (dashboard.global.state.test_websocket.send_frame === "" || location.href.includes("test_browser") === true) {
+                    dashboard.sections["test-websocket"].nodes.message_send_frame.value = `{
+    "extended": 0,
+    "fin": false,
+    "len": 0,
+    "mask": false,
+    "maskKey": "",
+    "opcode": 1,
+    "rsv1": false,
+    "rsv2": false,
+    "rsv3": false,
+    "startByte": 0,
+}`;
+                    dashboard.sections["test-websocket"].nodes.frame_validate.style.display = "block";
+                } else {
+                    dashboard.sections["test-websocket"].nodes.message_send_frame.value = dashboard.global.state.test_websocket.send_frame;
+                    if ((/frame\s*:\s*false/).test(dashboard.sections["test-websocket"].nodes.message_send_frame.value) === true) {
+                        dashboard.sections["test-websocket"].nodes.frame_validate.style.display = "block";
+                    }
+                }
                 dashboard.sections["test-websocket"].nodes.message_send_body.value = dashboard.global.state.test_websocket.send_message;
             }
         },

@@ -90,6 +90,7 @@
             li > strong,
             li > h6{width:22em}
         }
+        #disks li h4{display:inline-block;width:22em}
         #statistics-resources {
             .graphs[data-type="individual"] .section div{float:left;margin:0 0 0 -0.1em;width:calc(20% - 0.1em)}
             .graphs[data-type="individual"] .section div:first-child{margin:0}
@@ -251,7 +252,7 @@ select{background:var(--background_textarea);border-color:var(--border_input);bo
         p{float:none;width:100%}
     }
     #help ul{padding:0}
-    #test-http .from p,
+    #test-http .form p,
     #test-websocket .form p{float:none;width:100%}
     #test-http .http_response{
         p{float:left;width:calc(33% - 0.5em)}

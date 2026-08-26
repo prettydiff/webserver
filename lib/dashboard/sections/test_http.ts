@@ -64,7 +64,7 @@ const ui_test_http = function ui_test_http():void {
                 strong:HTMLCollectionOf<HTMLElement> = dashboard.sections["test-http"].nodes.stats.getElementsByTagName("strong");
             dashboard.sections["test-http"].nodes.responseBody.value = data.body;
             dashboard.sections["test-http"].nodes.responseHeaders.value = data.headers;
-            dashboard.sections["test-http"].nodes.responseURI.value = data.uri;
+            dashboard.sections["test-http"].nodes.responseURI.value = data.uri;console.log(data.stats);
             // round trip time
             strong[0].textContent = `${data.stats.time} seconds`;
             // response header size

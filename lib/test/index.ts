@@ -63,11 +63,18 @@ const test_index = function test_index():void {
                 let count:number = 0;
                 const removed = function test_index_callback_removed():void {
                     count = count + 1;
-                    if (count > 1) {
+                    if (count > 2) {
                         vars.test.total_time_end = process.hrtime.bigint();
                         test_summary(name, true);
                     }
                 };
+                // in the context of testing vars.path.project is actually ${vars.path.project}test so removing files does not harm the project runtime
+                file.remove({
+                    callback: removed,
+                    exclusions: [],
+                    location: `${vars.path.project}compose`,
+                    section: "startup"
+                });
                 file.remove({
                     callback: removed,
                     exclusions: [],

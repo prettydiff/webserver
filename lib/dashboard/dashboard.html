@@ -1393,14 +1393,14 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
             <div class="summary-stats">
                 <h3>Statistics</h3>
                 <ul>
-                    <li><span>Response Time:</span> <strong></strong></li>
-                    <li><span>Response Header Size:</span> <strong></strong></li>
-                    <li><span>Response Body Size:</span> <strong></strong></li>
-                    <li><span>Response Chunked:</span> <strong></strong></li>
-                    <li><span>Response Chunk Count:</span> <strong></strong></li>
-                    <li><span>Request Header Size:</span> <strong></strong></li>
-                    <li><span>Request Body Size:</span> <strong></strong></li>
-                    <li><span>URI Length:</span> <strong></strong></li>
+                    <li><span>Response Time:</span> <strong>0 seconds</strong></li>
+                    <li><span>Response Header Size:</span> <strong>0 bytes (0B)</strong></li>
+                    <li><span>Response Body Size:</span> <strong>0 bytes (0B)</strong></li>
+                    <li><span>Response Chunked:</span> <strong>false</strong></li>
+                    <li><span>Response Chunk Count:</span> <strong>0</strong></li>
+                    <li><span>Request Header Size:</span> <strong>0 bytes (0B)</strong></li>
+                    <li><span>Request Body Size:</span> <strong>0 bytes (0B)</strong></li>
+                    <li><span>URI Length:</span> <strong>0 bytes (0B)</strong></li>
                 </ul>
             </div>
         </div>
@@ -1556,7 +1556,7 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
                             <dt>fin</dt> <dd>A boolean value indicating whether the given frame is the final frame of a message.</dd>
                             <dt>len</dt> <dd>A number value storing the abridged frame content length.</dd>
                             <dt>mask</dt> <dd>A boolean value indicating whether the frame applies message masking.</dd>
-                            <dt>maskKey</dt> <dd>The 32 bit masking key used to unmask the frame body if the frame body were masked.</dd>
+                            <dt>maskKey</dt> <dd>The 32 bit masking key used to unmask the frame body if the frame body were masked. In the case of this testing tool the maskKey value will be created outside the web browser.</dd>
                             <dt>opcode</dt> <dd>A number value determining frame function or message body format.</dd>
                             <dt>rsv1</dt> <dd>A boolean value representing an optional bit flag that can be set for custom application preferences. This is not used by web browsers.</dd>
                             <dt>rsv2</dt> <dd>Same as rsv1.</dd>
@@ -1625,7 +1625,7 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
                         <span class="clear"></span>
                         <p class="buttons"><button disabled="disabled">Send</button></p>
                         <span class="clear"></span>
-                        <p class="frame_validate"><em></em></p>
+                        <p class="frame_validate"><em>Warning: Frame fin flag is set to false.</em></p>
                     </div>
                     <div class="form">
                         <h4>Receive</h4>

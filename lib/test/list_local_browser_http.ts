@@ -25,7 +25,19 @@ const test_listLocalBrowserHTTP = function test_listLocalBrowserHTTP():test_list
             ],
             name: "Navigate to http test",
             type: "dom",
-            unit: []
+            unit: [
+                {
+                    node: [
+                        ["getElementById", "test-http", 0],
+                        ["getElementsByClassName", "summary-stats", 0],
+                        ["getElementsByTagName", "strong", 0]
+                    ],
+                    qualifier: "is",
+                    target: ["textContent"],
+                    type: "property",
+                    value: "0 seconds"
+                }
+            ]
         },
         {
             delay: {
@@ -82,6 +94,17 @@ const test_listLocalBrowserHTTP = function test_listLocalBrowserHTTP():test_list
                     target: ["value"],
                     type: "property",
                     value: "\n<!doctype html>\n<html lang=\"en\">"
+                },
+                {
+                    node: [
+                        ["getElementById", "test-http", 0],
+                        ["getElementsByClassName", "summary-stats", 0],
+                        ["getElementsByTagName", "strong", 0]
+                    ],
+                    qualifier: "not",
+                    target: ["textContent"],
+                    type: "property",
+                    value: "0 seconds"
                 }
             ]
         }
