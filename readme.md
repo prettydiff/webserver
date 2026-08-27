@@ -41,14 +41,6 @@ Determine which features to exclude by simply setting a boolean value in the `fe
 7. Run the application: `npm run server`.
 6. Access the dashboard in a browser on the specified random port.
 
-## Performance
-The following benchmarks are executed from the application's internal *Performance Test* section.  The results are hardware specific executed using a localhost address and message size of 120 bytes across multiple experiments each comprising 10 tests.
-
-* *3,250,000 messages* in **0.002-0.006 seconds**: WebSockets, send only, not including garbage collection of system memory
-* *3,250,000 messages* in about 1 second: WebSockets, send only, includes memory garbage collection in the tests
-* *45,000 messages* in about 1 second: WebSockets, full round trip, includes memory garbage collection in the tests
-* *100 messages* in about 1 second: HTTP GET without keep alive, full round trip, includes memory garbage collection in the tests
-
 ## Nerd Stuff
 ### Shell commands
 * `npm run lint` - Executes ESLint for TypeScript to analyze the application against a bunch of draconian rules

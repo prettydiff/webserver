@@ -348,6 +348,7 @@ interface services_test_performance_input {
 
 interface services_test_performance_output {
     frame_body_size: number;
+    memory: supplemental_test_performance_data;
     message_size: number;
     quantity_tests: number;
     quantity_transmit: number;

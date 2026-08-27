@@ -136,29 +136,39 @@ const socket_extension = function transmit_socketExtension(config:config_websock
                 }
 
                 if (socket.type === "test-performance-socket" && error !== null && error !== undefined) {
-                    const output:services_test_performance_output = {
-                        frame_body_size: 0,
-                        message_size: 0,
-                        roundtrip: {
-                            average: 0,
-                            max: 0,
-                            min: 0,
-                            trials: [],
-                            variance: 0
-                        },
-                        send: {
-                            average: 0,
-                            max: 0,
-                            min: 0,
-                            trials: [],
-                            variance: 0
-                        },
-                        summary: JSON.stringify(error),
-                        quantity_tests: 0,
-                        quantity_transmit: 0,
-                        time: 0,
-                        type: "websocket"
-                    };
+                    const message:string = JSON.stringify(error),
+                        output:services_test_performance_output = {
+                            frame_body_size: 0,
+                            memory: {
+                                average: 0,
+                                max: 0,
+                                min: 0,
+                                trials: [],
+                                variance: 0
+                            },
+                            message_size: 0,
+                            roundtrip: {
+                                average: 0,
+                                max: 0,
+                                min: 0,
+                                trials: [],
+                                variance: 0
+                            },
+                            send: {
+                                average: 0,
+                                max: 0,
+                                min: 0,
+                                trials: [],
+                                variance: 0
+                            },
+                            summary: (message === "{}")
+                                ? error.message
+                                : JSON.stringify(error),
+                            quantity_tests: 0,
+                            quantity_transmit: 0,
+                            time: 0,
+                            type: "websocket"
+                        };
                     send({
                         data: output,
                         service: "services_test_performance_output"

@@ -1,7 +1,7 @@
 
 <!doctype html>
 <html lang="en">
-    <!-- cspell: words buildx, containerd, dpkg, endianness, EPROTO, healthcheck, internetwork, IRSSI, keyrings, jellyfin, journalctl, kurkle, libcap, NAPTR, PGID, POSIX, ppid, prettydiff, proxied, PUID, setgid, setuid, TLSA, uptimeimages, winget -->
+    <!-- cspell: words buildx, containerd, dpkg, endianness, EPROTO, healthcheck, internetwork, IRSSI, keyrings, jellyfin, journalctl, kurkle, libcap, NAPTR, PGID, POSIX, ppid, prettydiff, proxied, PUID, ryzen, setgid, setuid, TLSA, uptimeimages, winget -->
 <head>
 <meta charset="utf-8"/>
 <title>Server Management Dashboard</title>
@@ -1461,23 +1461,13 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
                     </p>
                     <h4>Key Findings</h4>
                     <ul>
-                        <li>TLS WebSocket transmissions are a bit faster in Node.js 26.3.1.</li>
-                        <li>This application in Node 26.3.1 on a Windows computer reports a send speed of about 3,250,000 messages a second, or about 5,000,000 in about 2.1 seconds, when garbage collection is not forced between tests.</li>
-                        <li>When garbage collection is forced between test runs the application reports a send speed of about 0.002-0.006 seconds to send 3,250,000 messages, but the experiment reports a slightly longer total duration, around 13.1 seconds for 10 tests as compared to 12.2 for 10 tests. This may indicate a fundamental performance difference between memory management in Node versus network interface buffer management in the OS kernel.</li>
-                        <li>Although this application reports slightly improved performance using TLS encryption versus an unencrypted socket Node.js will crash if too many TLS messages are queued for transport. This occurs even when pushing Node to consume 8gb of memory at start.  I have not gotten an unencrypted socket to crash in this manner, which suggests a problem with TLS execution in Node.js.</li>
-                        <li>Smaller, more numerous, message segments result in slightly slower send speeds.</li>
-                        <li>This application reports a dramatically slower performance on reading incoming messages compared to sending messages. This is likely due to a combination of segmentation and unpredictability.  When sending messages you know exactly what the data looks like and can segment it in a way that is most ideal for the local application. Messages can be segmented from a variety of factors, such as TLS 1.3 will segment messages into 16,383 bytes, and the receiving end how to account for all these factors and unpredictable network behavior.  This results in a variety of integrity schemes taking priority. While this application can send 3,250,000 in 0,004 seconds it can only send and receive messages at a rate of about 45,000 messages per second according to this tool on the tested hardware.</li>
-                        <li>This application reports only about 100 HTTP round trips serially per second.</li>
-                    </ul>
-                    <h4>Summary of Findings</h4>
-                    <p>It appears most WebSocket servers report invalid numbers if they report only message send speed. WebSocket message send is dramatically faster than WebSocket message receive.  In the case of this application is a difference of sending 3,250,000 messages as fast as 0.002 seconds compared to a send and receive speed of about 45,000 messages per second.</p>
-                    <p>Even if the total round trip speed of WebSocket messaging is dramatically slower than the most ideal case of message send speed it is still amazingly faster than HTTP at 45,000 versus 100.</p>
-                    <p>Here are the numbers from my personal Windows machine in a list:</p>
-                    <ul>
-                        <li>3,250,000 messages in 0.002 seconds for WebSocket message send with language garbage collection separated from message send instructions</li>
-                        <li>3,250,000 messages in 1 second for WebSocket send without separating language garbage collection from testing</li>
-                        <li>45,000 messages in 1 second WebSocket send and receive</li>
-                        <li>100 messages in 1 second for HTTP 1.1</li>
+                        <li>On a AMD Ryzen 9 9900X CPU this application reports a send only speed of 45,000 messages in about 0.30 seconds on Node.js 26.7.0 and Bun version 1.4.0 across a single socket.</li>
+                        <li>In Node this application reports a send speed of about 90,000 messages per 1.24 seconds and Bun throws a call stack exceeded error. Doubling the message count increases execution time 4x, which indicates the cost of instruction and memory overhead that scales slower than operation count.</li>
+                        <li>This application did not observe performance differences between send only operations and roundtrip operations in either Node or Bun regardless of message quantity size.</li>
+                        <li>This application can send 100 HTTP round trips in about 1.1 seconds on Node.js and about 0.55 seconds on Bun.</li>
+                        <li>Due to the shallow nature of the system level APIs provided by each of Node and Bun this application can push WebSocket messages onto a socket much faster than the application's JavaScript language can interpret the instructions. Due to a previous error in the application's profiler that presumed the application could push messages onto a socket's message queue, a language memory operation, faster than processing them onto the network, a CPU instruction set, it appears language interpretation speed is about 18,000x slower than the OS network message handling speed.</li>
+                        <li>Bun and Node report nearly identical performance metrics executing this application's approach to WebSockets, but Bun is nearly twice as fast on HTTP performance.</li>
+                        <li>As an aside this application formally reached conclusion that it could process WebSocket messages about 18,000x faster than the V8 language interpreter allows. This prior faulty conclusion was confirmed, as a second opinion, by one of the more popular AI tools commonly used to write software through a series of refined analysis.</li>
                     </ul>
                 </div>
             </div>
@@ -1527,6 +1517,11 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
                     <li><span>Roundtrip - Slowest Test</span> <strong>0 seconds</strong></li>
                     <li><span>Roundtrip - Variance</span> <strong>0 seconds, (0.00%)</strong></li>
                     <li><span>Roundtrip - Raw Trials (nanoseconds)</span> <strong>[]</strong></li>
+                    <li><span>Memory - Smallest Test</span> <strong>0 bytes</strong></li>
+                    <li><span>Memory - Test Average</span> <strong>0 bytes</strong></li>
+                    <li><span>Memory - Largest Test</span> <strong>0 bytes</strong></li>
+                    <li><span>Memory - Variance</span> <strong>0 bytes, (0.00%)</strong></li>
+                    <li><span>Memory - Raw Trials (bytes)</span> <strong>[]</strong></li>
                 </ul>
             </div>
         </div>
