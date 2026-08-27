@@ -231,7 +231,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                             const headerText:string[] = [
                                 "",
                                 `content-type: ${type}`,
-                                "",
+                                "transfer-encoding: chunked",
                                 `server: prettydiff/${vars.environment.name}`,
                                 "accept-ranges: bytes",
                                 ""
@@ -239,7 +239,8 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                             if (method === "HEAD") {
                                 write(headerText.join("\r\n"), true);
                             } else {
-                                let range:string = "";
+                                let range:string = "",
+                                    stream:node_fs_ReadStream = null;
                                 const status:string = (function http_get_stat_statTest_fileItem_partial():string {
                                     let index:number = headerList.length;
                                     do {
@@ -251,6 +252,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                                     } while (index > 0);
                                     return "HTTP/1.1 200";
                                 }());
+                                headerText[0] = status;
                                 if (status === "HTTP/1.1 206") {
                                     const ranges:string[] = range.split("-"),
                                         size:number = Number(stat.size),
@@ -264,38 +266,29 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                                     if (empty === true) {
                                         headerText[0] = "HTTP/1.1 200";
                                         headerText[2] = "content-length: 0";
-                                        write(headerText.join("\r\n"), true);
                                     } else {
-                                        const stream:node_fs_ReadStream = node.fs.createReadStream(input, {
+                                        stream = node.fs.createReadStream(input, {
                                             end: end,
                                             start: start
                                         });
-                                        headerText[0] = status;
-                                        headerText[2] = `content-length: ${end - start}`;
                                         if (end === size) {
                                             headerText.splice(2, 0, `content-range: bytes ${start}-${end - 1}/${size}`);
                                         } else {
                                             headerText.splice(2, 0, `content-range: bytes ${start}-${end}/${size}`);
                                         }
-                                        write(headerText.join("\r\n"), false);
-                                        stream.pipe(socket);
-                                        stream.on("close", function http_get_statTest_fileItem_close():void {
-                                            socket.destroySoon();
-                                        });
                                     }
                                 } else {
-                                    const stream:node_fs_ReadStream = node.fs.createReadStream(input);
-                                    headerText[0] = status;
-                                    headerText[2] = "transfer-encoding: chunked";
-                                    stream.on("close", function http_get_stat_statTest_fileItem_close():void {
-                                        write("\r\n0\r\n\r\n", true);
-                                    });
-                                    write(headerText.join("\r\n"), false);
-                                    stream.on("data", function http_get_stat_statTest_fileItem_data(chunk:Buffer|string):void {
-                                        write(`\r\n${Buffer.byteLength(chunk).toString(16)}\r\n`, false);
-                                        write(chunk, false);
-                                    });
+                                    stream = node.fs.createReadStream(input);
                                 }
+                                write(headerText.join("\r\n"), false);
+                                stream.on("close", function http_get_stat_statTest_fileItem_close():void {
+                                    write("\r\n0\r\n\r\n", true);
+                                    socket.destroySoon();
+                                });
+                                stream.on("data", function http_get_stat_statTest_fileItem_data(chunk:Buffer|string):void {
+                                    write(`\r\n${Buffer.byteLength(chunk).toString(16)}\r\n`, false);
+                                    write(chunk, false);
+                                });
                             }
                         };
                         if (vars.environment.file === true) {
