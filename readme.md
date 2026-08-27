@@ -34,12 +34,15 @@ Determine which features to exclude by simply setting a boolean value in the `fe
 * https://prettydiff.github.io/aphorio/screenshots/index.html
 
 ## Installation
-1. Install [Node.js](https://nodejs.org/) version 24 or later.
+1. Install one of
+   * [Node.js](https://nodejs.org/) version 25 or later.
+   * [bun](https://bun.com/)
 2. Install [git](https://git-scm.com/)
 3. Execute `git clone https://github.com/prettydiff/aphorio.git`
-4. Execute `cd aphorio`
-7. Run the application: `npm run server`.
-6. Access the dashboard in a browser on the specified random port.
+4. Run the application with any of:
+   * Node.js - `node aphorio/lib/index.ts`
+   * bun - `bun aphorio/lib/index.ts`
+5. Access the dashboard in a browser on the specified random port.
 
 ## Nerd Stuff
 ### Shell commands
