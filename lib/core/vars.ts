@@ -292,7 +292,6 @@ const vars:core_vars = {
                     pid: 0,
                     platform: "",
                     ppid: 0,
-                    sea: false,
                     uptime: 0,
                     versions: {}
                 },

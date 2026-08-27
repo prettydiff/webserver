@@ -919,7 +919,7 @@ const os = function utilities_os(type_os:type_os_services, callback:(output:sock
                         pid: process.pid,
                         platform: process.platform,
                         ppid: process.ppid,
-                        sea: node.sea.isSea(),
+                        // sea: node.sea.isSea(),
                         uptime: process.uptime(),
                         versions: process.versions
                     },

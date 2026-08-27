@@ -46,7 +46,9 @@ const assembler = function utilities_assembler(process_path:string, callback:() 
             str = str.slice(str.indexOf("{") + 1);
             str = str.slice(str.indexOf("=") + 1);
             str = str.slice(0, str.lastIndexOf("}"));
-            str = str.replace(/;\s*dashboard\.\w+\s*(\["\w+(-\w+)*"\]\s*)?=\s*\w+\s*;\s*$/, "");
+            // the (\["\w+(-\w+)*"\]) is the more literal code from the author, what Node.js expresses
+            // the (\.\w+(-\w+)*) is dot notation, which is what Bun expresses as output
+            str = str.replace(/;\s*dashboard\.\w+\s*((\["\w+(-\w+)*"\])|(\.\w+(-\w+)*))?\s*=\s*\w+\s*;\s*$/, "");
             return `${str}`;
         },
         // building out the dashboard browser object

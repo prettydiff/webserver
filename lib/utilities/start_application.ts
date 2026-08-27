@@ -978,13 +978,10 @@ const start_application = function utilities_startApplication(process_path:strin
                                 count = count + 1;
                                 if (count === total) {
                                     const time:number = Number(process.hrtime.bigint() - vars.environment.start_time),
-                                        sea:string = (node.sea.isSea() === true)
-                                            ? "Node.js Single Executable Application (SEA)"
-                                            : "regular Node.js project",
                                         logs:string[] = [
                                             "",
                                             heading("Startup Complete"),
-                                            `${asterisk} Application executed as a ${vars.text.cyan + sea + vars.text.none} at version ${vars.text.cyan + process.version + vars.text.none}.`,
+                                            `${asterisk} Application executed at Node.js API version ${vars.text.cyan + process.version + vars.text.none}.`,
                                             `${asterisk} Application completed ${vars.text.cyan + count_task + vars.text.none} startup tasks in ${vars.text.cyan + (time / 1e9) + vars.text.none} seconds.`,
                                             `${asterisk} Process ID: ${vars.text.cyan + process.pid + vars.text.none}`,
                                             "",
