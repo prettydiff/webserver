@@ -1,7 +1,7 @@
 
 import vars from "../core/vars.ts";
 
-const test_listLocalBrowserServices = function test_listLocalBrowserServices():test_list {
+const test_listLocalBrowserServicesOS = function test_listLocalBrowserServicesOS():test_list {
     const list:test_list = [
         {
             delay: {
@@ -139,4 +139,4 @@ const test_listLocalBrowserServices = function test_listLocalBrowserServices():t
     return list;
 };
 
-export default test_listLocalBrowserServices;
+export default test_listLocalBrowserServicesOS;

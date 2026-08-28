@@ -1,7 +1,7 @@
 
 import vars from "../core/vars.ts";
 
-const test_listLocalBrowserCompose = function test_listLocalBrowserCompose():test_list {
+const test_listLocalBrowserComposeContainers = function test_listLocalBrowserComposeContainers():test_list {
     const list:test_list = [
         {
             delay: {
@@ -50,4 +50,4 @@ const test_listLocalBrowserCompose = function test_listLocalBrowserCompose():tes
     return list;
 };
 
-export default test_listLocalBrowserCompose;
+export default test_listLocalBrowserComposeContainers;

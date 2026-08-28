@@ -220,7 +220,7 @@ const ui_tables = function ui_tables():void {
                     };
                 section_update("tcp");
                 section_update("udp");
-            } else if (module !== undefined) {
+            } else if (module !== undefined) {if(socket_data.data.length <1){console.log(module.dataName);console.log(new Error().stack);}
                 if (module.dataName === "ports-application") {
                     dashboard.global.payload["ports-application"] = socket_data.data as services_ports_application;
                 } else if (module.dataName === "sockets-application-tcp") {

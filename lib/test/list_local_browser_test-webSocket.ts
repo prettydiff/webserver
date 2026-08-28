@@ -1,6 +1,6 @@
 
 
-const test_listLocalBrowserWebSocket = function test_listLocalBrowserWebSocket():test_list {
+const test_listLocalBrowserTestWebSocket = function test_listLocalBrowserTestWebSocket():test_list {
     const list:test_list = [
         {
             delay: {
@@ -453,4 +453,4 @@ test insecure socket`
     return list;
 };
 
-export default test_listLocalBrowserWebSocket;
+export default test_listLocalBrowserTestWebSocket;
