@@ -43,6 +43,7 @@ const ui_global = function ui_global():void {
                         table_os: {},
                         tables: {},
                         terminal: "",
+                        test_automation: null,
                         test_performance: {
                             body: "",
                             connect_address: "",

@@ -156,6 +156,7 @@ declare global {
         performance_set: (section:type_dashboard_sections) => void;
         resize: () => void;
         setState: () => void;
+        test_browser?: (socket_data:socket_data) => void;
     }
 
     interface graph_composite {
@@ -755,6 +756,7 @@ declare global {
             };
         };
         terminal: string;
+        test_automation: services_test_browser;
         test_performance: {
             body: string;
             connect_address: string;

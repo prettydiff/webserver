@@ -40,8 +40,8 @@ Determine which features to exclude by simply setting a boolean value in the `fe
 2. Install [git](https://git-scm.com/)
 3. Execute `git clone https://github.com/prettydiff/aphorio.git`
 4. Run the application with any of:
-   * Node.js - `node aphorio/lib/index.ts`
-   * bun - `bun aphorio/lib/index.ts`
+   * Node.js - `node ./aphorio/lib/index.ts`
+   * bun - `bun ./aphorio/lib/index.ts`
 5. Access the dashboard in a browser on the specified random port.
 
 ## Nerd Stuff

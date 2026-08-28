@@ -978,10 +978,14 @@ const start_application = function utilities_startApplication(process_path:strin
                                 count = count + 1;
                                 if (count === total) {
                                     const time:number = Number(process.hrtime.bigint() - vars.environment.start_time),
+                                        bun:string = process.versions.bun,
+                                        versions:string = (bun === undefined)
+                                            ? `${asterisk} Application executed from ${vars.text.green}Node.js${vars.text.none} at version ${vars.text.cyan + process.versions.node + vars.text.none}.`
+                                            : `${asterisk} Application executed from ${vars.text.green}bun${vars.text.none} at Node.js API version ${vars.text.cyan + process.versions.node + vars.text.none} and bun version ${vars.text.cyan + bun + vars.text.none}.`,
                                         logs:string[] = [
                                             "",
                                             heading("Startup Complete"),
-                                            `${asterisk} Application executed at Node.js API version ${vars.text.cyan + process.version + vars.text.none}.`,
+                                            versions,
                                             `${asterisk} Application completed ${vars.text.cyan + count_task + vars.text.none} startup tasks in ${vars.text.cyan + (time / 1e9) + vars.text.none} seconds.`,
                                             `${asterisk} Process ID: ${vars.text.cyan + process.pid + vars.text.none}`,
                                             "",

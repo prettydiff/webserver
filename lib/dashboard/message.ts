@@ -50,7 +50,6 @@ const ui_message = function ui_message():void {
                 init("test-websocket", false);
                 init("udp-socket", false);
                 init("users", true);
-                dashboard.global.loaded = true;
                 dashboard.utility.nodes.main.style.display = "block";
                 anchor.setAttribute("href", dashboard.global.payload.repository);
                 anchor.textContent = `version ${dashboard.global.payload.version}`;
@@ -68,6 +67,7 @@ const ui_message = function ui_message():void {
                         dashboard.global.payload
                     ];
                 };
+                dashboard.global.loaded = true;
             }
         },
         receive: function dashboard_message_receive(data:string):void {
@@ -153,12 +153,12 @@ const ui_message = function ui_message():void {
                     "services_udp_status": (dashboard.sections["udp-socket"] === undefined)
                         ? null
                         : dashboard.sections["udp-socket"].receive,
-                    "services_websocket_status": (dashboard.sections["test-websocket"] === undefined)
-                        ? null
-                        : dashboard.sections["test-websocket"].transmit.status,
                     "services_websocket_message": (dashboard.sections["test-websocket"] === undefined)
                         ? null
-                        : dashboard.sections["test-websocket"].transmit.message_receive
+                        : dashboard.sections["test-websocket"].transmit.message_receive,
+                    "services_websocket_status": (dashboard.sections["test-websocket"] === undefined)
+                        ? null
+                        : dashboard.sections["test-websocket"].transmit.status
                 };
             if (message_item.service === "services_os_all") {
                 const data:services_os_all = message_item.data as services_os_all;

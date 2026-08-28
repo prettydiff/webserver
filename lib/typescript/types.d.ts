@@ -3,7 +3,7 @@
 
 
 type test_domMethod = "activeElement" | "addClass" | "childNodes" | "documentElement" | "firstChild" | "getAncestor" | "getElementById" | "getElementsByAttribute" | "getElementsByClassName" | "getElementsByName" | "getElementsByTagName" | "getElementsByText" | "getModalsByModalType" | "getNodesByType" | "lastChild" | "nextSibling" | "parentNode" | "previousSibling" | "removeClass" | "window";
-type test_eventName = "blur" | "click" | "command" | "contextmenu" | "dblclick" | "focus" | "keydown" | "keyup" | "mousedown" | "mouseenter" | "mouseleave" | "mousemove" | "mouseout" | "mouseover" | "mouseup" | "move" | "refresh-interaction" | "refresh" | "resize" | "select" | "setValue" | "touchend" | "touchstart" | "wait";
+type test_eventName = "blur" | "click" | "command" | "contextmenu" | "dblclick" | "focus" | "keydown" | "keyup" | "mousedown" | "mouseenter" | "mouseleave" | "mousemove" | "mouseout" | "mouseover" | "mouseup" | "move" | "refresh" | "resize" | "select" | "setValue" | "touchend" | "touchstart" | "wait";
 type test_primitive = bigint | boolean | number | string | null | undefined;
 type test_qualifier = "begins" | "contains" | "ends" | "greater" | "is" | "lesser" | "not contains" | "not" | "numeric";
 

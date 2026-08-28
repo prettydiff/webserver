@@ -80,7 +80,6 @@ const dashboard:dashboard = {
                         "pid": 0,
                         "platform": "",
                         "ppid": 0,
-                        "sea": false,
                         "uptime": 0,
                         "versions": {}
                     },
@@ -180,6 +179,7 @@ const dashboard:dashboard = {
             "table_os": {},
             "tables": {},
             "terminal": "",
+            "test_automation":  null,
             "test_performance": {
                 body: "",
                 connect_address: "",
@@ -350,6 +350,7 @@ const dashboard:dashboard = {
                 tbody: null
             },
             "receive": function(socket_data:socket_data):void {},
+            sort: false,
             "time": 0,
             "tools": {
                 "media_time": function(input:boolean|number|string):string {return "";}

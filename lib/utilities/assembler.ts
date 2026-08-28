@@ -49,6 +49,16 @@ const assembler = function utilities_assembler(process_path:string, callback:() 
             // the (\["\w+(-\w+)*"\]) is the more literal code from the author, what Node.js expresses
             // the (\.\w+(-\w+)*) is dot notation, which is what Bun expresses as output
             str = str.replace(/;\s*dashboard\.\w+\s*((\["\w+(-\w+)*"\])|(\.\w+(-\w+)*))?\s*=\s*\w+\s*;\s*$/, "");
+            if (fun === utility && vars.test.testing === true) {
+                let testBrowser:string = test_browser
+                    .toString();
+                testBrowser = testBrowser
+                    .slice(testBrowser.indexOf("function"))
+                    .replace(/delay\s*=\s*0/, `delay=${vars.options["delay-time"]}`)
+                    .replace(/maxTries\s*=\s*0/, `maxTries=${vars.options["delay-intervals"]}`)
+                    .replace(/\/\/ dashboard\.message\.send\(\{data:\s*test,\s*service:\s*"services_test_browser"\}\);\s+return test;/, "dashboard.message.send({data: test, service: \"services_test_browser\"});return test;");
+                str = str.replace(/\}\s*\}\s*$/, `},test_browser: ${testBrowser}}`);
+            }
             return `${str}`;
         },
         // building out the dashboard browser object
@@ -70,21 +80,15 @@ const assembler = function utilities_assembler(process_path:string, callback:() 
             flags[key] = true;
             if (flags.chart === true && flags.css === true && flags.xterm_css === true && flags.xterm_js === true) {
                 const xterm:string = xterm_js.replace(/\s*\/\/# sourceMappingURL=xterm\.js\.map/, ""),
-                    chart:string = chart_js.replace(/\/\/# sourceMappingURL=chart\.umd.min\.js\.map\s*$/, ""),
-                    testBrowser:string = (vars.test.testing === true)
-                        ? test_browser
-                            .toString()
-                            .replace(/delay\s*=\s*0/, `delay=${vars.options["delay-time"]}`)
-                            .replace(/maxTries\s*=\s*0/, `maxTries=${vars.options["delay-intervals"]}`)
-                            .replace(/\/\/ dashboard\.message\.send\(\{data:\s*test,\s*service:\s*"services_test_browser"\}\);\s+return test;/, "dashboard.message.send({data: test, service: \"services_test_browser\"});return test;")
-                        : null;
+                    chart:string = chart_js.replace(/\/\/# sourceMappingURL=chart\.umd.min\.js\.map\s*$/, "");
                 let total_script:string = null,
                     script:string = dashboard.join("\n")
                         .replace("path: \"\",", `path: "${vars.path.project.replace(/\\/g, "\\\\")
                         .replace(/"/g, "\\\"")}",`)
                         .replace(/\(\s*\)/, "(core)");
                 if (vars.test.testing === true) {
-                    script = script.replace("\"services_test_browser\": null,", `"services_test_browser": ${testBrowser},`);
+                    script = script.replace("\"services_test_browser\": null,", `"services_test_browser": dashboard.utility.test_browser,`)
+                        .replace(/dashboard\.global\.loaded\s*=\s*true;/, "dashboard.global.loaded=true;if(dashboard.global.state.test_automation!==null){dashboard.utility.test_browser({data:dashboard.global.state.test_automation,service:\"services_test_browser\"});}");
                 }
                 total_script = `${chart + xterm}const universal={bytes:${universal.bytes.toString()},bytes_big:${universal.bytes_big.toString()},capitalize:${universal.capitalize.toString()},commas:${universal.commas.toString()},dateTime:${universal.dateTime.toString()},time_elapsed:${universal.time_elapsed.toString()}};(${script}(${core.toString()}));`;
                 vars.environment.dashboard_page = vars.environment.dashboard_page

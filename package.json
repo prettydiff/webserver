@@ -40,8 +40,10 @@
         "url": "git+https://github.com/prettydiff/aphorio.git"
     },
     "scripts": {
-        "server": "node --max-old-space-size=8192 ./lib/index.ts",
-        "test":   "node ./lib/index.ts test",
+        "server-bun": "bun ./lib/index.ts",
+        "server-node": "node ./lib/index.ts",
+        "test-bun":   "bun ./lib/index.ts test",
+        "test-node":   "node ./lib/index.ts test",
         "tsc":    "node ./node_modules/typescript/bin/tsc --pretty"
     },
     "types": "/lib/typescript",

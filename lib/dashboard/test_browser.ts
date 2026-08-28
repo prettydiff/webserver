@@ -1,4 +1,6 @@
 
+import dashboard from "./dashboard.ts";
+
 const test_browser = function testBrowser(socketData:socket_data):void {
     const remote:module_remote = {
 
@@ -46,7 +48,7 @@ const test_browser = function testBrowser(socketData:socket_data):void {
         // eslint-disable-next-line
         error: function testBrowser_error(message:string, source:string, line:number, col:number, error:Error):void {
             remote.sendTest([{
-                assessment: "",
+                assessment: message,
                 location: "",
                 pass: false,
                 store: false,
@@ -341,12 +343,8 @@ const test_browser = function testBrowser(socketData:socket_data):void {
             if (item.index > remote.index || remote.index < 0) {
                 remote.index = item.index;
                 remote.suite_name = item.suite_name;
-                let a:number = 0,
-                    refresh:boolean = false;
                 const complete = function testBrowser_event_complete():void {
-                        if (refresh === false) {
-                            remote.delay(item.test);
-                        }
+                        remote.delay(item.test);
                     },
                     action = function testBrowser_event_action(index:number):void {
                         let element:HTMLElement,
@@ -356,11 +354,10 @@ const test_browser = function testBrowser(socketData:socket_data):void {
                         do {
                             config = item.test.interaction[index];
                             if (config.event === "refresh") {
-                                if (index === 0) {
-                                    location.reload();
-                                } else {
-                                    remote.error("The event 'refresh' was provided not as the first event of a test", "", 0, 0, null);
-                                }
+                                item.test.event_index = index + 1;
+                                dashboard.global.state.test_automation = item;
+                                localStorage.state = JSON.stringify(dashboard.global.state);
+                                location.reload();
                                 return;
                             }
                             if (config.event === "wait") {
@@ -389,7 +386,7 @@ const test_browser = function testBrowser(socketData:socket_data):void {
                                     return;
                                 }
                                 window.resizeTo(Number(config.coords[0]), Number(config.coords[1]));
-                            } else if (config.event !== "refresh-interaction") {
+                            } else {
                                 element = remote.node(config.node, null);
                                 if (remote.domFailure === true) {
                                     remote.domFailure = false;
@@ -485,23 +482,13 @@ const test_browser = function testBrowser(socketData:socket_data):void {
                         ? 0
                         : item.test.interaction.length;
                 remote.test_item = item;
-                if (eventLength > 0) {
-                    do {
-                        if (item.test.interaction[a].event === "refresh-interaction") {
-                            if (pageLoad === true) {
-                                remote.delay(item.test);
-                                return;
-                            }
-                            refresh = true;
-                            break;
-                        }
-                        a = a + 1;
-                    } while (a < eventLength);
-                }
-                if (item.test.interaction === null || item.test.interaction.length < 1) {
+                if (item.test.interaction === null || item.test.interaction.length < 1 || item.test.event_index >= item.test.interaction.length) {
                     complete();
                 } else {
-                    action(0);
+                    action((item.test.event_index === null || item.test.event_index === undefined)
+                        ? 0
+                        : item.test.event_index
+                    );
                 }
             }
         },
@@ -739,15 +726,15 @@ const test_browser = function testBrowser(socketData:socket_data):void {
         const data:services_test_browser = socketData.data as services_test_browser;
         // eslint-disable-next-line
         console.log(`On browser receive index ${data.index} of suite "${data.suite_name}"`);
+        if (dashboard.global.state.test_automation !== null) {
+            dashboard.global.state.test_automation = null;
+            localStorage.state = JSON.stringify(dashboard.global.state);
+        }
         remote.magicString = data.magicString;
         remote.store = data.store;
         remote.suite_name = data.suite_name;
         if (data.index === -10) {
             window.close();
-            return;
-        }
-        if (data.index === -20) {
-            location.reload();
             return;
         }
         if (Array.isArray(data.result) === true && data.result.length > 0) {

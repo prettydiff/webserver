@@ -12,9 +12,11 @@ import test_listLocalBrowserHash from "./list_local_browser_hash.ts";
 import test_listLocalBrowserHelp from "./list_local_browser_help.ts";
 import test_listLocalBrowserHTTP from "./list_local_browser_http.ts";
 import test_listLocalBrowserInterfaces from "./list_local_browser_interfaces.ts";
+import test_listLocalBrowserNotes from "./list_local_browser_notes.ts";
 import test_listLocalBrowserOS from "./list_local_browser_os.ts";
 import test_listLocalBrowserProcesses from "./list_local_browser_processes.ts";
 import test_listLocalBrowserServices from "./list_local_browser_services.ts";
+import test_listLocalBrowserServicesApp from "./list_local_browser_services_app.ts";
 import test_listLocalBrowserSocketsApplicationTCP from "./list_local_browser_sockets_application_tcp.ts";
 import test_listLocalBrowserSocketsOS_TCP from "./list_local_browser_sockets_os_tcp.ts";
 import test_listLocalBrowserSocketsOS_UDP from "./list_local_browser_sockets_os_udp.ts";
@@ -42,9 +44,11 @@ const test_index = function test_index():void {
                 test_listLocalBrowserHelp(),
                 test_listLocalBrowserHTTP(),
                 test_listLocalBrowserInterfaces(),
+                test_listLocalBrowserNotes(),
                 test_listLocalBrowserOS(),
                 test_listLocalBrowserProcesses(),
                 test_listLocalBrowserServices(),
+                test_listLocalBrowserServicesApp(),
                 test_listLocalBrowserSocketsApplicationTCP(),
                 test_listLocalBrowserSocketsOS_TCP(),
                 test_listLocalBrowserSocketsOS_UDP(),
