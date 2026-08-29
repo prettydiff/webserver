@@ -673,7 +673,7 @@ const test_browser = function testBrowser(socketData:socket_data):void {
         report: function testBrowser_report(delay:test_assertion_dom, test:test_assertion_dom[], index:number):void {
             let a:number = 0;
             const result:test_assert[] = [],
-                length:number = test.length;console.log(test);
+                length:number = test.length;
             if (delay !== undefined && delay !== null) {
                 result.push(remote.evaluate(delay));
                 if (remote.domFailure === true) {

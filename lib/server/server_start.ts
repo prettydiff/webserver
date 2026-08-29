@@ -75,7 +75,7 @@ const server_start = function server_start(id:string, callback:(name:string) => 
                     status: "error",
                     time: Date.now()
                 });
-                if (vars.environment.loading === true) {
+                if (vars.environment.loading === true && ser !== null) {
                     // eslint-disable-next-line no-console
                     console.log(ser);
                 }

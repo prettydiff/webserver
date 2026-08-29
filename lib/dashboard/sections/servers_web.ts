@@ -336,7 +336,16 @@ const ui_servers_web = function ui_servers_web():void {
                     populate(false, "Required property 'name' is not assigned an appropriate string value.");
                 }
                 // ports
-                if ((serverData.ports.open === 0 && (serverData.encryption === "both" || serverData.encryption === "open")) || (serverData.ports.secure === 0 && (serverData.encryption === "both" || serverData.encryption === "secure"))) {
+                if (serverData.encryption === "open" && serverData.ports.secure === undefined) {
+                    serverData.ports.secure = 0;
+                }
+                if (serverData.encryption === "secure" && serverData.ports.open === undefined) {
+                    serverData.ports.open = 0;
+                }
+                if (
+                    (serverData.ports.open === 0 && (serverData.encryption === "both" || serverData.encryption === "open")) ||
+                    (serverData.ports.secure === 0 && (serverData.encryption === "both" || serverData.encryption === "secure"))
+                ) {
                     populate(null, "A port value of 0 will assign a randomly available port from the local machine. A number greater than 0 and less than 65535 is preferred.");
                 }
                 key_test({
