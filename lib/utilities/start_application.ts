@@ -482,11 +482,14 @@ const start_application = function utilities_startApplication(process_path:strin
                                 const lines:string[] = raw.toString().split("\n"),
                                     store:[string, string][] = [],
                                     len:number = lines.length;
-                                let index:number = len;
+                                let index:number = len,
+                                    store_len:number = 0;
                                 do {
                                     index = index - 1;
-                                    lines[index] = lines[index].replace(/\s*=\s*/, "=");
-                                    store.push([lines[index].slice(0, lines[index].indexOf("=")), lines[index].slice(lines[index].indexOf("=") + 1)]);
+                                    if ((/^\s*$/).test(lines[index]) === false) {
+                                        lines[index] = lines[index].replace(/\s*=\s*/, "=");
+                                        store.push([lines[index].slice(0, lines[index].indexOf("=")), lines[index].slice(lines[index].indexOf("=") + 1)]);
+                                    }
                                 } while (index > 0);
                                 store.sort(function utilities_startApplication_composeVariables_read_sort(a:[string, string], b:[string, string]):-1|1 {
                                     if (a[0] < b[0]) {
@@ -495,10 +498,13 @@ const start_application = function utilities_startApplication(process_path:strin
                                     return 1;
                                 });
                                 index = 0;
-                                do {
-                                    vars.data.compose_variables[store[index][0]] = store[index][1];
-                                    index = index + 1;
-                                } while (index < len);
+                                store_len = store.length;
+                                if (store_len > 0) {
+                                    do {
+                                        vars.data.compose_variables[store[index][0]] = store[index][1];
+                                        index = index + 1;
+                                    } while (index < store_len);
+                                }
                             }
                             complete_tasks("compose_variables");
                         },
@@ -1102,12 +1108,11 @@ const start_application = function utilities_startApplication(process_path:strin
                                         len = keys.length;
                                         if (len > 0) {
                                             let index_ports:number = 0,
-                                                len_ports:number = 0;
+                                                len_ports:number = 0,
+                                                title:boolean = false;
                                             index = 0;
                                             longest = [0, 3, 0];
                                             keys.sort();
-                                            logs.push("");
-                                            logs.push(heading("Container Ports"));
                                             do {
                                                 if (vars.data.containers[keys[index]].name.length > longest[0]) {
                                                     longest[0] = vars.data.containers[keys[index]].name.length;
@@ -1121,6 +1126,11 @@ const start_application = function utilities_startApplication(process_path:strin
                                                     ? 0
                                                     : ports.length;
                                                 if (len_ports > 0) {
+                                                    if (title === false) {
+                                                        logs.push("");
+                                                        logs.push(heading("Container Ports"));
+                                                        title = true;
+                                                    }
                                                     longest[2] = 0;
                                                     ports.sort(sort);
                                                     index_ports = 0;

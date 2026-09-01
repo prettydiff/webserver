@@ -33,7 +33,7 @@ const docker:core_module_docker = {
         if (vars.os.main.process.admin === true || process.platform === "win32") {
             const child = function services_docker_list_child(output:core_spawn_output):void {
                 const stdout:string = output.stdout.trim();
-                if (stdout.charAt(0) !== "{" || stdout.charAt(stdout.length - 1) !== "}") {
+                if (stdout !== "" && (stdout.charAt(0) !== "{" || stdout.charAt(stdout.length - 1) !== "}")) {
                     const str:string = `${output.stderr.replace("error during connect: ", "")}`;
                     log.application({
                         error: null,
@@ -43,10 +43,7 @@ const docker:core_module_docker = {
                         status: "error",
                         time: now
                     });
-                    complete((str === "")
-                        ? "Format error on docker compose process list."
-                        : str
-                    );
+                    complete(str);
                 } else {
                     const counts:store_number = {},
                         addresses:string[] = [],
@@ -248,6 +245,8 @@ const docker:core_module_docker = {
                                 }
                                 index = index + 1;
                             } while (index < len);
+                        } else {
+                            complete_ps();
                         }
                     }
                 }
