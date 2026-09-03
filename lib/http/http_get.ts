@@ -18,9 +18,9 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
             ? "HEAD"
             : "GET",
         server_id:string = socket.server_hash,
-        path:string = `${vars.path.servers + server_id + vars.path.sep}assets${vars.path.sep}`,
         resource:string = index0[1],
         asset:string[] = resource.split("/"),
+        path:string = `${vars.path.servers + server_id + vars.path.sep}assets${vars.path.sep}`,
         fileFragment:string = asset.join(vars.path.sep).replace(/^(\\|\/)/, ""),
         payload = function http_get_payload(heading:string[], body:string):string {
             if (method === "HEAD") {
@@ -141,7 +141,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
         stat = function http_get_stat(input:string):void {
             const statTest = function http_get_stat_statTest(stat:node_fs_BigIntStats):void {
                 const directory_item = function http_get_stat_statTest_directoryItem():void {
-                        const indexFile:string = `${input.replace(/\\|\/$/, "") + vars.path.sep}index.html`;
+                        const indexFile:string = `${input.replace(/(\\|\/)$/, "") + vars.path.sep}index.html`;
                         file.stat({
                             callback: function http_get_stat_statItem_directoryItem_callback():void {
                                 input = indexFile;
@@ -351,7 +351,19 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                 if (stat.isFile() === true) {
                     fileItem();
                 } else if (stat.isDirectory() === true) {
-                    directory_item();
+                    if (input.charAt(input.length - 1) === vars.path.sep) {
+                        directory_item();
+                    } else {
+                        const headers:string[] = [
+                            "HTTP/1.1 308 Permanent Redirect",
+                            `Location: ${resource}/`,
+                            "Content-Type: text/html; charset=UTF-8",
+                            "Content-Length: 0",
+                            "",
+                            ""
+                        ];
+                        write(headers.join("\r\n"), true);
+                    }
                 } else {
                     notFound();
                 }
