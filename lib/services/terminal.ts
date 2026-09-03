@@ -36,6 +36,7 @@ const terminal:core_module_terminal = {
                 name: socket.server_hash,
                 rows: config.rows
             }),
+            demo:boolean = vars.options.demo,
             close = function services_terminalShell_close():void {
                 pty.kill();
             },
@@ -53,7 +54,38 @@ const terminal:core_module_terminal = {
                 close();
             },
             handler = function services_terminalShell_handler(socket:websocket_client, data:Buffer):void {
-                pty.write(data.toString());
+                if (demo === true) {
+                    const str:string = data.toString(),
+                        ending:string = (process.platform === "win32")
+                            ? "\r"
+                            : "\n";
+                    if (str === "l") {
+                        pty.write("l");
+                        pty.write("s");
+                        pty.write(ending);
+                    } else if (str === "c") {
+                        pty.write("c");
+                        pty.write("a");
+                        pty.write("t");
+                        pty.write(" ");
+                        pty.write("f");
+                        pty.write("e");
+                        pty.write("a");
+                        pty.write("t");
+                        pty.write("u");
+                        pty.write("r");
+                        pty.write("e");
+                        pty.write("s");
+                        pty.write(".");
+                        pty.write("j");
+                        pty.write("s");
+                        pty.write("o");
+                        pty.write("n");
+                        pty.write(ending);
+                    }
+                } else {
+                    pty.write(data.toString());
+                }
             },
             out = function services_terminalShell_out(output:string):void {
                 send(output, socket, 1);

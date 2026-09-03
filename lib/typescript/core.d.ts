@@ -346,6 +346,7 @@ interface core_vars_environment {
     css_complete: string;
     dashboard_page: string;
     date_commit: number;
+    demo_kill: number;
     features: {
         "application-logs": boolean;
         "compose-containers": boolean;
@@ -405,6 +406,7 @@ interface core_vars_options {
     "browser": string;
     "delay-intervals": number;
     "delay-time": number;
+    "demo": boolean;
     "list": string;
     "no-color": boolean;
     "no-exit": boolean;

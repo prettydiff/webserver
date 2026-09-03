@@ -70,6 +70,7 @@ All arguments are supported only on the server command, example: `npm run server
 * `test`                     - If present this option instructs the application to execute test automation.
 
 ##### General Use Options
+* `demo`                      - Runs the application in demo mode where some functionality is disabled and no changes are written to disk.
 * `no-color`                  - Eliminates use of ANSI color codes in terminal output.
 * `port-open:<port_number>`   - Creates an insecure instance of the dashboard server on the specified insecure port, if that port is open.
 * `port-secure:<port_number>` - Creates a secure instance of the dashboard server on the specified insecure port, if that port is open.

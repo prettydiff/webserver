@@ -50,7 +50,7 @@ const server_create = function services_serverCreate(data:services_server_action
                             time: Date.now()
                         });
                         // 4. launch servers
-                        if (config.activate === true && config.id !== vars.id.dashboard_server) {
+                        if (config.activate === true && vars.options.demo === false && config.id !== vars.id.dashboard_server) {
                             server_start(data.server.id, serverCallback);
                         } else if (callback !== null) {
                             callback();
@@ -73,6 +73,9 @@ const server_create = function services_serverCreate(data:services_server_action
             if (vars.data.server[output.hash] === undefined) {
                 // 1. add server to the vars.data.servers object
                 config.id = output.hash;
+                if (vars.options.demo === true) {
+                    config.encryption = "open";
+                }
                 if (vars.data.server[config.id] === undefined) {
                     if (dashboard === true) {
                         vars.id.dashboard_server = output.hash;
@@ -92,11 +95,16 @@ const server_create = function services_serverCreate(data:services_server_action
                     }
                     vars.data.server[config.id] = {
                         certificates_client: {
-                            crt: "",
-                            pfx: ""
+                            crt: (config.encryption === "open")
+                                ? "no certificates on open servers"
+                                : "",
+                            pfx: (config.encryption === "open")
+                                ? "no certificates on open servers"
+                                : ""
                         },
                         config: config,
-                        ports: config.ports
+                        ports: config.ports,
+                        sockets: []
                     };
                     vars.data_store.server[config.id] = {
                         server_certs: null,

@@ -386,6 +386,7 @@ const connection = function transmit_connection(this:core_server_instance, TLS_s
                                                         variables: vars.data.compose_variables
                                                     }
                                                     : null,
+                                                demo: vars.options.demo,
                                                 hashes: (vars.environment.features["hash"] === true)
                                                     ? vars.environment.hashes
                                                     : null,

@@ -155,6 +155,13 @@ const fileSystem = function services_fileSystem(socket_data:socket_data, transmi
             search: data.search,
             symbolic: true
         };
+    if (vars.options.demo === true) {
+        if (config_parent.path.includes(vars.path.project) === false) {
+            config_parent.path = vars.path.project;
+            data.address = vars.path.project;
+            service.address = vars.path.project;
+        }
+    }
     node.fs.stat(data.address, function services_fileSystem_stat(ers:node_error):void {
         if (ers === null) {
             directory(config_parent);

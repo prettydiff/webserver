@@ -218,18 +218,22 @@ const certificate = function services_certificate(config:config_certificate):voi
                 section: "servers-web"
             });
         };
-    file.stat({
-        callback: cert,
-        location: cert_path,
-        no_file: function services_certificate_mkdir():void {
-            file.mkdir({
-                callback: cert,
-                location: cert_path,
-                section: "servers-web"
-            });
-        },
-        section: "servers-web"
-    });
+    if (vars.options.demo === true) {
+        config.callback();
+    } else {
+        file.stat({
+            callback: cert,
+            location: cert_path,
+            no_file: function services_certificate_mkdir():void {
+                file.mkdir({
+                    callback: cert,
+                    location: cert_path,
+                    section: "servers-web"
+                });
+            },
+            section: "servers-web"
+        });
+    }
 };
 
 export default certificate;

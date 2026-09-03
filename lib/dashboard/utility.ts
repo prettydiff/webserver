@@ -159,8 +159,8 @@ const ui_utility = function ui_utility():void {
             }
         },
         // provides server status information
-        clock: function dashboard_utility_clock(data_item:socket_data):void {
-            const data:services_status_clock = data_item.data as services_status_clock,
+        clock: function dashboard_utility_clock(socket_data:socket_data):void {
+            const data:services_status_clock = socket_data.data as services_status_clock,
                 str = function dashboard_utility_clock_srt(num:number):string {
                     const date:Date = new Date(num),
                         hour:string = String(date.getHours()),
@@ -178,10 +178,21 @@ const ui_utility = function ui_utility():void {
                     return `${hours}:${minutes}:${seconds}`;
                 };
             dashboard.utility.nodes.clock.setAttribute("data-local", String(data.time_local));
-            dashboard.utility.nodes.clock.textContent = `${str(data.time_local)}L (${str(data.time_zulu)}Z)`;
+            if (data.time_zulu === data.time_local) {
+                dashboard.utility.nodes.clock.textContent = `${str(data.time_local)}Z`;
+            } else {
+                dashboard.utility.nodes.clock.textContent = `${str(data.time_local)}L (${str(data.time_zulu)}Z)`;
+            }
+        },
+        clock_demo: function dashboard_utility_clockDemo(socket_data:socket_data):void {
+            if (dashboard.global.payload.demo === true) {
+                const data:services_status_clock_demo = socket_data.data as services_status_clock_demo;
+                dashboard.utility.nodes.clock_demo.textContent = data.remaining;
+            }
         },
         nodes: {
             clock: document.getElementById("clock").getElementsByTagName("time")[0],
+            clock_demo: document.getElementById("demo-mode").getElementsByTagName("p")[1].getElementsByTagName("strong")[0],
             load: document.getElementsByClassName("title")[0].getElementsByTagName("time")[0],
             main: document.getElementsByTagName("main")[0]
         },

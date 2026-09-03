@@ -146,9 +146,11 @@ declare global {
 
     interface dashboard_utility {
         baseline: () => void;
-        clock: (data_item:socket_data) => void;
+        clock: (socket_data:socket_data) => void;
+        clock_demo: (socket_data:socket_data) => void;
         nodes: {
             clock: HTMLElement;
+            clock_demo: HTMLElement;
             load: HTMLElement;
             main: HTMLElement;
         };
@@ -338,6 +340,7 @@ declare global {
         nodes: {
             body: HTMLElement;
             cols: HTMLElement;
+            demo_containers: HTMLElement;
             list: HTMLElement;
             list_variables: HTMLElement;
             new_container: HTMLButtonElement;
@@ -588,6 +591,7 @@ declare global {
         item: Terminal;
         nodes: {
             cols: HTMLElement;
+            demo_terminal: HTMLElement;
             output: HTMLElement;
             rows: HTMLElement;
             select: HTMLSelectElement;

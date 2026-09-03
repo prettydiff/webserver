@@ -15,6 +15,7 @@ const dashboard:dashboard = {
                 "time": 0,
                 "variables": {}
             },
+            "demo": false,
             "hashes": [""],
             "http_request": "",
             id: {
@@ -247,6 +248,7 @@ const dashboard:dashboard = {
             "nodes": {
                 body: null,
                 cols: null,
+                demo_containers: null,
                 list: null,
                 list_variables: null,
                 new_container: null,
@@ -689,6 +691,7 @@ const dashboard:dashboard = {
             "item": null,
             "nodes": {
                 cols: null,
+                demo_terminal: null,
                 output: null,
                 rows: null,
                 select: null
@@ -873,8 +876,10 @@ const dashboard:dashboard = {
     utility: {
         "baseline": function():void {},
         "clock": function(socket_data:socket_data):void {},
+        "clock_demo": function(socket_data:socket_data):void {},
         "nodes": {
             clock: null,
+            clock_demo: null,
             load: null,
             main: null
         },

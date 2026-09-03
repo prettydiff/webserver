@@ -110,9 +110,9 @@ const websocket_test:websocket_test = {
             } while (index > 0);
 
             // set host to loopback if not found
-            if (host === "") {
+            if (vars.options.demo === true || host === "") {
                 config.ip = "127.0.0.1";
-                config.port = (data.encryption === true)
+                config.port = (data.encryption === true && vars.options.demo === false)
                     ? vars.data.server[vars.id.dashboard_server].ports.secure
                     : vars.data.server[vars.id.dashboard_server].ports.open;
             // discern host value from IPv6 address plus specified port

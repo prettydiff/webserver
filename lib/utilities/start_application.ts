@@ -2,6 +2,7 @@
 import assembler from "./assembler.ts";
 import broadcast from "../transmit/broadcast.ts";
 import clock from "../services/clock.ts";
+import clock_demo from "../services/clock_demo.ts";
 import directory from "./directory.ts";
 import docker from "../services/docker.ts";
 import file from "./file.ts";
@@ -19,7 +20,7 @@ import test_index from "../test/index.ts";
 import universal from "../core/universal.ts";
 import vars from "../core/vars.ts";
 
-// cspell: words serv, stcp, sudp
+// cspell: words serv, stcp, sudp, tskey
 
 const start_application = function utilities_startApplication(process_path:string):void {
     // prerequisite tasks will execute first in the order presented
@@ -170,8 +171,8 @@ const start_application = function utilities_startApplication(process_path:strin
             compose: {
                 label: "Restores the docker compose containers if docker is available.",
                 task: function utilities_startApplication_compose():void {
-                    docker.shell_start();
                     if (vars.environment.features["compose-containers"] === true) {
+                        docker.shell_start();
                         docker.list(start_prerequisites);
                     } else {
                         start_prerequisites();
@@ -262,7 +263,8 @@ const start_application = function utilities_startApplication(process_path:strin
                                         ports: {
                                             open: 0,
                                             secure: 0
-                                        }
+                                        },
+                                        sockets: []
                                     };
                                     vars.data_store.server[server.id] = {
                                         server_certs: {
@@ -282,14 +284,16 @@ const start_application = function utilities_startApplication(process_path:strin
                                 }
                             } while (index_srv > 0);
                         }
-                        do {
-                            index_int = index_int - 1;
-                            sub = interfaces[keys_int[index_int]].length;
+                        if (index_int > 0) {
                             do {
-                                sub = sub - 1;
-                                includes(interfaces[keys_int[index_int]][sub].address);
-                            } while (sub > 0);
-                        } while (index_int > 0);
+                                index_int = index_int - 1;
+                                sub = interfaces[keys_int[index_int]].length;
+                                do {
+                                    sub = sub - 1;
+                                    includes(interfaces[keys_int[index_int]][sub].address);
+                                } while (sub > 0);
+                            } while (index_int > 0);
+                        }
                         if (typeof vars.id.machine === "string" && vars.id.machine.length > 0) {
                             start_prerequisites();
                         } else {
@@ -308,12 +312,16 @@ const start_application = function utilities_startApplication(process_path:strin
                             });
                         }
                     };
-                    file.read({
-                        callback: callback,
-                        location: `${vars.path.project}servers.json`,
-                        no_file: null,
-                        section: "startup"
-                    });
+                    if (vars.options.demo === true) {
+                        callback(null);
+                    } else {
+                        file.read({
+                            callback: callback,
+                            location: `${vars.path.project}servers.json`,
+                            no_file: null,
+                            section: "startup"
+                        });
+                    }
                 }
             }
         },
@@ -406,7 +414,7 @@ const start_application = function utilities_startApplication(process_path:strin
             cgroup: {
                 label: "Find Linux cgroup address for gathering precision docker performance metrics.",
                 task: function utilities_startApplication_cgroup():void {
-                    if (vars.environment.features["compose-containers"] === true && vars.environment.compose_status === "" && (vars.os.main.process.admin === true || process.platform === "win32")) {
+                    if (vars.options.demo === false && vars.environment.features["compose-containers"] === true && vars.environment.compose_status === "" && (vars.os.main.process.admin === true || process.platform === "win32")) {
                         const command:string = (process.platform === "win32")
                                 ? vars.commands.docker_read.replace("cat address", "systemctl status containerd")
                                 : "systemctl status containerd",
@@ -476,42 +484,55 @@ const start_application = function utilities_startApplication(process_path:strin
             compose_variables: {
                 label: "Gathering stored docker compose variables.",
                 task: function utilities_startApplication_composeVariables():void {
-                    file.read({
-                        callback: function utilities_startApplication_composeVariables_read(raw:Buffer):void {
-                            if (raw !== null) {
-                                const lines:string[] = raw.toString().split("\n"),
-                                    store:[string, string][] = [],
-                                    len:number = lines.length;
-                                let index:number = len,
-                                    store_len:number = 0;
-                                do {
-                                    index = index - 1;
-                                    if ((/^\s*$/).test(lines[index]) === false) {
-                                        lines[index] = lines[index].replace(/\s*=\s*/, "=");
-                                        store.push([lines[index].slice(0, lines[index].indexOf("=")), lines[index].slice(lines[index].indexOf("=") + 1)]);
-                                    }
-                                } while (index > 0);
-                                store.sort(function utilities_startApplication_composeVariables_read_sort(a:[string, string], b:[string, string]):-1|1 {
-                                    if (a[0] < b[0]) {
-                                        return -1;
-                                    }
-                                    return 1;
-                                });
-                                index = 0;
-                                store_len = store.length;
-                                if (store_len > 0) {
+                    if (vars.options.demo === true) {
+                        vars.data.compose_variables = {
+                            APP_DISK: "/path_to_apps",
+                            DATA_DISK: "/path_to_disk",
+                            PASSWORD: "1234",
+                            TAILSCALE_KEY: "tskey-auth-asdf-1234",
+                            TAILSCALE_OAUTH_CLIENT: "asdf_1234",
+                            TAILSCALE_OAUTH_SECRET: "tskey-client-asdf-1234",
+                            TZ: "America/Chicago"
+                        };
+                        complete_tasks("compose_variables");
+                    } else {
+                        file.read({
+                            callback: function utilities_startApplication_composeVariables_read(raw:Buffer):void {
+                                if (raw !== null) {
+                                    const lines:string[] = raw.toString().split("\n"),
+                                        store:[string, string][] = [],
+                                        len:number = lines.length;
+                                    let index:number = len,
+                                        store_len:number = 0;
                                     do {
-                                        vars.data.compose_variables[store[index][0]] = store[index][1];
-                                        index = index + 1;
-                                    } while (index < store_len);
+                                        index = index - 1;
+                                        if ((/^\s*$/).test(lines[index]) === false) {
+                                            lines[index] = lines[index].replace(/\s*=\s*/, "=");
+                                            store.push([lines[index].slice(0, lines[index].indexOf("=")), lines[index].slice(lines[index].indexOf("=") + 1)]);
+                                        }
+                                    } while (index > 0);
+                                    store.sort(function utilities_startApplication_composeVariables_read_sort(a:[string, string], b:[string, string]):-1|1 {
+                                        if (a[0] < b[0]) {
+                                            return -1;
+                                        }
+                                        return 1;
+                                    });
+                                    index = 0;
+                                    store_len = store.length;
+                                    if (store_len > 0) {
+                                        do {
+                                            vars.data.compose_variables[store[index][0]] = store[index][1];
+                                            index = index + 1;
+                                        } while (index < store_len);
+                                    }
                                 }
-                            }
-                            complete_tasks("compose_variables");
-                        },
-                        location: `${process_path}compose${vars.path.sep}.env`,
-                        no_file: null,
-                        section: "startup"
-                    });
+                                complete_tasks("compose_variables");
+                            },
+                            location: `${process_path}compose${vars.path.sep}.env`,
+                            no_file: null,
+                            section: "startup"
+                        });
+                    }
                 }
             },
             file: {
@@ -957,7 +978,9 @@ const start_application = function utilities_startApplication(process_path:strin
                             "127.0.0.1",
                             "::1"
                         ],
-                        encryption: "both",
+                        encryption: (vars.options.demo === true)
+                            ? "open"
+                            : "both",
                         id: "",
                         message_segmentation: 1e6,
                         mutual_tls: false,
@@ -988,11 +1011,15 @@ const start_application = function utilities_startApplication(process_path:strin
                                         versions:string = (bun === undefined)
                                             ? `${asterisk} Application executed from ${vars.text.green}Node.js${vars.text.none} at version ${vars.text.cyan + process.versions.node + vars.text.none}.`
                                             : `${asterisk} Application executed from ${vars.text.green}bun${vars.text.none} at Node.js API version ${vars.text.cyan + process.versions.node + vars.text.none} and bun version ${vars.text.cyan + bun + vars.text.none}.`,
+                                        demo:string = (vars.options.demo === true)
+                                            ? `${vars.text.angry}demo${vars.text.none}`
+                                            : `${vars.text.green}service${vars.text.none}`,
                                         logs:string[] = [
                                             "",
                                             heading("Startup Complete"),
                                             versions,
                                             `${asterisk} Application completed ${vars.text.cyan + count_task + vars.text.none} startup tasks in ${vars.text.cyan + (time / 1e9) + vars.text.none} seconds.`,
+                                            `${asterisk} Application is running in ${demo} mode.`,
                                             `${asterisk} Process ID: ${vars.text.cyan + process.pid + vars.text.none}`,
                                             "",
                                             heading("Web Server Ports"),
@@ -1150,6 +1177,10 @@ const start_application = function utilities_startApplication(process_path:strin
                                             } while (index < len);
                                         }
                                         log.shell(logs, true);
+
+                                        if (vars.options.demo === true) {
+                                            process.stderr.write(vars.data.server[vars.id.dashboard_server].ports.open.toString());
+                                        }
                                         vars.environment.loading = false;
                                     }
                                 }
@@ -1168,6 +1199,9 @@ const start_application = function utilities_startApplication(process_path:strin
 
                     };
                     clock();
+                    if (vars.options.demo === true) {
+                        clock_demo();
+                    }
                     statistics_resources.data();
                     if (vars.test.testing === true || vars.data.server[vars.id.dashboard_server] === undefined) {
                         server_create({

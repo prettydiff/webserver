@@ -20,6 +20,11 @@
 <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgo="/>
 </head>
 <body id="dashboard">
+    <section id="demo-mode">
+        <h2>DEMO MODE</h2>
+        <p>Application is in demo mode. Many features are modified, disabled, or incomplete.</p>
+        <p>Demo Time Remaining <strong>00:00</strong>.</p>
+    </section>
     <header class="title">
         <h1>Server Management Dashboard</h1>
         <p><span>Page Load Time:</span><time>0.00000 seconds</time></p>
@@ -130,6 +135,7 @@
                 </div>
                 <div class="section">
                     <h3>Containers</h3>
+                    <p class="demo-containers">Container interaction disabled in demo mode.</p>
                     <p class="buttons"><button class="compose-container-new">New Container</button></p>
                     <span class="clear"></span>
                     <ul class="compose-container-list"></ul>
@@ -1312,6 +1318,7 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
             </div>
             <div class="section">
                 <h3>Terminal Display</h3>
+                <p class="demo-terminal">Disabled in demo mode. Type <em>l</em> or <em>c</em> for some demonstrations.</p>
                 <p class="dimensions">Columns: <em>0</em>, Rows: <em>0</em></p>
                 <span class="clear"></span>
                 <div class="terminal-output"></div>

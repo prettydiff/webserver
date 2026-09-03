@@ -103,7 +103,7 @@ const socket_extension = function transmit_socketExtension(config:config_websock
                     } while (index > 0);
                 }
 
-                // remove socket data
+                // remove socket data from socket storage
                 index = vars.data.sockets_tcp.length;
                 if (index > 0) {
                     do {
@@ -113,6 +113,27 @@ const socket_extension = function transmit_socketExtension(config:config_websock
                             break;
                         }
                     } while (index > 0);
+                }
+
+                // remove socket data from server specific socket storage
+                index = vars.data.server[socket.server.id].sockets.length;
+                if (index > 0) {
+                    do {
+                        index = index - 1;
+                        if (socket.hash === vars.data.server[socket.server.id].sockets[index].hash) {
+                            vars.data.server[socket.server.id].sockets.splice(index, 1);
+                            break;
+                        }
+                    } while (index > 0);
+
+                    // kill off an unused demo dashboard
+                    if (vars.options.demo === true && vars.data.server[socket.server.id].sockets.length < 1 && socket.type !== "http-get") {
+                        setTimeout(function transmit_socketExtension_demoKill():void {
+                            if (vars.data.server[socket.server.id].sockets.length < 1) {
+                                process.exit(0);
+                            }
+                        }, 5000);
+                    } 
                 }
 
                 if (vars.data.server[socket.server_hash].config.id === vars.id.dashboard_server && socket.type === "dashboard") {
@@ -253,6 +274,7 @@ const socket_extension = function transmit_socketExtension(config:config_websock
         }
         vars.data_store.server[config.server].sockets_tcp[encryption].push(config.socket);
         vars.data.sockets_tcp.push(socket);
+        vars.data.server[config.server].sockets.push(socket);
         socket_list_build();
         log.application(log_config);
     }
