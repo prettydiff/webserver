@@ -30,15 +30,11 @@ const server_create = function services_serverCreate(data:services_server_action
                 complete = function services_serverCreate_complete(input:"config"|"dir"):void {
                     flags[input] = true;
                     if (flags.config === true && flags.dir === true) {
-                        let server_count:number = 0;
                         const serverCallback = function services_serverCreate_complete_serverCallback():void {
-                                server_count = server_count + 1;
-                                if ((server_count > 1 && config.encryption === "both") || config.encryption !== "both") {
-                                    ports_application();
-                                    // 6. call the callback
-                                    if (callback !== null) {
-                                        callback();
-                                    }
+                                ports_application();
+                                // 6. call the callback
+                                if (callback !== null) {
+                                    callback();
                                 }
                             };
                         log.application({
@@ -60,7 +56,14 @@ const server_create = function services_serverCreate(data:services_server_action
                 children = function services_serverCreate_children():void {
                     count = count + 1;
                     if (count > 1) {
-                        complete("dir");
+                        file.write({
+                            callback: function services_serverCreate_children_complete():void {
+                                complete("dir");
+                            },
+                            contents: config.name,
+                            location: `${path_name}name-${config.name.file_sanitize()}`,
+                            section: "servers-web"
+                        });
                     }
                 },
                 mkdir = function services_serverCreate_serverDir(location:string):void {

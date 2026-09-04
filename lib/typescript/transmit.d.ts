@@ -115,6 +115,7 @@ interface websocket_client extends node_tls_TLSSocket {
 
 interface websocket_pty extends websocket_client {
     pty: shell_pty;
+    pty_status: "killed" | "open";
 }
 
 interface websocket_event extends Event {

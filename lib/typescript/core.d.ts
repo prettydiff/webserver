@@ -177,6 +177,7 @@ interface core_module_universal {
     capitalize: () => string;
     commas: () => string;
     dateTime: (date:boolean, timeZone_offset:number) => string;
+    file_sanitize: () => string;
     time_elapsed: () => string;
 }
 

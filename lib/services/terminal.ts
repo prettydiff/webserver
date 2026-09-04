@@ -3,7 +3,7 @@ import log from "../core/log.ts";
 import send from "../transmit/send.ts";
 import vars from "../core/vars.ts";
 
-import { spawn } from "@lydell/node-pty";
+import { spawn as pty_spawn } from "@lydell/node-pty";
 
 const terminal:core_module_terminal = {
     resize: function services_terminalResize(socket_data:socket_data):void {
@@ -29,7 +29,7 @@ const terminal:core_module_terminal = {
         }
     },
     shell: function services_terminalShell(socket:websocket_pty, config:config_terminal):void {
-        const pty:shell_pty = spawn(config.shell, [], {
+        const pty:shell_pty = pty_spawn(config.shell, [], {
                 cols: config.cols,
                 cwd: vars.path.project,
                 env: process.env,
@@ -38,7 +38,12 @@ const terminal:core_module_terminal = {
             }),
             demo:boolean = vars.options.demo,
             close = function services_terminalShell_close():void {
-                pty.kill();
+                socket.pty = null;
+                socket.pty_status = "killed";
+                socket.destroy();
+                if (socket.pty_status !== "killed") {
+                    pty.kill();
+                }
             },
             error = function services_terminalShell_error(err:node_error):void {
                 const config:config_log = {
@@ -88,7 +93,9 @@ const terminal:core_module_terminal = {
                 }
             },
             out = function services_terminalShell_out(output:string):void {
-                send(output, socket, 1);
+                if (socket.status === "open") {
+                    send(output, socket, 1);
+                }
             },
             identifiers:terminal_identifiers = {
                 pid: pty.pid,
@@ -99,6 +106,7 @@ const terminal:core_module_terminal = {
             };
         socket.handler = handler;
         socket.pty = pty;
+        socket.pty_status = "open";
         send(JSON.stringify(identifiers), socket, 1);
         pty.onData(out);
         pty.onExit(close);

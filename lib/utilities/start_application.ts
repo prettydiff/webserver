@@ -1289,6 +1289,7 @@ const start_application = function utilities_startApplication(process_path:strin
     String.prototype.bytes = universal.bytes;
     String.prototype.bytes_big = universal.bytes_big;
     String.prototype.capitalize = universal.capitalize;
+    String.prototype.file_sanitize = universal.file_sanitize;
 
     vars.environment.hashes = node.crypto.getHashes();
 

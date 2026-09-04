@@ -140,6 +140,20 @@ const utilities:core_module_universal = {
         return output.join(" ");
 
     },
+    file_sanitize: function core_fileSanitize(this:string):string {
+        let input:string = this;
+        if (process.platform === "win32") {
+            input = input.replace(/\\|:/g, "")
+                .replace(/[\u0001-\u001f]/g, "")
+                .replace(/(CON)|(PRN)|(AUX)|(NUL)/gi, "")
+                .replace(/(COM1)|(COM2)|(COM3)|(COM4)|(COM5)|(COM6)|(COM7)|(COM8)|(COM9)/gi, "")
+                .replace(/(LPT1)|(LPT2)|(LPT3)|(LPT4)|(LPT5)|(LPT6)|(LPT7)|(LPT8)|(LPT9)/gi, "")
+                .replace(/(\s+|\.)$/, "");
+        }
+        input = input.replace(/\u0000|\*|\?|\||<|>|"|\//g, "")
+            .replace(/^-+/, "");
+        return input;
+    },
     time_elapsed: function core_universalTimeElapsed(this:number, start?:bigint):string {
         const elapsed:boolean = (typeof start === "bigint"),
             number:bigint = (elapsed === true)

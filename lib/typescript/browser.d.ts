@@ -42,6 +42,7 @@ declare global {
         bytes: () => number;
         bytes_big: () => bigint;
         capitalize: () => string;
+        file_sanitize: () => string;
     }
 
     interface Window {
