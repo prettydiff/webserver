@@ -234,6 +234,7 @@ const socket_extension = function transmit_socketExtension(config:config_websock
                 config.socket.ping = ping;                // provides a means to insert a ping control frame and measure the round trip time of the returned pong frame
                 config.socket.pong = {};                  // stores termination times and callbacks for pong handling
                 config.socket.queue = [];                 // stores messages for transmit, because websocket protocol cannot intermix messages
+                config.socket.queue_index = 0;            // indicates current position in message queue
             }
             config.socket.status = "open"; // sets the status flag for the socket
             if (config.single_socket === true) {

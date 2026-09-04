@@ -428,6 +428,7 @@ select{background:var(--background_textarea);border-color:var(--border_input);bo
         #faq li{list-style:disc}
         li{list-style:none}
     }
+    mark{background:transparent;color:var(--text_yellow);display:inline-block;margin:0 0.5em}
     nav{
         background:var(--background_nav);border-color:var(--background_button);border-style:solid;border-width:0.1em;
         div{border-color:var(--border_color);border-style:solid none none;border-width:0.1em;margin:0 0 2em;padding:2em 0 0}
@@ -640,6 +641,7 @@ select{background:var(--background_textarea);border-color:var(--border_input);bo
     td::selection{background-color:var(--text);color:var(--black)}
 
     em::selection,
+    mark::selection,
     strong::selection,
     time::selection{background-color:var(--text_yellow);color:var(--background)}
     svg path{fill:var(--background_dark)}

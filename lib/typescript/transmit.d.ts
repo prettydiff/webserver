@@ -102,6 +102,7 @@ interface websocket_client extends node_tls_TLSSocket {
     proxy: websocket_client;
     queue: Buffer[];
     queue_callback?: () => void;
+    queue_index:number;
     role: "client"|"server";
     secure: boolean;
     segmentation: number;

@@ -4,10 +4,12 @@ import message_inspection from "../services/message_inspection.ts";
 const send = function transmit_send(body:Buffer|socket_data|string, socket:websocket_client, opcode:0|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15):void {
     const writeFrame = function transmit_send_writeFrame():void {
             const writeCallback = function transmit_send_writeFrame_writeCallback():void {
-                socket.queue.splice(0, 1);
-                if (socket.queue.length > 0) {
+                socket.queue_index = socket.queue_index + 1;
+                if (socket.queue.length > socket.queue_index) {
                     transmit_send_writeFrame();
                 } else {
+                    socket.queue = [];
+                    socket.queue_index = 0;
                     socket.status = "open";
                     if (socket.queue_callback !== null && socket.queue_callback !== undefined) {
                         socket.queue_callback();
