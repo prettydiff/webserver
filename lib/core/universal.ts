@@ -55,7 +55,11 @@ const utilities:core_module_universal = {
         return output.join(" ");
     },
     commas: function core_universalCommas(this:number):string {
-        const str:string = String(this),
+        const negative:boolean = this < 0,
+            str:string = String((negative === true)
+                ? this * -1
+                : this
+            ),
             period:number = str.indexOf("."),
             arr:string[] = str.split("");
         let a:number   = (period > -1)
@@ -68,7 +72,9 @@ const utilities:core_module_universal = {
             a      = a - 3;
             arr[a] = "," + arr[a];
         } while (a > 3);
-        return arr.join("");
+        return (negative === true)
+            ? `-${arr.join("")}`
+            : arr.join("");
     },
     dateTime: function core_universalDateTime(this:number, date:boolean, timeZone_offset:number):string {
         const dateItem:Date = new Date(this),

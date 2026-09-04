@@ -55,6 +55,7 @@ const test_performance = function services_testPerformance(socket_data:socket_da
                     let index:number = 0,
                         value:number = 0,
                         variance:number = 0,
+                        variance_step:number = 0,
                         total:number = 0;
                     do {
                         value = (type === "memory")
@@ -73,12 +74,16 @@ const test_performance = function services_testPerformance(socket_data:socket_da
                     output[type].average = (total / data.quantity_tests);
                     index = 0;
                     do {
-                        variance = variance + ((output[type].trials[index] - output[type].average) * (output[type].trials[index] - output[type].average));
+                        variance_step = output[type].trials[index] - output[type].average;
+                        variance = variance + ((variance_step < 0)
+                            ? variance_step * -1
+                            : variance_step
+                        );
                         index = index + 1;
                     } while (index < data.quantity_tests);
                     output[type].variance = (type === "memory")
-                        ? Math.round(Math.sqrt(variance / data.quantity_tests))
-                        : Math.sqrt(variance / data.quantity_tests);
+                        ? Math.round(variance / data.quantity_tests)
+                        : (variance / data.quantity_tests);
                 };
                 if (data.type === "http" || data.measure === "roundtrip") {
                     setTimes("roundtrip");

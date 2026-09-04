@@ -593,7 +593,7 @@ const connection = function transmit_connection(this:core_server_instance, TLS_s
                 direction: "in",
                 maximum_size: 0,
                 message: dataString,
-                service: socket.server.id,
+                service: socket.server_hash,
                 throttle_size: 0,
                 throttle_time: 0,
                 type: "web-server"

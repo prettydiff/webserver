@@ -116,20 +116,20 @@ const socket_extension = function transmit_socketExtension(config:config_websock
                 }
 
                 // remove socket data from server specific socket storage
-                index = vars.data.server[socket.server.id].sockets.length;
+                index = vars.data.server[socket.server_hash].sockets.length;
                 if (index > 0) {
                     do {
                         index = index - 1;
-                        if (socket.hash === vars.data.server[socket.server.id].sockets[index].hash) {
-                            vars.data.server[socket.server.id].sockets.splice(index, 1);
+                        if (socket.hash === vars.data.server[socket.server_hash].sockets[index].hash) {
+                            vars.data.server[socket.server_hash].sockets.splice(index, 1);
                             break;
                         }
                     } while (index > 0);
 
                     // kill off an unused demo dashboard
-                    if (vars.options.demo === true && vars.data.server[socket.server.id].sockets.length < 1 && socket.type !== "http-get") {
+                    if (vars.options.demo === true && vars.data.server[socket.server_hash].sockets.length < 1 && socket.type !== "http-get") {
                         setTimeout(function transmit_socketExtension_demoKill():void {
-                            if (vars.data.server[socket.server.id].sockets.length < 1) {
+                            if (vars.data.server[socket.server_hash].sockets.length < 1) {
                                 process.exit(0);
                             }
                         }, 5000);

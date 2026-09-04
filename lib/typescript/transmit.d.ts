@@ -105,7 +105,6 @@ interface websocket_client extends node_tls_TLSSocket {
     role: "client"|"server";
     secure: boolean;
     segmentation: number;
-    server: core_server_instance;
     server_hash: string;
     status: type_socket_status;
     time: number;
