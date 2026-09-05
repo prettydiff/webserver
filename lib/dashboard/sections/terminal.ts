@@ -74,10 +74,14 @@ const ui_terminal = function ui_terminal():void {
                 section: "terminal",
                 shell: dashboard.sections["terminal"].item
             });
+            if (dashboard.global.payload.demo === true) {
+                dashboard.sections["terminal"].nodes.demo_terminal.style.display = "block";
+            }
         },
         item: null,
         nodes: {
             cols: document.getElementById("terminal").getElementsByClassName("dimensions")[0].getElementsByTagName("em")[0],
+            demo_terminal: document.getElementById("terminal").getElementsByClassName("section")[2].getElementsByClassName("demo-terminal")[0] as HTMLElement,
             output: document.getElementById("terminal").getElementsByClassName("terminal-output")[0] as HTMLElement,
             rows: document.getElementById("terminal").getElementsByClassName("dimensions")[0].getElementsByTagName("em")[1],
             select: document.getElementById("terminal").getElementsByTagName("select")[0] as HTMLSelectElement

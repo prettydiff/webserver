@@ -424,6 +424,7 @@ const core = function core(config:config_core):socket_object {
             Number.prototype.time_elapsed            = universal.time_elapsed;
 
             String.prototype.capitalize              = universal.capitalize;
+            String.prototype.file_sanitize           = universal.file_sanitize;
         };
     dom();
     return socket;

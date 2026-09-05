@@ -15,6 +15,7 @@ const dashboard:dashboard = {
                 "time": 0,
                 "variables": {}
             },
+            "demo": false,
             "hashes": [""],
             "http_request": "",
             id: {
@@ -80,7 +81,6 @@ const dashboard:dashboard = {
                         "pid": 0,
                         "platform": "",
                         "ppid": 0,
-                        "sea": false,
                         "uptime": 0,
                         "versions": {}
                     },
@@ -180,6 +180,7 @@ const dashboard:dashboard = {
             "table_os": {},
             "tables": {},
             "terminal": "",
+            "test_automation":  null,
             "test_performance": {
                 body: "",
                 connect_address: "",
@@ -247,6 +248,7 @@ const dashboard:dashboard = {
             "nodes": {
                 body: null,
                 cols: null,
+                demo_containers: null,
                 list: null,
                 list_variables: null,
                 new_container: null,
@@ -350,6 +352,7 @@ const dashboard:dashboard = {
                 tbody: null
             },
             "receive": function(socket_data:socket_data):void {},
+            sort: false,
             "time": 0,
             "tools": {
                 "media_time": function(input:boolean|number|string):string {return "";}
@@ -688,6 +691,7 @@ const dashboard:dashboard = {
             "item": null,
             "nodes": {
                 cols: null,
+                demo_terminal: null,
                 output: null,
                 rows: null,
                 select: null
@@ -872,8 +876,10 @@ const dashboard:dashboard = {
     utility: {
         "baseline": function():void {},
         "clock": function(socket_data:socket_data):void {},
+        "clock_demo": function(socket_data:socket_data):void {},
         "nodes": {
             clock: null,
+            clock_demo: null,
             load: null,
             main: null
         },

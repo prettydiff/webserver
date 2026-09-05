@@ -1,12 +1,12 @@
 
 import vars from "../core/vars.ts";
 
-const test_listLocalSocketsOS_UDP = function test_listLocalSocketsOS_UDP():test_list {
+const test_listLocalSocketsOS_TCP = function test_listLocalSocketsOS_TCP():test_list {
     const list:test_list = [
         {
             delay: {
                 node: [
-                    ["getElementById", "sockets-os-udp", null],
+                    ["getElementById", "sockets-os-tcp", null],
                     ["getElementsByTagName", "h2", 0]
                 ],
                 qualifier: "greater",
@@ -19,17 +19,17 @@ const test_listLocalSocketsOS_UDP = function test_listLocalSocketsOS_UDP():test_
                     event: "click",
                     node: [
                         ["getElementsByTagName", "nav", 0],
-                        ["getElementsByTagName", "div", 1],
-                        ["getElementsByTagName", "button", 5]
+                        ["getElementsByTagName", "div", 2],
+                        ["getElementsByTagName", "button", 1]
                     ]
                 }
             ],
-            name: "Navigate to OS UDP Sockets",
+            name: "Navigate to OS TCP Sockets",
             type: "dom",
             unit: [
                 {
                     node: [
-                        ["getElementById", "sockets-os-udp", null],
+                        ["getElementById", "sockets-os-tcp", null],
                         ["getElementsByTagName", "tbody", 0],
                         ["getElementsByTagName", "tr", 0],
                         ["getElementsByTagName", "td", 0]
@@ -41,7 +41,7 @@ const test_listLocalSocketsOS_UDP = function test_listLocalSocketsOS_UDP():test_
                 },
                 {
                     node: [
-                        ["getElementById", "sockets-os-udp", null],
+                        ["getElementById", "sockets-os-tcp", null],
                         ["getElementsByTagName", "tbody", 0],
                         ["getElementsByTagName", "tr", 0],
                         ["getElementsByTagName", "td", 1]
@@ -68,7 +68,7 @@ const test_listLocalSocketsOS_UDP = function test_listLocalSocketsOS_UDP():test_
         {
             delay: {
                 node: [
-                    ["getElementById", "sockets-os-udp", null],
+                    ["getElementById", "sockets-os-tcp", null],
                     ["getElementsByTagName", "tbody", 0],
                     ["getElementsByTagName", "tr", null]
                 ],
@@ -79,7 +79,7 @@ const test_listLocalSocketsOS_UDP = function test_listLocalSocketsOS_UDP():test_
                 value: 1
             },
             interaction: [],
-            name: "Check if sockets-os-udp table is populated",
+            name: "Check if sockets-os-tcp table is populated",
             type: "dom",
             unit: []
         },
@@ -89,7 +89,7 @@ const test_listLocalSocketsOS_UDP = function test_listLocalSocketsOS_UDP():test_
                 {
                     event: "click",
                     node: [
-                        ["getElementById", "sockets-os-udp", null],
+                        ["getElementById", "sockets-os-tcp", null],
                         ["getElementsByClassName", "form", 0],
                         ["getElementsByTagName", "input", 0]
                     ]
@@ -97,7 +97,7 @@ const test_listLocalSocketsOS_UDP = function test_listLocalSocketsOS_UDP():test_
                 {
                     event: "setValue",
                     node: [
-                        ["getElementById", "sockets-os-udp", null],
+                        ["getElementById", "sockets-os-tcp", null],
                         ["getElementsByClassName", "form", 0],
                         ["getElementsByTagName", "input", 0]
                     ],
@@ -106,7 +106,7 @@ const test_listLocalSocketsOS_UDP = function test_listLocalSocketsOS_UDP():test_
                 {
                     event: "keyup",
                     node: [
-                        ["getElementById", "sockets-os-udp", null],
+                        ["getElementById", "sockets-os-tcp", null],
                         ["getElementsByClassName", "form", 0],
                         ["getElementsByTagName", "input", 0]
                     ],
@@ -118,12 +118,12 @@ const test_listLocalSocketsOS_UDP = function test_listLocalSocketsOS_UDP():test_
                     value: "50"
                 }
             ],
-            name: "Filter sockets-os-udp",
+            name: "Filter sockets-os-tcp",
             type: "dom",
             unit: [
                 {
                     node: [
-                        ["getElementById", "sockets-os-udp", null],
+                        ["getElementById", "sockets-os-tcp", null],
                         ["getElementsByClassName", "table-stats", 0],
                         ["getElementsByTagName", "em", 1]
                     ],
@@ -135,8 +135,8 @@ const test_listLocalSocketsOS_UDP = function test_listLocalSocketsOS_UDP():test_
             ]
         }
     ];
-    list.name = "Local browser tests - sockets-os-udp";
+    list.name = "Local browser tests - sockets-os-tcp";
     return list;
 };
 
-export default test_listLocalSocketsOS_UDP;
+export default test_listLocalSocketsOS_TCP;

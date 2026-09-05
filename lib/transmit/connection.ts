@@ -386,6 +386,7 @@ const connection = function transmit_connection(this:core_server_instance, TLS_s
                                                         variables: vars.data.compose_variables
                                                     }
                                                     : null,
+                                                demo: vars.options.demo,
                                                 hashes: (vars.environment.features["hash"] === true)
                                                     ? vars.environment.hashes
                                                     : null,
@@ -592,7 +593,7 @@ const connection = function transmit_connection(this:core_server_instance, TLS_s
                 direction: "in",
                 maximum_size: 0,
                 message: dataString,
-                service: socket.server.id,
+                service: socket.server_hash,
                 throttle_size: 0,
                 throttle_time: 0,
                 type: "web-server"
@@ -632,10 +633,13 @@ const connection = function transmit_connection(this:core_server_instance, TLS_s
                 // * requests from the dashboard http test tool are ignored
                 const resource_first:string = headerList[0].slice(headerList[0].replace(/ +/, " ").indexOf(" ") + 1),
                     resource_second:string = resource_first.replace(/\s+HTTP\/\d(\.\d)?/, ""),
-                    resource:string = resource_second.replace(/\/$/, "");
+                    resource:string = resource_second.replace(/\/$/, ""),
+                    domain:string = (node.net.isIPv6(store.domain) === true)
+                        ? `[${store.domain}]`
+                        : store.domain;
                 socket.write([
                     "HTTP/1.1 308",
-                    `location: https://${store.domain + resource}:${vars.data.server[server_id].ports.secure}`,
+                    `location: https://${domain}:${vars.data.server[server_id].ports.secure + resource}`,
                     "content-length: 5",
                     "",
                     "moved",

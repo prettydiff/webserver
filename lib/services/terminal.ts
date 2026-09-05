@@ -3,7 +3,7 @@ import log from "../core/log.ts";
 import send from "../transmit/send.ts";
 import vars from "../core/vars.ts";
 
-import { spawn } from "@lydell/node-pty";
+import { spawn as pty_spawn } from "@lydell/node-pty";
 
 const terminal:core_module_terminal = {
     resize: function services_terminalResize(socket_data:socket_data):void {
@@ -29,15 +29,21 @@ const terminal:core_module_terminal = {
         }
     },
     shell: function services_terminalShell(socket:websocket_pty, config:config_terminal):void {
-        const pty:shell_pty = spawn(config.shell, [], {
+        const pty:shell_pty = pty_spawn(config.shell, [], {
                 cols: config.cols,
                 cwd: vars.path.project,
                 env: process.env,
                 name: socket.server_hash,
                 rows: config.rows
             }),
+            demo:boolean = vars.options.demo,
             close = function services_terminalShell_close():void {
-                pty.kill();
+                socket.pty = null;
+                socket.pty_status = "killed";
+                socket.destroy();
+                if (socket.pty_status !== "killed") {
+                    pty.kill();
+                }
             },
             error = function services_terminalShell_error(err:node_error):void {
                 const config:config_log = {
@@ -53,10 +59,43 @@ const terminal:core_module_terminal = {
                 close();
             },
             handler = function services_terminalShell_handler(socket:websocket_client, data:Buffer):void {
-                pty.write(data.toString());
+                if (demo === true) {
+                    const str:string = data.toString(),
+                        ending:string = (process.platform === "win32")
+                            ? "\r"
+                            : "\n";
+                    if (str === "l") {
+                        pty.write("l");
+                        pty.write("s");
+                        pty.write(ending);
+                    } else if (str === "c") {
+                        pty.write("c");
+                        pty.write("a");
+                        pty.write("t");
+                        pty.write(" ");
+                        pty.write("f");
+                        pty.write("e");
+                        pty.write("a");
+                        pty.write("t");
+                        pty.write("u");
+                        pty.write("r");
+                        pty.write("e");
+                        pty.write("s");
+                        pty.write(".");
+                        pty.write("j");
+                        pty.write("s");
+                        pty.write("o");
+                        pty.write("n");
+                        pty.write(ending);
+                    }
+                } else {
+                    pty.write(data.toString());
+                }
             },
             out = function services_terminalShell_out(output:string):void {
-                send(output, socket, 1);
+                if (socket.status === "open") {
+                    send(output, socket, 1);
+                }
             },
             identifiers:terminal_identifiers = {
                 pid: pty.pid,
@@ -67,6 +106,7 @@ const terminal:core_module_terminal = {
             };
         socket.handler = handler;
         socket.pty = pty;
+        socket.pty_status = "open";
         send(JSON.stringify(identifiers), socket, 1);
         pty.onData(out);
         pty.onExit(close);

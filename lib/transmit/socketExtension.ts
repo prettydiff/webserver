@@ -103,7 +103,7 @@ const socket_extension = function transmit_socketExtension(config:config_websock
                     } while (index > 0);
                 }
 
-                // remove socket data
+                // remove socket data from socket storage
                 index = vars.data.sockets_tcp.length;
                 if (index > 0) {
                     do {
@@ -113,6 +113,27 @@ const socket_extension = function transmit_socketExtension(config:config_websock
                             break;
                         }
                     } while (index > 0);
+                }
+
+                // remove socket data from server specific socket storage
+                index = vars.data.server[socket.server_hash].sockets.length;
+                if (index > 0) {
+                    do {
+                        index = index - 1;
+                        if (socket.hash === vars.data.server[socket.server_hash].sockets[index].hash) {
+                            vars.data.server[socket.server_hash].sockets.splice(index, 1);
+                            break;
+                        }
+                    } while (index > 0);
+
+                    // kill off an unused demo dashboard
+                    if (vars.options.demo === true && vars.data.server[socket.server_hash].sockets.length < 1 && socket.type !== "http-get") {
+                        setTimeout(function transmit_socketExtension_demoKill():void {
+                            if (vars.data.server[socket.server_hash].sockets.length < 1) {
+                                process.exit(0);
+                            }
+                        }, 5000);
+                    } 
                 }
 
                 if (vars.data.server[socket.server_hash].config.id === vars.id.dashboard_server && socket.type === "dashboard") {
@@ -136,29 +157,39 @@ const socket_extension = function transmit_socketExtension(config:config_websock
                 }
 
                 if (socket.type === "test-performance-socket" && error !== null && error !== undefined) {
-                    const output:services_test_performance_output = {
-                        frame_body_size: 0,
-                        message_size: 0,
-                        roundtrip: {
-                            average: 0,
-                            max: 0,
-                            min: 0,
-                            trials: [],
-                            variance: 0
-                        },
-                        send: {
-                            average: 0,
-                            max: 0,
-                            min: 0,
-                            trials: [],
-                            variance: 0
-                        },
-                        summary: JSON.stringify(error),
-                        quantity_tests: 0,
-                        quantity_transmit: 0,
-                        time: 0,
-                        type: "websocket"
-                    };
+                    const message:string = JSON.stringify(error),
+                        output:services_test_performance_output = {
+                            frame_body_size: 0,
+                            memory: {
+                                average: 0,
+                                max: 0,
+                                min: 0,
+                                trials: [],
+                                variance: 0
+                            },
+                            message_size: 0,
+                            roundtrip: {
+                                average: 0,
+                                max: 0,
+                                min: 0,
+                                trials: [],
+                                variance: 0
+                            },
+                            send: {
+                                average: 0,
+                                max: 0,
+                                min: 0,
+                                trials: [],
+                                variance: 0
+                            },
+                            summary: (message === "{}")
+                                ? error.message
+                                : JSON.stringify(error),
+                            quantity_tests: 0,
+                            quantity_transmit: 0,
+                            time: 0,
+                            type: "websocket"
+                        };
                     send({
                         data: output,
                         service: "services_test_performance_output"
@@ -203,6 +234,7 @@ const socket_extension = function transmit_socketExtension(config:config_websock
                 config.socket.ping = ping;                // provides a means to insert a ping control frame and measure the round trip time of the returned pong frame
                 config.socket.pong = {};                  // stores termination times and callbacks for pong handling
                 config.socket.queue = [];                 // stores messages for transmit, because websocket protocol cannot intermix messages
+                config.socket.queue_index = 0;            // indicates current position in message queue
             }
             config.socket.status = "open"; // sets the status flag for the socket
             if (config.single_socket === true) {
@@ -243,6 +275,7 @@ const socket_extension = function transmit_socketExtension(config:config_websock
         }
         vars.data_store.server[config.server].sockets_tcp[encryption].push(config.socket);
         vars.data.sockets_tcp.push(socket);
+        vars.data.server[config.server].sockets.push(socket);
         socket_list_build();
         log.application(log_config);
     }

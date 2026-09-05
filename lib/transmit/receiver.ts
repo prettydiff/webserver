@@ -40,7 +40,9 @@ const receiver = function transmit_receiver(this:websocket_client, buf:Buffer):v
                         ? 4 + keyOffset
                         : 10 + keyOffset,
                 lengthExtended:number = (len < 126)
-                    ? len
+                    ? (len === 0)
+                        ? input.length - startByte
+                        : len
                     : (len === 126)
                         ? input.subarray(2, 4).readUInt16BE(0)
                         : input.subarray(4, 10).readUIntBE(0, 6);

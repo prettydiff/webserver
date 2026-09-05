@@ -2,6 +2,7 @@
 import assembler from "./assembler.ts";
 import broadcast from "../transmit/broadcast.ts";
 import clock from "../services/clock.ts";
+import clock_demo from "../services/clock_demo.ts";
 import directory from "./directory.ts";
 import docker from "../services/docker.ts";
 import file from "./file.ts";
@@ -19,7 +20,7 @@ import test_index from "../test/index.ts";
 import universal from "../core/universal.ts";
 import vars from "../core/vars.ts";
 
-// cspell: words serv, stcp, sudp
+// cspell: words serv, stcp, sudp, tskey
 
 const start_application = function utilities_startApplication(process_path:string):void {
     // prerequisite tasks will execute first in the order presented
@@ -170,8 +171,8 @@ const start_application = function utilities_startApplication(process_path:strin
             compose: {
                 label: "Restores the docker compose containers if docker is available.",
                 task: function utilities_startApplication_compose():void {
-                    docker.shell_start();
                     if (vars.environment.features["compose-containers"] === true) {
+                        docker.shell_start();
                         docker.list(start_prerequisites);
                     } else {
                         start_prerequisites();
@@ -262,7 +263,8 @@ const start_application = function utilities_startApplication(process_path:strin
                                         ports: {
                                             open: 0,
                                             secure: 0
-                                        }
+                                        },
+                                        sockets: []
                                     };
                                     vars.data_store.server[server.id] = {
                                         server_certs: {
@@ -282,14 +284,16 @@ const start_application = function utilities_startApplication(process_path:strin
                                 }
                             } while (index_srv > 0);
                         }
-                        do {
-                            index_int = index_int - 1;
-                            sub = interfaces[keys_int[index_int]].length;
+                        if (index_int > 0) {
                             do {
-                                sub = sub - 1;
-                                includes(interfaces[keys_int[index_int]][sub].address);
-                            } while (sub > 0);
-                        } while (index_int > 0);
+                                index_int = index_int - 1;
+                                sub = interfaces[keys_int[index_int]].length;
+                                do {
+                                    sub = sub - 1;
+                                    includes(interfaces[keys_int[index_int]][sub].address);
+                                } while (sub > 0);
+                            } while (index_int > 0);
+                        }
                         if (typeof vars.id.machine === "string" && vars.id.machine.length > 0) {
                             start_prerequisites();
                         } else {
@@ -308,12 +312,16 @@ const start_application = function utilities_startApplication(process_path:strin
                             });
                         }
                     };
-                    file.read({
-                        callback: callback,
-                        location: `${vars.path.project}servers.json`,
-                        no_file: null,
-                        section: "startup"
-                    });
+                    if (vars.options.demo === true) {
+                        callback(null);
+                    } else {
+                        file.read({
+                            callback: callback,
+                            location: `${vars.path.project}servers.json`,
+                            no_file: null,
+                            section: "startup"
+                        });
+                    }
                 }
             }
         },
@@ -406,7 +414,7 @@ const start_application = function utilities_startApplication(process_path:strin
             cgroup: {
                 label: "Find Linux cgroup address for gathering precision docker performance metrics.",
                 task: function utilities_startApplication_cgroup():void {
-                    if (vars.environment.features["compose-containers"] === true && vars.environment.compose_status === "" && (vars.os.main.process.admin === true || process.platform === "win32")) {
+                    if (vars.options.demo === false && vars.environment.features["compose-containers"] === true && vars.environment.compose_status === "" && (vars.os.main.process.admin === true || process.platform === "win32")) {
                         const command:string = (process.platform === "win32")
                                 ? vars.commands.docker_read.replace("cat address", "systemctl status containerd")
                                 : "systemctl status containerd",
@@ -476,36 +484,55 @@ const start_application = function utilities_startApplication(process_path:strin
             compose_variables: {
                 label: "Gathering stored docker compose variables.",
                 task: function utilities_startApplication_composeVariables():void {
-                    file.read({
-                        callback: function utilities_startApplication_composeVariables_read(raw:Buffer):void {
-                            if (raw !== null) {
-                                const lines:string[] = raw.toString().split("\n"),
-                                    store:[string, string][] = [],
-                                    len:number = lines.length;
-                                let index:number = len;
-                                do {
-                                    index = index - 1;
-                                    lines[index] = lines[index].replace(/\s*=\s*/, "=");
-                                    store.push([lines[index].slice(0, lines[index].indexOf("=")), lines[index].slice(lines[index].indexOf("=") + 1)]);
-                                } while (index > 0);
-                                store.sort(function utilities_startApplication_composeVariables_read_sort(a:[string, string], b:[string, string]):-1|1 {
-                                    if (a[0] < b[0]) {
-                                        return -1;
+                    if (vars.options.demo === true) {
+                        vars.data.compose_variables = {
+                            APP_DISK: "/path_to_apps",
+                            DATA_DISK: "/path_to_disk",
+                            PASSWORD: "1234",
+                            TAILSCALE_KEY: "tskey-auth-asdf-1234",
+                            TAILSCALE_OAUTH_CLIENT: "asdf_1234",
+                            TAILSCALE_OAUTH_SECRET: "tskey-client-asdf-1234",
+                            TZ: "America/Chicago"
+                        };
+                        complete_tasks("compose_variables");
+                    } else {
+                        file.read({
+                            callback: function utilities_startApplication_composeVariables_read(raw:Buffer):void {
+                                if (raw !== null) {
+                                    const lines:string[] = raw.toString().split("\n"),
+                                        store:[string, string][] = [],
+                                        len:number = lines.length;
+                                    let index:number = len,
+                                        store_len:number = 0;
+                                    do {
+                                        index = index - 1;
+                                        if ((/^\s*$/).test(lines[index]) === false) {
+                                            lines[index] = lines[index].replace(/\s*=\s*/, "=");
+                                            store.push([lines[index].slice(0, lines[index].indexOf("=")), lines[index].slice(lines[index].indexOf("=") + 1)]);
+                                        }
+                                    } while (index > 0);
+                                    store.sort(function utilities_startApplication_composeVariables_read_sort(a:[string, string], b:[string, string]):-1|1 {
+                                        if (a[0] < b[0]) {
+                                            return -1;
+                                        }
+                                        return 1;
+                                    });
+                                    index = 0;
+                                    store_len = store.length;
+                                    if (store_len > 0) {
+                                        do {
+                                            vars.data.compose_variables[store[index][0]] = store[index][1];
+                                            index = index + 1;
+                                        } while (index < store_len);
                                     }
-                                    return 1;
-                                });
-                                index = 0;
-                                do {
-                                    vars.data.compose_variables[store[index][0]] = store[index][1];
-                                    index = index + 1;
-                                } while (index < len);
-                            }
-                            complete_tasks("compose_variables");
-                        },
-                        location: `${process_path}compose${vars.path.sep}.env`,
-                        no_file: null,
-                        section: "startup"
-                    });
+                                }
+                                complete_tasks("compose_variables");
+                            },
+                            location: `${process_path}compose${vars.path.sep}.env`,
+                            no_file: null,
+                            section: "startup"
+                        });
+                    }
                 }
             },
             file: {
@@ -664,6 +691,38 @@ const start_application = function utilities_startApplication(process_path:strin
                     } else {
                         complete_tasks("os_user");
                     }
+                }
+            },
+            server_audit: {
+                label: "Server audit removes directories of server artifacts no longer in the server inventory.",
+                task: function utilities_startApplication_serverAudit():void {
+                    node.fs.readdir(vars.path.servers, function utilities_startApplication_serverAudit_dirs(erd:node_error, dirs:string[]):void {
+                        if (erd === null) {
+                            const removed = function utilities_startApplication_serverAudit_dirs_removed():void {
+                                count = count - 1;
+                                if (count < 1) {
+                                    complete_tasks("server_audit");
+                                }
+                            };
+                            let index:number = dirs.length,
+                                count:number = 1;
+                            do {
+                                index = index - 1;
+                                if (vars.data.server[dirs[index]] === undefined) {
+                                    count = count + 1;
+                                    file.remove({
+                                        callback: removed,
+                                        exclusions: [],
+                                        location: vars.path.servers + dirs[index],
+                                        section: "startup"
+                                    });
+                                }
+                            } while (index > 0);
+                            removed();
+                        } else {
+                            complete_tasks("server_audit");
+                        }
+                    });
                 }
             },
             services_app: {
@@ -951,7 +1010,9 @@ const start_application = function utilities_startApplication(process_path:strin
                             "127.0.0.1",
                             "::1"
                         ],
-                        encryption: "both",
+                        encryption: (vars.options.demo === true)
+                            ? "open"
+                            : "both",
                         id: "",
                         message_segmentation: 1e6,
                         mutual_tls: false,
@@ -978,14 +1039,19 @@ const start_application = function utilities_startApplication(process_path:strin
                                 count = count + 1;
                                 if (count === total) {
                                     const time:number = Number(process.hrtime.bigint() - vars.environment.start_time),
-                                        sea:string = (node.sea.isSea() === true)
-                                            ? "Node.js Single Executable Application (SEA)"
-                                            : "regular Node.js project",
+                                        bun:string = process.versions.bun,
+                                        versions:string = (bun === undefined)
+                                            ? `${asterisk} Application executed from ${vars.text.green}Node.js${vars.text.none} at version ${vars.text.cyan + process.versions.node + vars.text.none}.`
+                                            : `${asterisk} Application executed from ${vars.text.green}bun${vars.text.none} at Node.js API version ${vars.text.cyan + process.versions.node + vars.text.none} and bun version ${vars.text.cyan + bun + vars.text.none}.`,
+                                        demo:string = (vars.options.demo === true)
+                                            ? `${vars.text.angry}demo${vars.text.none}`
+                                            : `${vars.text.green}service${vars.text.none}`,
                                         logs:string[] = [
                                             "",
                                             heading("Startup Complete"),
-                                            `${asterisk} Application executed as a ${vars.text.cyan + sea + vars.text.none} at version ${vars.text.cyan + process.version + vars.text.none}.`,
+                                            versions,
                                             `${asterisk} Application completed ${vars.text.cyan + count_task + vars.text.none} startup tasks in ${vars.text.cyan + (time / 1e9) + vars.text.none} seconds.`,
+                                            `${asterisk} Application is running in ${demo} mode.`,
                                             `${asterisk} Process ID: ${vars.text.cyan + process.pid + vars.text.none}`,
                                             "",
                                             heading("Web Server Ports"),
@@ -1101,12 +1167,11 @@ const start_application = function utilities_startApplication(process_path:strin
                                         len = keys.length;
                                         if (len > 0) {
                                             let index_ports:number = 0,
-                                                len_ports:number = 0;
+                                                len_ports:number = 0,
+                                                title:boolean = false;
                                             index = 0;
                                             longest = [0, 3, 0];
                                             keys.sort();
-                                            logs.push("");
-                                            logs.push(heading("Container Ports"));
                                             do {
                                                 if (vars.data.containers[keys[index]].name.length > longest[0]) {
                                                     longest[0] = vars.data.containers[keys[index]].name.length;
@@ -1120,6 +1185,11 @@ const start_application = function utilities_startApplication(process_path:strin
                                                     ? 0
                                                     : ports.length;
                                                 if (len_ports > 0) {
+                                                    if (title === false) {
+                                                        logs.push("");
+                                                        logs.push(heading("Container Ports"));
+                                                        title = true;
+                                                    }
                                                     longest[2] = 0;
                                                     ports.sort(sort);
                                                     index_ports = 0;
@@ -1139,6 +1209,10 @@ const start_application = function utilities_startApplication(process_path:strin
                                             } while (index < len);
                                         }
                                         log.shell(logs, true);
+
+                                        if (vars.options.demo === true) {
+                                            process.stderr.write(vars.data.server[vars.id.dashboard_server].ports.open.toString());
+                                        }
                                         vars.environment.loading = false;
                                     }
                                 }
@@ -1157,6 +1231,9 @@ const start_application = function utilities_startApplication(process_path:strin
 
                     };
                     clock();
+                    if (vars.options.demo === true) {
+                        clock_demo();
+                    }
                     statistics_resources.data();
                     if (vars.test.testing === true || vars.data.server[vars.id.dashboard_server] === undefined) {
                         server_create({
@@ -1212,6 +1289,7 @@ const start_application = function utilities_startApplication(process_path:strin
     String.prototype.bytes = universal.bytes;
     String.prototype.bytes_big = universal.bytes_big;
     String.prototype.capitalize = universal.capitalize;
+    String.prototype.file_sanitize = universal.file_sanitize;
 
     vars.environment.hashes = node.crypto.getHashes();
 

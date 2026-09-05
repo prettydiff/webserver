@@ -34,20 +34,15 @@ Determine which features to exclude by simply setting a boolean value in the `fe
 * https://prettydiff.github.io/aphorio/screenshots/index.html
 
 ## Installation
-1. Install [Node.js](https://nodejs.org/) version 24 or later.
+1. Install one of
+   * [Node.js](https://nodejs.org/) version 25 or later.
+   * [bun](https://bun.com/)
 2. Install [git](https://git-scm.com/)
 3. Execute `git clone https://github.com/prettydiff/aphorio.git`
-4. Execute `cd aphorio`
-7. Run the application: `npm run server`.
-6. Access the dashboard in a browser on the specified random port.
-
-## Performance
-The following benchmarks are executed from the application's internal *Performance Test* section.  The results are hardware specific executed using a localhost address and message size of 120 bytes across multiple experiments each comprising 10 tests.
-
-* *3,250,000 messages* in **0.002-0.006 seconds**: WebSockets, send only, not including garbage collection of system memory
-* *3,250,000 messages* in about 1 second: WebSockets, send only, includes memory garbage collection in the tests
-* *45,000 messages* in about 1 second: WebSockets, full round trip, includes memory garbage collection in the tests
-* *100 messages* in about 1 second: HTTP GET without keep alive, full round trip, includes memory garbage collection in the tests
+4. Run the application with any of:
+   * Node.js - `node ./aphorio/lib/index.ts`
+   * bun - `bun ./aphorio/lib/index.ts`
+5. Access the dashboard in a browser on the specified random port.
 
 ## Nerd Stuff
 ### Shell commands
@@ -75,6 +70,7 @@ All arguments are supported only on the server command, example: `npm run server
 * `test`                     - If present this option instructs the application to execute test automation.
 
 ##### General Use Options
+* `demo`                      - Runs the application in demo mode where some functionality is disabled and no changes are written to disk.
 * `no-color`                  - Eliminates use of ANSI color codes in terminal output.
 * `port-open:<port_number>`   - Creates an insecure instance of the dashboard server on the specified insecure port, if that port is open.
 * `port-secure:<port_number>` - Creates a secure instance of the dashboard server on the specified insecure port, if that port is open.

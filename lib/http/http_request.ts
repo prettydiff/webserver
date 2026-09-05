@@ -14,7 +14,7 @@ const http_request = function http_request(config:services_test_http, callback:(
             ? ""
             : bodyRaw,
         path:string = headers[0].replace(/^[A-Z]+\s+/, ""),
-        scheme:"http"|"https" = (config.encryption === true)
+        scheme:"http"|"https" = (vars.options.demo === false && config.encryption === true)
             ? "https"
             : "http";
     let index:number = headers.length,
@@ -25,7 +25,11 @@ const http_request = function http_request(config:services_test_http, callback:(
         address:string = "",
         chunked:boolean = false,
         chunkCount:number = 0;
-    if (address_input === null || address_input === undefined) {
+    if (vars.options.demo === true) {
+        host = "127.0.0.1";
+        port = vars.data.server[vars.id.dashboard_server].ports.open;
+        config.encryption = false;
+    } else if (address_input === null || address_input === undefined) {
         do {
             index = index - 1;
             if ((/^host\s*:\s*/).test(headers[index].toLowerCase()) === true) {

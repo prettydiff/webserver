@@ -254,32 +254,37 @@ const directory = function utilities_directory(args:config_directory):void {
                             fail(null, null, parent_index);
                         } else {
                             if (type === "directory") {
-                                if (parent_item === true || path_drive === args.path || args.depth < 1 || dir_len < args.depth) {
-                                    const config_readdir:config_directory_readdir = {
-                                        name_rel: name_rel,
-                                        parent_index: parent_index,
-                                        parent_item: parent_item,
-                                        path: path,
-                                        path_drive: path_drive,
-                                        stat_obj: stat_obj
-                                    };
-                                    if (args.directory_size === true) {
-                                        spawn(vars.commands.directory_size, function utilities_directory_statWrap_stat_populate_size(size_output:core_spawn_output):void {
+                                const config_readdir:config_directory_readdir = {
+                                    name_rel: name_rel,
+                                    parent_index: parent_index,
+                                    parent_item: parent_item,
+                                    path: path,
+                                    path_drive: path_drive,
+                                    stat_obj: stat_obj
+                                };
+                                if (args.directory_size === true) {
+                                    spawn(vars.commands.directory_size, function utilities_directory_statWrap_stat_populate_size(size_output:core_spawn_output):void {
+                                        if (parent_item === true || path_drive === args.path || args.depth < 1 || dir_len < args.depth) {
                                             config_readdir.stat_obj.size = Number(size_output.stdout.replace(/\D/g, ""));
                                             readdir(config_readdir);
-                                        }, {
-                                            cwd: path,
-                                            shell: (process.platform === "win32")
-                                                ? "powershell"
-                                                : "bash"
-                                        }).execute();
-                                    } else {
+                                        } else {
+                                            stat_obj.size = Number(size_output.stdout.replace(/\D/g, ""));
+                                            add_item([path, "directory", parent_index, 0, stat_obj, name_rel]);
+                                        }
+                                    }, {
+                                        cwd: path,
+                                        shell: (process.platform === "win32")
+                                            ? "powershell"
+                                            : "bash"
+                                    }).execute();
+                                } else {
+                                    if (parent_item === true || path_drive === args.path || args.depth < 1 || dir_len < args.depth) {
                                         config_readdir.stat_obj.size = 0;
                                         readdir(config_readdir);
+                                    } else {
+                                        stat_obj.size = 0;
+                                        add_item([path, "directory", parent_index, 0, stat_obj, name_rel]);
                                     }
-                                } else {
-                                    stat_obj.size = 0;
-                                    add_item([path, "directory", parent_index, 0, stat_obj, name_rel]);
                                 }
                             } else {
                                 if (type === "symbolic_link") {

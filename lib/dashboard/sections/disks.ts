@@ -36,7 +36,7 @@ const ui_disks = function ui_disks():void {
                             ? item.data[index].partitions.length
                             : 0,
                         strong:HTMLElement = (key === "partitions" && len > 0)
-                            ? document.createElement("h6")
+                            ? document.createElement("h4")
                             : document.createElement("strong"),
                         span:HTMLElement = document.createElement("span"),
                         children = function dashboard_sections_disks_receive_dataItem_children(list_data:os_disk_partition[], list_len:number, parent:HTMLElement):void {

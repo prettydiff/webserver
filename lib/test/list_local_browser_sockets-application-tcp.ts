@@ -19,7 +19,7 @@ const test_listLocalBrowserSocketsApplicationTCP = function test_listLocalBrowse
                     node: [
                         ["getElementsByTagName", "nav", 0],
                         ["getElementsByTagName", "div", 1],
-                        ["getElementsByTagName", "button", 2]
+                        ["getElementsByTagName", "button", 1]
                     ]
                 }
             ],

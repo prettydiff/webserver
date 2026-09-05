@@ -139,6 +139,8 @@ const vars:core_vars = {
             dashboard_page: "",
             // last git commit date/time
             date_commit: 0,
+            // The future time when to kill this process if in demo mode
+            demo_kill: 0,
             // supported features of this running instance
             features: {
                 "application-logs": true,
@@ -211,7 +213,9 @@ const vars:core_vars = {
                     "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
                     "C:\\Windows\\System32\\cmd.exe",
                     "C:\\Program Files\\Git\\bin\\bash.exe",
-                    "C:\\Program Files (x86)\\Git\\bin\\bash.exe"
+                    "C:\\Program Files (x86)\\Git\\bin\\bash.exe",
+                    "C:\\cygwin64\\bin\\bash.exe",
+                    "C:\\msys64\\usr\\bin\\bash.exe"
                 ]
                 : [],
             // the amount of time required to covert local time to UTC time
@@ -230,6 +234,7 @@ const vars:core_vars = {
             "browser": null,
             "delay-intervals": 250,
             "delay-time": 50,
+            "demo": false,
             "list": null,
             "no-color": false,
             "no-exit": false,
@@ -292,7 +297,6 @@ const vars:core_vars = {
                     pid: 0,
                     platform: "",
                     ppid: 0,
-                    sea: false,
                     uptime: 0,
                     versions: {}
                 },

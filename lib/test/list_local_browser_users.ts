@@ -19,7 +19,7 @@ const test_listLocalBrowserUsers = function test_listLocalBrowserUsers():test_li
                     event: "click",
                     node: [
                         ["getElementsByTagName", "nav", 0],
-                        ["getElementsByTagName", "div", 2],
+                        ["getElementsByTagName", "div", 3],
                         ["getElementsByTagName", "button", 5]
                     ]
                 }

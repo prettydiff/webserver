@@ -42,6 +42,7 @@ declare global {
         bytes: () => number;
         bytes_big: () => bigint;
         capitalize: () => string;
+        file_sanitize: () => string;
     }
 
     interface Window {
@@ -146,9 +147,11 @@ declare global {
 
     interface dashboard_utility {
         baseline: () => void;
-        clock: (data_item:socket_data) => void;
+        clock: (socket_data:socket_data) => void;
+        clock_demo: (socket_data:socket_data) => void;
         nodes: {
             clock: HTMLElement;
+            clock_demo: HTMLElement;
             load: HTMLElement;
             main: HTMLElement;
         };
@@ -156,6 +159,7 @@ declare global {
         performance_set: (section:type_dashboard_sections) => void;
         resize: () => void;
         setState: () => void;
+        test_browser?: (socket_data:socket_data) => void;
     }
 
     interface graph_composite {
@@ -337,6 +341,7 @@ declare global {
         nodes: {
             body: HTMLElement;
             cols: HTMLElement;
+            demo_containers: HTMLElement;
             list: HTMLElement;
             list_variables: HTMLElement;
             new_container: HTMLButtonElement;
@@ -413,6 +418,7 @@ declare global {
             summary: HTMLElement;
             tbody: HTMLElement;
         };
+        sort: boolean;
         time: number;
         tools: {
             media_time: (input:boolean|number|string) => string;
@@ -586,6 +592,7 @@ declare global {
         item: Terminal;
         nodes: {
             cols: HTMLElement;
+            demo_terminal: HTMLElement;
             output: HTMLElement;
             rows: HTMLElement;
             select: HTMLSelectElement;
@@ -754,6 +761,7 @@ declare global {
             };
         };
         terminal: string;
+        test_automation: services_test_browser;
         test_performance: {
             body: string;
             connect_address: string;

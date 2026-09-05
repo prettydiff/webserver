@@ -12,7 +12,6 @@ import { connect as netConnect, createServer as netCreateServer, isIPv4, isIPv6 
 import { arch, cpus, endianness, EOL, freemem, homedir, hostname, networkInterfaces, platform, release, totalmem, type, uptime, userInfo, version } from "node:os";
 import { isAbsolute, resolve as resolvePath, sep } from "node:path";
 import { clearScreenDown, cursorTo } from "node:readline";
-import { isSea } from "node:sea";
 import { Readable } from "node:stream";
 import { StringDecoder } from "node:string_decoder";
 import { connect as tlsConnect, createServer as tlsCreateServer } from "node:tls";
@@ -111,9 +110,6 @@ const node = {
     readline: {
         clearScreenDown: clearScreenDown,
         cursorTo: cursorTo
-    },
-    sea: {
-        isSea: isSea
     },
     stream: {
         Readable: Readable

@@ -30,15 +30,11 @@ const server_create = function services_serverCreate(data:services_server_action
                 complete = function services_serverCreate_complete(input:"config"|"dir"):void {
                     flags[input] = true;
                     if (flags.config === true && flags.dir === true) {
-                        let server_count:number = 0;
                         const serverCallback = function services_serverCreate_complete_serverCallback():void {
-                                server_count = server_count + 1;
-                                if ((server_count > 1 && config.encryption === "both") || config.encryption !== "both") {
-                                    ports_application();
-                                    // 6. call the callback
-                                    if (callback !== null) {
-                                        callback();
-                                    }
+                                ports_application();
+                                // 6. call the callback
+                                if (callback !== null) {
+                                    callback();
                                 }
                             };
                         log.application({
@@ -50,7 +46,7 @@ const server_create = function services_serverCreate(data:services_server_action
                             time: Date.now()
                         });
                         // 4. launch servers
-                        if (config.activate === true && config.id !== vars.id.dashboard_server) {
+                        if (config.activate === true && vars.options.demo === false && config.id !== vars.id.dashboard_server) {
                             server_start(data.server.id, serverCallback);
                         } else if (callback !== null) {
                             callback();
@@ -60,7 +56,14 @@ const server_create = function services_serverCreate(data:services_server_action
                 children = function services_serverCreate_children():void {
                     count = count + 1;
                     if (count > 1) {
-                        complete("dir");
+                        file.write({
+                            callback: function services_serverCreate_children_complete():void {
+                                complete("dir");
+                            },
+                            contents: config.name,
+                            location: `${path_name}name-${config.name.file_sanitize()}`,
+                            section: "servers-web"
+                        });
                     }
                 },
                 mkdir = function services_serverCreate_serverDir(location:string):void {
@@ -73,6 +76,9 @@ const server_create = function services_serverCreate(data:services_server_action
             if (vars.data.server[output.hash] === undefined) {
                 // 1. add server to the vars.data.servers object
                 config.id = output.hash;
+                if (vars.options.demo === true) {
+                    config.encryption = "open";
+                }
                 if (vars.data.server[config.id] === undefined) {
                     if (dashboard === true) {
                         vars.id.dashboard_server = output.hash;
@@ -92,11 +98,16 @@ const server_create = function services_serverCreate(data:services_server_action
                     }
                     vars.data.server[config.id] = {
                         certificates_client: {
-                            crt: "",
-                            pfx: ""
+                            crt: (config.encryption === "open")
+                                ? "no certificates on open servers"
+                                : "",
+                            pfx: (config.encryption === "open")
+                                ? "no certificates on open servers"
+                                : ""
                         },
                         config: config,
-                        ports: config.ports
+                        ports: config.ports,
+                        sockets: []
                     };
                     vars.data_store.server[config.id] = {
                         server_certs: null,

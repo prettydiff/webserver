@@ -248,13 +248,19 @@ const ui_compose_containers = function ui_compose_containers():void {
                         }
                     }
                 };
-                shell();
-                dashboard.shared_services.shellResize({
-                    node: dashboard.sections["compose-containers"].nodes.shell,
-                    section: "compose-containers",
-                    shell: dashboard.sections["compose-containers"].shell
-                });
-                dashboard.sections["compose-containers"].nodes.new_container.onclick = dashboard.shared_services.create;
+                if (dashboard.global.payload.demo === true) {
+                    const p:HTMLElement = document.createElement("p");
+                    p.textContent = "Shell output disabled in demo mode.";
+                    dashboard.sections["compose-containers"].nodes.shell.appendChild(p);
+                } else {
+                    shell();
+                    dashboard.shared_services.shellResize({
+                        node: dashboard.sections["compose-containers"].nodes.shell,
+                        section: "compose-containers",
+                        shell: dashboard.sections["compose-containers"].shell
+                    });
+                    dashboard.sections["compose-containers"].nodes.new_container.onclick = dashboard.shared_services.create;
+                }
                 dashboard.sections["compose-containers"].nodes.new_variable.onclick = dashboard.sections["compose-containers"].events.edit_variable;
                 dashboard.sections["compose-containers"].nodes.update_button.onclick = dashboard.sections["compose-containers"].events.update;
                 dashboard.sections["compose-containers"].nodes.update_time.onclick = null;
@@ -270,10 +276,14 @@ const ui_compose_containers = function ui_compose_containers():void {
                 dashboard.sections["compose-containers"].nodes.status.appendText(dashboard.global.payload.compose.status);
                 dashboard.sections["compose-containers"].nodes.status.style.display = "block";
             }
+            if (dashboard.global.payload.demo === true) {
+                dashboard.sections["compose-containers"].nodes.demo_containers.style.display = "block";
+            }
         },
         nodes: {
             body: document.getElementById("compose-containers").getElementsByClassName("compose-body")[0] as HTMLElement,
             cols: document.getElementById("compose-containers").getElementsByClassName("section")[2].getElementsByTagName("p")[0].getElementsByTagName("em")[0] as HTMLElement,
+            demo_containers: document.getElementById("compose-containers").getElementsByClassName("section")[3].getElementsByClassName("demo-containers")[0] as HTMLElement,
             list: document.getElementById("compose-containers").getElementsByClassName("compose-container-list")[0] as HTMLElement,
             list_variables: document.getElementById("compose-containers").getElementsByClassName("compose-variable-list")[0] as HTMLElement,
             new_container: document.getElementById("compose-containers").getElementsByClassName("compose-container-new")[0] as HTMLButtonElement,

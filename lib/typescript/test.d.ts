@@ -40,6 +40,7 @@ interface test_browserEvent {
 
 interface test_browserItem {
     delay?: test_assertion_dom;
+    event_index?: number;
     interaction: test_browserEvent[];
     name: string;
     unit: test_assertion_dom[];

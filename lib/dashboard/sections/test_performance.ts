@@ -116,52 +116,83 @@ const ui_test_performance = function ui_test_performance():void {
         receive: function dashboard_sections_testPerformance_receive(socket_data:socket_data):void {
             const data:services_test_performance_output = socket_data.data as services_test_performance_output,
                 list:HTMLCollectionOf<HTMLElement> = document.getElementById("test-performance").getElementsByClassName("summary-stats")[0].getElementsByTagName("strong"),
-                output = function dashboard_sections_testPerformance_receive_output(index:number, type:"roundtrip"|"send"):void {
+                output = function dashboard_sections_testPerformance_receive_output(index:number, type:"memory"|"roundtrip"|"send"):void {
                     const max:HTMLElement = document.createElement("em"),
                         min:HTMLElement = document.createElement("em"),
-                        trials:string[] = `[${data[type].trials.join(", ")}]`.split(data[type].max.toString()),
-                        len:number = data[type].trials.length;
-                    let trial_min:string[] = null;
-                    max.textContent = data[type].max.toString();
-                    min.textContent = data[type].min.toString();
-                    max.setAttribute("title", "maximum value");
-                    min.setAttribute("title", "minimum value");
-                    max.setAttribute("class", "red");
-                    min.setAttribute("class", "green");
-                    list[index].textContent = `${(data[type].min / 1e9).commas()} seconds`;
-                    list[index + 1].textContent = `${(data[type].average / 1e9).commas()} seconds`;
-                    list[index + 2].textContent = `${(data[type].max / 1e9).commas()} seconds`;
-                    list[index + 3].textContent = (data[type].variance === 0 || data[type].average === 0)
-                        ? "0 seconds, (0.00%)"
-                        : `\u00b1${(data[type].variance / 1e9).toFixed(9).replace(/0+$/, "")} seconds, (${((data[type].variance / data[type].average) * 100).toFixed(2)}%)`;
-                    if (len > 1) {
-                        if (trials[0].includes(data[type].min.toString()) === true) {
-                            trial_min = trials[0].split(data[type].min.toString());
-                            list[index + 4].textContent = trial_min[0];
-                            list[index + 4].appendChild(min);
-                            list[index + 4].appendText(trial_min[1]);
-                            list[index + 4].appendChild(max);
-                            list[index + 4].appendText(trials[1]);
-                        } else {
-                            trial_min = trials[1].split(data[type].min.toString());
-                            list[index + 4].textContent = trials[0];
-                            list[index + 4].appendChild(max);
-                            list[index + 4].appendText(trial_min[0]);
-                            list[index + 4].appendChild(min);
-                            list[index + 4].appendText(trial_min[1]);
-                        }
-                    } else if (len === 1) {
-                        list[index + 4].textContent = `[${data[type].trials}]`;
-                    } else {
+                        trials:string[] = (data[type] === undefined)
+                            ? []
+                            : `[${data[type].trials.join(", ")}]`.split(data[type].max.toString()),
+                        len:number = (data[type] === undefined)
+                            ? 0
+                            : data[type].trials.length,
+                        label:string = (type === "memory")
+                            ? "bytes"
+                            : "seconds",
+                        value = function dashboard_sections_testPerformance_receive_output_value(input:number):number {
+                            if (type === "memory") {
+                                return input;
+                            }
+                            return input / 1e9;
+                        };
+                    if (len < 1) {
+                        list[index].textContent = `0 ${label}`;
+                        list[index + 1].textContent = `0 ${label}`;
+                        list[index + 2].textContent = `0 ${label}`;
+                        list[index + 3].textContent = `0 ${label}, (0.00%)`;
                         list[index + 4].textContent = "[]";
+                    } else {
+                        let trial_min:string[] = null;
+                        max.textContent = data[type].max.toString();
+                        min.textContent = data[type].min.toString();
+                        max.setAttribute("title", "maximum value");
+                        min.setAttribute("title", "minimum value");
+                        max.setAttribute("class", "red");
+                        min.setAttribute("class", "green");
+                        list[index].textContent = `${value(data[type].min).commas()} ${label}`;
+                        list[index + 1].textContent = `${value(data[type].average).commas()} ${label}`;
+                        list[index + 2].textContent = `${value(data[type].max).commas()} ${label}`;
+                        list[index + 3].textContent = (data[type].variance === 0 || data[type].average === 0)
+                            ? `0 ${label}, (0.00%)`
+                            : `\u00b1${value(data[type].variance).toFixed(9).replace(/0+$/, "")} ${label}, (${((data[type].variance / data[type].average) * 100).toFixed(2)}%)`;
+                        if (len > 1) {
+                            if (trials[0].includes(data[type].min.toString()) === true) {
+                                trial_min = trials[0].split(data[type].min.toString());
+                                list[index + 4].textContent = trial_min[0];
+                                list[index + 4].appendChild(min);
+                                list[index + 4].appendText(trial_min[1]);
+                                list[index + 4].appendChild(max);
+                                list[index + 4].appendText(trials[1]);
+                            } else {
+                                trial_min = trials[1].split(data[type].min.toString());
+                                list[index + 4].textContent = trials[0];
+                                list[index + 4].appendChild(max);
+                                list[index + 4].appendText(trial_min[0]);
+                                list[index + 4].appendChild(min);
+                                list[index + 4].appendText(trial_min[1]);
+                            }
+                        } else if (len === 1) {
+                            list[index + 4].textContent = `[${data[type].trials}]`;
+                        } else {
+                            list[index + 4].textContent = "[]";
+                        }
                     }
                 };
-            list[0].textContent = data.quantity_transmit.commas();
-            list[1].textContent = data.quantity_tests.commas();
-            list[2].textContent = `${data.message_size.commas()} bytes`;
-            list[3].textContent = `${data.frame_body_size.commas()} bytes`;
-            list[4].textContent = `${(data.time / 1e9).commas()} seconds`;
-            list[5].textContent = data.type;
+            if (data.summary === "Test complete.") {
+                list[0].textContent = data.quantity_transmit.commas();
+                list[1].textContent = data.quantity_tests.commas();
+                list[2].textContent = `${data.message_size.commas()} bytes`;
+                list[3].textContent = `${data.frame_body_size.commas()} bytes`;
+                list[4].textContent = `${(data.time / 1e9).commas()} seconds`;
+                list[5].textContent = data.type;
+            } else {
+                list[0].textContent = "0";
+                list[1].textContent = "0";
+                list[2].textContent = "0 bytes";
+                list[3].textContent = "0 bytes";
+                list[4].textContent = "0 seconds";
+                list[5].textContent = data.type;
+            }
+            output(16, "memory");
             output(6, "send");
             output(11, "roundtrip");
             dashboard.sections["test-performance"].nodes.status.textContent = data.summary;

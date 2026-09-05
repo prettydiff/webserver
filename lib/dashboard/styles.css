@@ -90,6 +90,7 @@
             li > strong,
             li > h6{width:22em}
         }
+        #disks li h4{display:inline-block;width:22em}
         #statistics-resources {
             .graphs[data-type="individual"] .section div{float:left;margin:0 0 0 -0.1em;width:calc(20% - 0.1em)}
             .graphs[data-type="individual"] .section div:first-child{margin:0}
@@ -243,15 +244,20 @@ select{background:var(--background_textarea);border-color:var(--border_input);bo
             li{background:var(--background_textarea);padding:1em}
             strong{border-color:var(--text);border-style:none solid none none;border-width:0 0.065em 0 0;display:inline-block;margin:0 1.5em 0 0;width:10em}
         }
+        .demo-containers{display:none}
     }
     #connection-status{margin:0 0 1.8em}
+    #demo-mode{
+        background:var(--text_yellow);border-color:var(--black);border-style:solid;border-width:0.2em;color:var(--background);display:none;margin:0 0 1em;padding:0.5em 1em;
+        strong{color:var(--background);display:inline-block;font-weight:bold}
+    }
     #file-system ul{margin:0 0 0 4em;padding:0}
     #hash {
         .output{height:15em}
         p{float:none;width:100%}
     }
     #help ul{padding:0}
-    #test-http .from p,
+    #test-http .form p,
     #test-websocket .form p{float:none;width:100%}
     #test-http .http_response{
         p{float:left;width:calc(33% - 0.5em)}
@@ -300,6 +306,9 @@ select{background:var(--background_textarea);border-color:var(--border_input);bo
         canvas{background:var(--background_textarea)};
         .graphs .section div{border-color:var(--border_input);border-style:solid;border-width:0.1em};
         .graphs[data-type="composite"] .section div{height:40em}
+    }
+    #terminal{
+        .demo-terminal{display:none;float:left;margin:-2.8em 0 0 15em}
     }
     /* end id selectors */
 
@@ -419,6 +428,7 @@ select{background:var(--background_textarea);border-color:var(--border_input);bo
         #faq li{list-style:disc}
         li{list-style:none}
     }
+    mark{background:transparent;color:var(--text_yellow);display:inline-block;margin:0 0.5em}
     nav{
         background:var(--background_nav);border-color:var(--background_button);border-style:solid;border-width:0.1em;
         div{border-color:var(--border_color);border-style:solid none none;border-width:0.1em;margin:0 0 2em;padding:2em 0 0}
@@ -524,7 +534,7 @@ select{background:var(--background_textarea);border-color:var(--border_input);bo
 
     #compose-containers,
     #terminal{
-        .dimensions{float:right;margin:-3em 0 0 0}
+        .dimensions{float:right;margin:-2.8em 0 0 0}
         .terminal-output{width:100%}
         .xterm{border-color:var(--border_input);overflow:hidden}
         .xterm-rows{font-size:vars(--font-size)}
@@ -631,6 +641,7 @@ select{background:var(--background_textarea);border-color:var(--border_input);bo
     td::selection{background-color:var(--text);color:var(--black)}
 
     em::selection,
+    mark::selection,
     strong::selection,
     time::selection{background-color:var(--text_yellow);color:var(--background)}
     svg path{fill:var(--background_dark)}

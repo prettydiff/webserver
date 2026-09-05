@@ -110,9 +110,9 @@ const websocket_test:websocket_test = {
             } while (index > 0);
 
             // set host to loopback if not found
-            if (host === "") {
+            if (vars.options.demo === true || host === "") {
                 config.ip = "127.0.0.1";
-                config.port = (data.encryption === true)
+                config.port = (data.encryption === true && vars.options.demo === false)
                     ? vars.data.server[vars.id.dashboard_server].ports.secure
                     : vars.data.server[vars.id.dashboard_server].ports.open;
             // discern host value from IPv6 address plus specified port
@@ -158,6 +158,9 @@ const websocket_test:websocket_test = {
         const data:services_websocket_message = socket_data.data as services_websocket_message,
             socket_dashboard:websocket_client = transmit.socket as websocket_client,
             body:Buffer = Buffer.from(data.message),
+            key:Buffer = (data.frame.mask === true)
+                ? Buffer.from(Math.random().toString() + Math.random().toString() + Math.random().toString()).subarray(0, 32)
+                : null,
             socket_test:websocket_client = websocket_test.find_socket("out", socket_dashboard.hash);
         let frameHeader:Buffer = null,
             payload:Buffer = null,
@@ -195,10 +198,10 @@ const websocket_test:websocket_test = {
             } else if (data.frame.len === 127) {
                 frameHeader.writeUIntBE(data.frame.extended, 4, 6);
             }
-            if (data.frame.mask === true) {
-                payload = Buffer.concat([frameHeader, data.frame.maskKey, body]);
-            } else {
+            if (key === null) {
                 payload = Buffer.concat([frameHeader, body]);
+            } else {
+                payload = Buffer.concat([frameHeader, key, body]);
             }
         } else {
             payload = Buffer.concat([frameHeader, body]);

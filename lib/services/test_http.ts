@@ -3,10 +3,10 @@ import http_request from "../http/http_request.ts";
 import send from "../transmit/send.ts";
 
 const test_http = function services_testHTTP(socket_data:socket_data, transmit:transmit_socket):void {
-    const data:services_test_http = socket_data.data as services_test_http;
+    const data:services_test_http = socket_data.data as services_test_http,
+        startTime:bigint = process.hrtime.bigint();
     http_request(data, function services_testHTTP_callback(config:config_http_request_output):void {
-        const startTime:bigint = process.hrtime.bigint(),
-            response_body:string = (config.error === null)
+        const response_body:string = (config.error === null)
                     ? (config.response_body_raw === undefined)
                         ? ""
                         : config.response_body_raw

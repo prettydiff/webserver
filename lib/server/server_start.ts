@@ -28,6 +28,11 @@ const server_start = function server_start(id:string, callback:(name:string) => 
             complete = function server_start_open_complete(id:string):void {
                 count = count + 1;
                 if (callback !== null && callback !== undefined && ((vars.data.server[id].config.encryption === "both" && count > 1) || vars.data.server[id].config.encryption !== "both")) {
+                    count = 0;
+                    broadcast(vars.id.dashboard_server, "dashboard", {
+                        data: vars.data.server,
+                        service: "services_server_update"
+                    });
                     callback(id);
                 }
             },
@@ -54,10 +59,6 @@ const server_start = function server_start(id:string, callback:(name:string) => 
                     status: "informational",
                     time: Date.now()
                 });
-                broadcast(vars.id.dashboard_server, "dashboard", {
-                    data: vars.data.server,
-                    service: "services_server_update"
-                });
                 complete(serverItem.id);
             },
             server_error = function server_start_open_serverError(this:core_server_instance, ser:node_error):void {
@@ -75,7 +76,7 @@ const server_start = function server_start(id:string, callback:(name:string) => 
                     status: "error",
                     time: Date.now()
                 });
-                if (vars.environment.loading === true) {
+                if (vars.environment.loading === true && ser !== null && ser !== undefined) {
                     // eslint-disable-next-line no-console
                     console.log(ser);
                 }

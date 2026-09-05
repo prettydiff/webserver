@@ -28,6 +28,7 @@ interface services_compose_variables {
 // A key/value list of custom docker compose template variables
 
 interface services_dashboard_open {
+    demo: boolean;
     compose: services_compose;
     hashes: string[];
     http_request: string;
@@ -206,7 +207,6 @@ interface services_os_main {
         pid: number;
         platform: string;
         ppid: number;
-        sea: boolean;
         uptime: number;
         versions: store_string;
     };
@@ -290,6 +290,11 @@ interface services_status_clock {
 }
 // Provides the server's clock time to the UI
 
+interface services_status_clock_demo {
+    remaining: string;
+}
+// Provides the server's clock time to the UI
+
 interface services_terminal_resize {
     cols: number;
     hash: string;
@@ -349,6 +354,7 @@ interface services_test_performance_input {
 
 interface services_test_performance_output {
     frame_body_size: number;
+    memory: supplemental_test_performance_data;
     message_size: number;
     quantity_tests: number;
     quantity_transmit: number;
@@ -434,6 +440,7 @@ type socket_data =
     {data: services_statistics_change;       service: "services_statistics_change";} |
     {data: services_statistics_data;         service: "services_statistics_data";} |
     {data: services_status_clock;            service: "services_status_clock";} |
+    {data: services_status_clock_demo;       service: "services_status_clock_demo";} |
     {data: services_terminal_resize;         service: "services_terminal_resize";} |
     {data: services_test_browser;            service: "services_test_browser";} |
     {data: services_test_http;               service: "services_test_http";} |

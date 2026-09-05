@@ -69,6 +69,7 @@ interface supplemental_server {
     certificates_client: supplemental_certificate_client;
     config: supplemental_server_config;
     ports: core_server_ports;
+    sockets: supplemental_socket_application_tcp[];
 }
 
 interface supplemental_server_config {

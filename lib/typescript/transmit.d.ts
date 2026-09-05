@@ -102,10 +102,10 @@ interface websocket_client extends node_tls_TLSSocket {
     proxy: websocket_client;
     queue: Buffer[];
     queue_callback?: () => void;
+    queue_index:number;
     role: "client"|"server";
     secure: boolean;
     segmentation: number;
-    server: core_server_instance;
     server_hash: string;
     status: type_socket_status;
     time: number;
@@ -115,6 +115,7 @@ interface websocket_client extends node_tls_TLSSocket {
 
 interface websocket_pty extends websocket_client {
     pty: shell_pty;
+    pty_status: "killed" | "open";
 }
 
 interface websocket_event extends Event {
