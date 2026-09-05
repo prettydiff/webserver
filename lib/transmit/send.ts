@@ -19,7 +19,7 @@ const send = function transmit_send(body:Buffer|socket_data|string, socket:webso
             if (socket.status === "open") {
                 socket.status = "pending";
             }
-            if (socket.write(socket.queue[0]) === true) {
+            if (socket.write(socket.queue[socket.queue_index]) === true) {
                 writeCallback();
             } else {
                 socket.once("drain", writeCallback);
@@ -148,7 +148,7 @@ const send = function transmit_send(body:Buffer|socket_data|string, socket:webso
             frameBody:Buffer = dataPackage.subarray(0, 125);
         frameHeader[0] = 128 + opcode;
         frameHeader[1] = frameBody.length;
-        socket.queue.unshift(Buffer.concat([frameHeader, frameBody]));
+        socket.queue.push(Buffer.concat([frameHeader, frameBody]));
         if (socket.status === "open") {
             writeFrame();
         }
