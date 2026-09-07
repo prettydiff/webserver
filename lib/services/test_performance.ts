@@ -225,6 +225,14 @@ const test_performance = function services_testPerformance(socket_data:socket_da
             }
         };
     if (typeof data.quantity_tests === "number" && typeof data.quantity_transmit === "number" && data.quantity_tests > 0 && data.quantity_transmit > 0) {
+        if (vars.options.demo === true) {
+            if (data.quantity_tests > 10) {
+                data.quantity_tests = 10;
+            }
+            if (data.quantity_transmit > 1000) {
+                data.quantity_transmit = 1000;
+            }
+        }
         time_start = process.hrtime.bigint();
         test_type();
     } else {
