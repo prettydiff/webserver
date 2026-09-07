@@ -173,7 +173,7 @@ const test_performance = function services_testPerformance(socket_data:socket_da
                                 let index:number = data.quantity_transmit;
                                 socket_test.segmentation = data.frame_body_size;
                                 socket_test.proxy = transmit.socket as websocket_client;
-                                socket_test.queue_callback = function services_testPerformance_testWebSocket_hash_socket_queueCallback():void {
+                                socket_test.queue_callback = function services_testPerformance_testWebSocket_hash_create_queueCallback():void {
                                     if (index < 1) {
                                         complete("send", socket_test);
                                     }
@@ -181,7 +181,9 @@ const test_performance = function services_testPerformance(socket_data:socket_da
                                 if (index > 0) {
                                     do {
                                         index = index - 1;
-                                        send(data.body, socket_test, 1);
+                                        setTimeout(function services_testPerformance_testWebSocket_hash_create_send():void {
+                                            send(data.body, socket_test, 1);
+                                        }, 0);
                                     } while (index > 0);
                                 }
                             }

@@ -1248,15 +1248,15 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
             <p class="tab-description">Providing a real time metrics for supported services.</p>
             <div class="form">
                 <h3>Metric Controls</h3>
-                <p><label>Delay between updates in seconds <input spellcheck="false" type="number"/></label></p>
-                <p><label>Maximum number of data points <input spellcheck="false" type="number"/></label></p>
-                <p><label>Graph Type<select>
+                <p><label>Delay between updates in seconds <input spellcheck="false" type="number" value="20"/></label></p>
+                <p><label>Maximum number of data points <input spellcheck="false" type="number" value="1000"/></label></p>
+                <p class="stat-select"><label>Graph Type<select>
                     <option value="bar">bar</option>
-                    <option value="line">line</option>
+                    <option value="line" selected="selected">line</option>
                 </select></label></p>
-                <p><label>Display Method<select>
+                <p class="stat-select"><label>Display Method<select>
                     <option value="individual">individual graphs per service</option>
-                    <option value="composite">composite graphs per data type</option>
+                    <option value="composite" selected="selected">composite graphs per data type</option>
                 </select></label></p>
                 <span class="clear"></span>
             </div>

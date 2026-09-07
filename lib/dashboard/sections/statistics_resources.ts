@@ -191,8 +191,10 @@ const ui_statistics_resources = function ui_statistics_resources():void {
                                             : (dashboard.global.payload.compose.containers[keys[index_key]] === null || dashboard.global.payload.compose.containers[keys[index_key]] === undefined)
                                                 ? keys[index_key]
                                                 : dashboard.global.payload.compose.containers[keys[index_key]].name,
+                                        pointHoverRadius: 0,
+                                        pointRadius: 0,
                                         showLine: true,
-                                        tension: 0.2
+                                        tension: 0
                                     });
                                 }
                                 index_key = index_key + 1;
@@ -215,7 +217,14 @@ const ui_statistics_resources = function ui_statistics_resources():void {
                                     options: {
                                         animation: false,
                                         maintainAspectRatio: false,
-                                        responsive: true
+                                        responsive: true,
+                                        scales: {
+                                            x: {
+                                                ticks: {
+                                                    display: false
+                                                }
+                                            }
+                                        }
                                     },
                                     type: graph_type
                                 });
@@ -316,8 +325,10 @@ const ui_statistics_resources = function ui_statistics_resources():void {
                                             label: (type === "cpu" || type === "mem" || type === "threads")
                                                 ? dashboard.sections["statistics-resources"].graph_config.labels[type]
                                                 : dashboard.sections["statistics-resources"].graph_config.labels[`${type}_in` as "disk_in"],
+                                            pointHoverRadius: 0,
+                                            pointRadius: 0,
                                             showLine: true,
-                                            tension: 0.2
+                                            tension: 0
                                         },
                                         dataset1:graph_dataset = (type === "cpu" || type === "mem" || type === "threads")
                                             ? null
@@ -329,8 +340,10 @@ const ui_statistics_resources = function ui_statistics_resources():void {
                                                 data: dashboard.global.payload.stats.containers[id][`${type}_out` as "disk_out"].data,
                                                 fill: true,
                                                 label: dashboard.sections["statistics-resources"].graph_config.labels[`${type}_out` as "disk_out"],
+                                                pointHoverRadius: 0,
+                                                pointRadius: 0,
                                                 showLine: true,
-                                                tension: 0.2
+                                                tension: 0
                                             };
                                     if (type === "cpu" || type === "mem" || type === "threads") {
                                         return [[dataset0], dashboard.global.payload.stats.containers[id][type].labels];
@@ -361,7 +374,14 @@ const ui_statistics_resources = function ui_statistics_resources():void {
                                                     } - ${dashboard.sections["statistics-resources"].graph_config.title[type]}`
                                                 }
                                             },
-                                            responsive: true
+                                            responsive: true,
+                                            scales: {
+                                                x: {
+                                                    ticks: {
+                                                        display: false
+                                                    }
+                                                }
+                                            }
                                         },
                                         type: graph_type
                                     });

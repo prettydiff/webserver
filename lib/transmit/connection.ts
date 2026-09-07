@@ -111,7 +111,7 @@ const connection = function transmit_connection(this:core_server_instance, TLS_s
                         store.userAgent = `${ua[0]}, ${ua[1]}, ${store.userAgent.slice(store.userAgent.lastIndexOf(")") + 2)}`;
                     } else if ((/^upgrade-insecure-requests:\s*1$/).test(lower) === true && socket.encrypted !== true && server.upgrade === true && vars.data.server[server_id].ports.secure > 0) {
                         flags.upgrade = true;
-                    } else if (lower === "services_http_test: true") {
+                    } else if ((/services_http_test:\s*true/).test(lower) === true) {
                         flags.dashboard_http_test = true;
                     }
                 },
@@ -646,6 +646,7 @@ const connection = function transmit_connection(this:core_server_instance, TLS_s
                     "",
                     ""
                 ].join("\r\n"));
+                socket.destroySoon();
             // regular local traffic
             } else {
                 local_service();
