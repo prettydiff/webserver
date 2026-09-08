@@ -1,6 +1,7 @@
 
 import file from "../utilities/file.ts";
 import node from "../core/node.ts";
+import save from "../utilities/save.ts";
 import spawn from "../core/spawn.ts";
 import vars from "../core/vars.ts";
 
@@ -38,7 +39,12 @@ const certificate = function services_certificate(config:config_certificate):voi
                                     }
                                     if (count > 1) {
                                         vars.data.server[config.id].certificates_client = store_cert;
-                                        config.callback();
+                                        vars.data.server[config.id].config.certificate_path = {
+                                            ca: `${vars.path.project}servers${config.id + vars.path.sep}certs${vars.path.sep}int.crt`,
+                                            cert: `${vars.path.project}servers${config.id + vars.path.sep}certs${vars.path.sep}server.crt`,
+                                            key: `${vars.path.project}servers${config.id + vars.path.sep}certs${vars.path.sep}server.key`
+                                        };
+                                        save(config.callback, "servers-web");
                                     }
                                 };
                             file.read({

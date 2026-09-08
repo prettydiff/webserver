@@ -199,21 +199,21 @@ const server_start = function server_start(id:string, callback:(name:string) => 
                         file.read({
                             callback: read_callback,
                             identifier: "cert",
-                            location: `${certLocation}server.crt`,
+                            location: vars.data.server[id].config.certificate_path.cert,
                             no_file: null,
                             section:  "servers-web"
                         });
                         file.read({
                             callback: read_callback,
                             identifier: "key",
-                            location: `${certLocation}server.key`,
+                            location: vars.data.server[id].config.certificate_path.key,
                             no_file: null,
                             section:  "servers-web"
                         });
                         file.read({
                             callback: read_callback,
                             identifier: "ca",
-                            location: `${certLocation}int.crt`,
+                            location: vars.data.server[id].config.certificate_path.ca,
                             no_file: null,
                             section:  "servers-web"
                         });
@@ -231,9 +231,9 @@ const server_start = function server_start(id:string, callback:(name:string) => 
                     }
                 }
             };
-        node.fs.stat(`${certLocation}server.crt`, stat_callback);
-        node.fs.stat(`${certLocation}server.key`, stat_callback);
-        node.fs.stat(`${certLocation}int.crt`, stat_callback);
+        node.fs.stat(vars.data.server[id].config.certificate_path.ca, stat_callback);
+        node.fs.stat(vars.data.server[id].config.certificate_path.cert, stat_callback);
+        node.fs.stat(vars.data.server[id].config.certificate_path.key, stat_callback);
     }
 };
 

@@ -163,6 +163,11 @@ const ui_shared_services = function ui_shared_services():void {
                                 serverData:supplemental_server_config = (newFlag === true)
                                     ? {
                                         activate: true,
+                                        certificate_path: {
+                                            ca: "",
+                                            cert: "",
+                                            key: ""
+                                        },
                                         domain_local: ["localhost"],
                                         encryption: "both",
                                         id: "",

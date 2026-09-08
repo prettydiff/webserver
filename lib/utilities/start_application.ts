@@ -1005,6 +1005,11 @@ const start_application = function utilities_startApplication(process_path:strin
                 const ready = function utilities_startApplication_completeTasks_ready():void {
                     const default_server:supplemental_server_config = {
                         activate: true,
+                        certificate_path: {
+                            ca: "",
+                            cert: "",
+                            key: ""
+                        },
                         domain_local: [
                             "localhost",
                             "127.0.0.1",

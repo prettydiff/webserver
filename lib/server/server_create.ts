@@ -76,6 +76,13 @@ const server_create = function services_serverCreate(data:services_server_action
             if (vars.data.server[output.hash] === undefined) {
                 // 1. add server to the vars.data.servers object
                 config.id = output.hash;
+                if (config.activate === false && config.encryption !== "open") {
+                    config.certificate_path = {
+                        ca: `${vars.path.project}servers${config.id + vars.path.sep}certs${vars.path.sep}int.crt`,
+                        cert: `${vars.path.project}servers${config.id + vars.path.sep}certs${vars.path.sep}server.crt`,
+                        key: `${vars.path.project}servers${config.id + vars.path.sep}certs${vars.path.sep}server.key`
+                    };
+                }
                 if (vars.options.demo === true) {
                     config.encryption = "open";
                 }
