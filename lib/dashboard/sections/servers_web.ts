@@ -263,7 +263,7 @@ const ui_servers_web = function ui_servers_web():void {
                             }
                         }
                     },
-                    rootProperties:string[] = ["activate", "block_list", "domain_local", "encryption", "id", "method", "message_segmentation", "mutual_tls", "name", "ports", "redirect_asset", "redirect_domain", "single_socket", "temporary", "upgrade"];
+                    rootProperties:string[] = ["activate", "block_list", "certificate_path", "domain_local", "encryption", "id", "method", "message_segmentation", "mutual_tls", "name", "ports", "redirect_asset", "redirect_domain", "single_socket", "temporary", "upgrade"];
                 let serverData:supplemental_server_config = null,
                     failures:number = 0;
                 ul.textContent = "";
@@ -291,6 +291,12 @@ const ui_servers_web = function ui_servers_web():void {
                     supported: ["host", "ip", "referrer"],
                     type: "array"
                 });
+                // certificate_path
+                if (serverData.certificate_path !== undefined && serverData.certificate_path !== null && typeof serverData.certificate_path.ca === "string" && typeof serverData.certificate_path.cert === "string" && typeof serverData.certificate_path.key === "string") {
+                    populate(true, "Required property 'certificate_path' is present with the 3 required child properties each assigned a string value.");
+                } else {
+                    populate(false, "Required property 'certificate_path' is either not an object or the 3 required child properties are not a string value.  The three child properties are: ca, cert, and key.");
+                }
                 // domain_local
                 stringArray(false, "domain_local", serverData.domain_local);
                 // encryption
