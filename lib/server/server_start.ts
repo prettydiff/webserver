@@ -198,22 +198,22 @@ const server_start = function server_start(id:string, callback:(name:string) => 
                         };
                         file.read({
                             callback: read_callback,
+                            identifier: "ca",
+                            location: path_ca,
+                            no_file: null,
+                            section:  "servers-web"
+                        });
+                        file.read({
+                            callback: read_callback,
                             identifier: "cert",
-                            location: vars.data.server[id].config.certificate_path.cert,
+                            location: path_cert,
                             no_file: null,
                             section:  "servers-web"
                         });
                         file.read({
                             callback: read_callback,
                             identifier: "key",
-                            location: vars.data.server[id].config.certificate_path.key,
-                            no_file: null,
-                            section:  "servers-web"
-                        });
-                        file.read({
-                            callback: read_callback,
-                            identifier: "ca",
-                            location: vars.data.server[id].config.certificate_path.ca,
+                            location: path_key,
                             no_file: null,
                             section:  "servers-web"
                         });
@@ -230,10 +230,19 @@ const server_start = function server_start(id:string, callback:(name:string) => 
                         });
                     }
                 }
-            };
-        node.fs.stat(vars.data.server[id].config.certificate_path.ca, stat_callback);
-        node.fs.stat(vars.data.server[id].config.certificate_path.cert, stat_callback);
-        node.fs.stat(vars.data.server[id].config.certificate_path.key, stat_callback);
+            },
+            path_ca:string = (vars.data.server[id].config.certificate_path === undefined)
+                ? `${certLocation}int.crt`
+                : vars.data.server[id].config.certificate_path.ca,
+            path_cert:string = (vars.data.server[id].config.certificate_path === undefined)
+                ? `${certLocation}server.crt`
+                : vars.data.server[id].config.certificate_path.ca,
+            path_key:string = (vars.data.server[id].config.certificate_path === undefined)
+                ? `${certLocation}server.key`
+                : vars.data.server[id].config.certificate_path.ca;
+        node.fs.stat(path_ca, stat_callback);
+        node.fs.stat(path_cert, stat_callback);
+        node.fs.stat(path_key, stat_callback);
     }
 };
 
