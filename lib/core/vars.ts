@@ -139,8 +139,6 @@ const vars:core_vars = {
             dashboard_page: "",
             // last git commit date/time
             date_commit: 0,
-            // The future time when to kill this process if in demo mode
-            demo_kill: 0,
             // supported features of this running instance
             features: {
                 "application-logs": true,

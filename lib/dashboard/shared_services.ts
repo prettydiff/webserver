@@ -181,6 +181,7 @@ const ui_shared_services = function ui_shared_services():void {
                                         upgrade: false
                                     }
                                     : dashboard.global.payload.server[id].config,
+                                server_path:string = `${dashboard.global.payload.path.project}servers${dashboard.global.payload.path.sep + serverData.id + dashboard.global.payload.path.sep}`,
                                 output:string[] = [
                                         "{",
                                         `"activate": ${serverData.activate},`
@@ -194,6 +195,19 @@ const ui_shared_services = function ui_shared_services():void {
                                 array(true, "ip", serverData.block_list.ip);
                                 array(true, "referrer", serverData.block_list.referrer);
                                 output[output.length - 1] = output[output.length - 1].replace(/,$/, "");
+                                output.push("},");
+                            }
+                            if (serverData.certificate_path === null || serverData.certificate_path === undefined) {
+                                output.push("\"certificate_path\": {");
+                                output.push(`    "ca": "${server_path}certs${dashboard.global.payload.path.sep}int.crt",`.replace(/\\/g, "\\\\"));
+                                output.push(`    "cert": "${server_path}certs${dashboard.global.payload.path.sep}server.crt",`.replace(/\\/g, "\\\\"));
+                                output.push(`    "key": "${server_path}certs${dashboard.global.payload.path.sep}server.key"`.replace(/\\/g, "\\\\"));
+                                output.push("},");
+                            } else {
+                                output.push("\"certificate_path\": {");
+                                output.push(`    "ca": "${serverData.certificate_path.ca}",`.replace(/\\/g, "\\\\"));
+                                output.push(`    "cert": "${serverData.certificate_path.cert}",`.replace(/\\/g, "\\\\"));
+                                output.push(`    "key": "${serverData.certificate_path.key}"`.replace(/\\/g, "\\\\"));
                                 output.push("},");
                             }
                             array(false, "domain_local", serverData.domain_local);

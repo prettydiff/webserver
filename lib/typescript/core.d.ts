@@ -355,7 +355,6 @@ interface core_vars_environment {
     css_complete: string;
     dashboard_page: string;
     date_commit: number;
-    demo_kill: number;
     features: {
         "application-logs": boolean;
         "compose-containers": boolean;

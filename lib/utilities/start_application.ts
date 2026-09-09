@@ -248,6 +248,13 @@ const start_application = function utilities_startApplication(process_path:strin
                                             referrer: []
                                         };
                                     }
+                                    if (server.certificate_path === undefined || server.certificate_path === null) {
+                                        server.certificate_path = {
+                                            ca: `${process_path}servers${vars.path.sep + server.id + vars.path.sep}certs${vars.path.sep}int.crt`,
+                                            cert: `${process_path}servers${vars.path.sep + server.id + vars.path.sep}certs${vars.path.sep}server.crt`,
+                                            key: `${process_path}servers${vars.path.sep + server.id + vars.path.sep}certs${vars.path.sep}server.key`
+                                        };
+                                    }
                                     if (Array.isArray(server.domain_local) === false) {
                                         server.domain_local = [];
                                     }
@@ -1255,9 +1262,7 @@ const start_application = function utilities_startApplication(process_path:strin
         start_tasks = function utilities_startApplication_startTasks():void {
             do {
                 index_tasks = index_tasks - 1;
-                if (vars.test.testing === false || (keys_tasks[index_tasks] !== "servers" && vars.test.testing === true)) {
-                    tasks[keys_tasks[index_tasks]].task();
-                }
+                tasks[keys_tasks[index_tasks]].task();
             } while (index_tasks > 0);
         },
         start_prerequisites = function utilities_startApplication_startPrerequisites():void {

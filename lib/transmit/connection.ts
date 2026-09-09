@@ -2,6 +2,7 @@
 import get_address from "../core/get_address.ts";
 import hash from "../core/hash.ts";
 import http from "../http/index.ts";
+import http_write from "../http/http_write.ts";
 import log from "../core/log.ts";
 import node from "../core/node.ts";
 import message_handler from "./messageHandler.ts";
@@ -638,7 +639,7 @@ const connection = function transmit_connection(this:core_server_instance, TLS_s
                     domain:string = (node.net.isIPv6(store.domain) === true)
                         ? `[${store.domain}]`
                         : store.domain;
-                socket.write([
+                http_write(socket, [
                     "HTTP/1.1 308",
                     `location: https://${domain}:${vars.data.server[server_id].ports.secure + resource}`,
                     "content-length: 5",
@@ -646,8 +647,7 @@ const connection = function transmit_connection(this:core_server_instance, TLS_s
                     "moved",
                     "",
                     ""
-                ].join("\r\n"));
-                socket.destroySoon();
+                ].join("\r\n"), true);
             // regular local traffic
             } else {
                 local_service();

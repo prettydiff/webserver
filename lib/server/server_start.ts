@@ -204,7 +204,7 @@ const server_start = function server_start(id:string, callback:(name:string) => 
                             file.read({
                                 callback: read_callback,
                                 identifier: "ca",
-                                location: path_ca,
+                                location: vars.data.server[id].config.certificate_path.ca,
                                 no_file: null,
                                 section:  "servers-web"
                             });
@@ -212,14 +212,14 @@ const server_start = function server_start(id:string, callback:(name:string) => 
                         file.read({
                             callback: read_callback,
                             identifier: "cert",
-                            location: path_cert,
+                            location: vars.data.server[id].config.certificate_path.cert,
                             no_file: null,
                             section:  "servers-web"
                         });
                         file.read({
                             callback: read_callback,
                             identifier: "key",
-                            location: path_key,
+                            location: vars.data.server[id].config.certificate_path.key,
                             no_file: null,
                             section:  "servers-web"
                         });

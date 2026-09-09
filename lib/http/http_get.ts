@@ -5,7 +5,7 @@ import core from "../browser/core.ts";
 import directory from "../utilities/directory.ts";
 import file from "../utilities/file.ts";
 import file_list from "../browser/file_list.ts";
-import message_inspection from "../services/message_inspection.ts";
+import http_write from "./http_write.ts";
 import node from "../core/node.ts";
 import spawn from "../core/spawn.ts";
 import vars from "../core/vars.ts";
@@ -110,25 +110,8 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
             headerText[2] = `content-length: ${Buffer.byteLength(bodyText)}`;
             return payload(headerText, bodyText);
         },
-        write = function http_get_write(payload:Buffer|string, final:boolean):void {
-            // this if condition and the following "else" block are critical for ensuring response messages are delivered completely and the sockets are closed appropriately.
-            socket.write(payload);
-            if (final === true) {
-                socket.destroySoon();
-            }
-            message_inspection.send({
-                count: 0,
-                direction: "out",
-                maximum_size: 0,
-                message: payload.toString(),
-                service: socket.server_hash,
-                throttle_size: 0,
-                throttle_time: 0,
-                type: "web-server"
-            });
-        },
         notFound = function http_get_notFound():void {
-            write(html({
+            http_write(socket, html({
                 content: [`<p>Resource not found: <strong>${asset.join("/")}</strong></p>`],
                 content_type: "text/html; utf8",
                 core: false,
@@ -201,7 +184,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                                         index_item = index_item + 1;
                                     } while (index_item < total);
                                     content.push("</tbody></table>");
-                                    write(html({
+                                    http_write(socket, html({
                                         content: content,
                                         content_type: "text/html; utf8",
                                         core: true,
@@ -237,7 +220,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                                 ""
                             ];
                             if (method === "HEAD") {
-                                write(headerText.join("\r\n"), true);
+                                http_write(socket, headerText.join("\r\n"), true);
                             } else {
                                 let range:string = "",
                                     stream:node_fs_ReadStream = null;
@@ -280,14 +263,13 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                                 } else {
                                     stream = node.fs.createReadStream(input);
                                 }
-                                write(headerText.join("\r\n"), false);
+                                http_write(socket, headerText.join("\r\n"), false);
                                 stream.on("close", function http_get_stat_statTest_fileItem_close():void {
-                                    write("\r\n0\r\n\r\n", true);
-                                    socket.destroySoon();
+                                    http_write(socket, "\r\n0\r\n\r\n", true);
                                 });
                                 stream.on("data", function http_get_stat_statTest_fileItem_data(chunk:Buffer|string):void {
-                                    write(`\r\n${Buffer.byteLength(chunk).toString(16)}\r\n`, false);
-                                    write(chunk, false);
+                                    http_write(socket, `\r\n${Buffer.byteLength(chunk).toString(16)}\r\n`, false);
+                                    http_write(socket, chunk, false);
                                 });
                             }
                         };
@@ -362,7 +344,7 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                             "",
                             ""
                         ];
-                        write(headers.join("\r\n"), true);
+                        http_write(socket, headers.join("\r\n"), true);
                     }
                 } else {
                     notFound();
@@ -397,13 +379,13 @@ const http_get:http_action = function http_get(headerList:string[], socket:webso
                     ""
                 ];
             if (method === "GET") {
-                write(headers.join("\r\n") + dashboard, true);
+                http_write(socket, headers.join("\r\n") + dashboard, true);
             } else if (method === "HEAD") {
-                write(headers.join("\r\n"), true);
+                http_write(socket, headers.join("\r\n"), true);
             }
             return;
         }
-        write([
+        http_write(socket, [
             "HTTP/1.1 404",
             "content-type: text/html",
             "content-length: 0",

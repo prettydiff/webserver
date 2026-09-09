@@ -32,7 +32,6 @@ const server_halt = function services_serverHalt(data:services_server_action, ca
     } else {
         const single_socket:boolean = vars.data.server[id].config.single_socket,
             temporary:boolean = vars.data.server[id].config.temporary,
-            path_name:string = vars.path.servers + id + vars.path.sep,
             encryption:type_encryption = vars.data.server[id].config.encryption,
             complete = function services_serverHalt_complete():void {
                 const actionText:string = (data.action.charAt(data.action.length - 1) === "e")
@@ -42,7 +41,7 @@ const server_halt = function services_serverHalt(data:services_server_action, ca
                     ports_application();
                 }
                 if (callback !== null) {
-                    // 5. call the callback
+                    // 4. call the callback
                     callback();
                 }
                 log.application({
@@ -54,41 +53,8 @@ const server_halt = function services_serverHalt(data:services_server_action, ca
                     time: Date.now()
                 });
             },
-            write_callback = function services_serverHalt_writeCallback():void {
-                const activate = function servers_serverHalt_activate():void {
-                        if (vars.data.server[id].config.activate === true) {
-                            // 4. Reactivate the server(s) if its given "activate" property has a true boolean value
-                            server_start(data.server.id, function servers_serverHalt_complete_serverStart():void {
-                                complete();
-                            });
-                        } else {
-                            complete();
-                        }
-                    };
-                if (data.action === "deactivate") {
-                    complete();
-                } else if (data.action === "destroy") {
-                    const  file_remove:config_file_remove = {
-                        callback: function services_serverHalt_remove():void {
-                            complete();
-                        },
-                        exclusions: [],
-                        location: path_name,
-                        section: "servers-web"
-                    };
-                    delete vars.data.server[id];
-                    // 3. Remove the web server's assets from the file system
-                    file.remove(file_remove);
-                } else if (data.action === "modify" && (encryption === "both" || encryption === "secure")) {
-                    vars.data.server[id].config = data.server;
-                    server_start(data.server.id, function services_serverHalt_certificate_serverStart():void {
-                        activate();
-                    });
-                } else {
-                    activate();
-                }
-            },
-            kill_sockets = function servers_serverHalt_killSockets(sockets:websocket_client[]):void {
+            kill_sockets = function servers_serverHalt_killSockets(encryption_sockets:"open"|"secure"):void {
+                const sockets:websocket_client[] = vars.data_store.server[id].sockets_tcp[encryption_sockets];
                 let index:number = sockets.length;
                 if (index > 0) {
                     do {
@@ -96,36 +62,50 @@ const server_halt = function services_serverHalt(data:services_server_action, ca
                         sockets[index].destroy();
                     } while (index > 0);
                 }
+                vars.data_store.server[id].server_object[encryption_sockets].close(closed);
             },
-            close_server = function servers_serverHalt_closeServer():void {
+            closed = function servers_serverHalt_closed():void {
+                // 2. write changes to the servers.json file
                 count_server = count_server + 1;
                 if (count_server > 1) {
-                    if (data.action === "destroy" || data.action === "modify") {
-                        if (data.action === "modify") {
-                            vars.data.server[id].config = data.server;
-                            vars.data.server[id].ports = {
-                                open: 0,
-                                secure: 0
-                            };
-                            save(write_callback, "servers-web");
+                    vars.data.server[id].ports = {
+                        open: 0,
+                        secure: 0
+                    };
+                    if (data.action === "deactivate") {
+                        complete();
+                    } else if (data.action === "destroy") {
+                        delete vars.data.server[id];
+                        delete vars.data_store.server[id];
+                        if (vars.options.demo === true) {
+                            complete();
                         } else {
-                            delete vars.data.server[id];
-                            delete vars.data_store.server[id];
-                            if (vars.options.demo === true) {
-                                complete();
-                            } else {
-                                file.remove({
-                                    callback: function server_serverHalt_delete():void {
-                                        save(write_callback, "servers-web");
-                                    },
-                                    exclusions: null,
-                                    location: vars.path.servers + id,
-                                    section: "servers-web"
-                                });
-                            }
+                            file.remove({
+                                callback: function server_serverHalt_closed_delete():void {
+                                    save(complete, "servers-web");
+                                },
+                                exclusions: null,
+                                location: vars.path.servers + id,
+                                section: "servers-web"
+                            });
                         }
-                    } else {
-                        write_callback();
+                    } else if (data.action === "modify") {
+                        const activate = function servers_serverHalt_closed_activate():void {
+                            if (vars.data.server[id].config.activate === true) {
+                                // 3. Reactivate the server(s) if its given "activate" property has a true boolean value
+                                server_start(data.server.id, function servers_serverHalt_closed_activate_serverStart():void {
+                                    complete();
+                                });
+                            } else {
+                                complete();
+                            }
+                        };
+                        vars.data.server[id].config = data.server;
+                        if (vars.options.demo === true) {
+                            complete();
+                        } else {
+                            save(activate, "servers-web");
+                        }
                     }
                 }
             };
@@ -134,29 +114,17 @@ const server_halt = function services_serverHalt(data:services_server_action, ca
         if (single_socket === true || temporary === true) {
             data.action = "destroy";
         }
-
         // 1. Disable the servers and kill their sockets
-        if (vars.options.demo === true) {
-            count_server = 1;
-            close_server();
-        } else {
-            if (encryption === "both") {
-                if (vars.data_store.server[id].server_object.open !== null) {
-                    vars.data.server[id].ports.open = 0;
-                    kill_sockets(vars.data_store.server[id].sockets_tcp.open);
-                    vars.data_store.server[id].server_object.open.close(close_server);
-                }
-                if (vars.data_store.server[id].server_object.secure !== null) {
-                    vars.data.server[id].ports.secure = 0;
-                    kill_sockets(vars.data_store.server[id].sockets_tcp.secure);
-                    vars.data_store.server[id].server_object.secure.close(close_server);
-                }
-            } else {
-                count_server = 1;
-                vars.data.server[id].ports[encryption] = 0;
-                kill_sockets(vars.data_store.server[id].sockets_tcp[encryption]);
-                vars.data_store.server[id].server_object[encryption].close(close_server);
+        if (encryption === "both") {
+            if (vars.data_store.server[id].server_object.open !== null) {
+                kill_sockets("open");
             }
+            if (vars.data_store.server[id].server_object.secure !== null) {
+                kill_sockets("secure");
+            }
+        } else {
+            count_server = 1;
+            kill_sockets(encryption);
         }
     }
 };
