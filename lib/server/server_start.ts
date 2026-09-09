@@ -198,7 +198,7 @@ const server_start = function server_start(id:string, callback:(name:string) => 
                                 certCheck();
                             }
                         };
-                        if (path_ca === null) {
+                        if (path_ca === null || path_ca === "") {
                             read_callback(null, "", "ca");
                         } else {
                             file.read({
@@ -227,12 +227,21 @@ const server_start = function server_start(id:string, callback:(name:string) => 
                     count = 0;
                     if (flag_error === false) {
                         read_cert();
-                    } else {
+                    } else if (vars.data.server[id].config.certificate_path === undefined || vars.data.server[id].config.certificate_path === null || vars.data.server[id].config.certificate_path.cert === "" || vars.data.server[id].config.certificate_path.key === "") {
                         certificate({
                             callback: read_cert,
                             days: 65535,
                             id: id,
                             selfSign: false
+                        });
+                    } else {
+                        log.application({
+                            error: error,
+                            message: `Required certificate files are missing for server named ${vars.data.server[id].config.name}.`,
+                            origin: id,
+                            section: "servers-web",
+                            status: "error",
+                            time: Date.now()
                         });
                     }
                 }
@@ -252,7 +261,7 @@ const server_start = function server_start(id:string, callback:(name:string) => 
                 : (vars.data.server[id].config.certificate_path.key === null)
                     ? ""
                     : vars.data.server[id].config.certificate_path.key;
-        if (path_ca === null) {
+        if (path_ca === null || path_ca === "") {
             stat_callback(null);
         } else {
             node.fs.stat(path_ca, stat_callback);
