@@ -2,7 +2,7 @@
 import assembler from "./assembler.ts";
 import broadcast from "../transmit/broadcast.ts";
 import clock from "../services/clock.ts";
-import clock_demo from "../services/clock_demo.ts";
+import demo from "../services/demo.ts";
 import directory from "./directory.ts";
 import docker from "../services/docker.ts";
 import file from "./file.ts";
@@ -1048,7 +1048,7 @@ const start_application = function utilities_startApplication(process_path:strin
                                         versions:string = (bun === undefined)
                                             ? `${asterisk} Application executed from ${vars.text.green}Node.js${vars.text.none} at version ${vars.text.cyan + process.versions.node + vars.text.none}.`
                                             : `${asterisk} Application executed from ${vars.text.green}bun${vars.text.none} at Node.js API version ${vars.text.cyan + process.versions.node + vars.text.none} and bun version ${vars.text.cyan + bun + vars.text.none}.`,
-                                        demo:string = (vars.options.demo === true)
+                                        demo_text:string = (vars.options.demo === true)
                                             ? `${vars.text.angry}demo${vars.text.none}`
                                             : `${vars.text.green}service${vars.text.none}`,
                                         logs:string[] = [
@@ -1056,7 +1056,7 @@ const start_application = function utilities_startApplication(process_path:strin
                                             heading("Startup Complete"),
                                             versions,
                                             `${asterisk} Application completed ${vars.text.cyan + count_task + vars.text.none} startup tasks in ${vars.text.cyan + (time / 1e9) + vars.text.none} seconds.`,
-                                            `${asterisk} Application is running in ${demo} mode.`,
+                                            `${asterisk} Application is running in ${demo_text} mode.`,
                                             `${asterisk} Process ID: ${vars.text.cyan + process.pid + vars.text.none}`,
                                             "",
                                             heading("Web Server Ports"),
@@ -1213,11 +1213,10 @@ const start_application = function utilities_startApplication(process_path:strin
                                                 index = index + 1;
                                             } while (index < len);
                                         }
-                                        log.shell(logs, true);
-
                                         if (vars.options.demo === true) {
-                                            process.stderr.write(vars.data.server[vars.id.dashboard_server].ports.open.toString());
+                                            demo.clock_self();
                                         }
+                                        log.shell(logs, true);
                                         vars.environment.loading = false;
                                     }
                                 }
@@ -1236,9 +1235,6 @@ const start_application = function utilities_startApplication(process_path:strin
 
                     };
                     clock();
-                    if (vars.options.demo === true) {
-                        clock_demo();
-                    }
                     statistics_resources.data();
                     if (vars.test.testing === true || vars.data.server[vars.id.dashboard_server] === undefined) {
                         server_create({

@@ -453,25 +453,26 @@ const connection = function transmit_connection(this:core_server_instance, TLS_s
                                     ? `dashboard-terminal-${hashOutput.hash}`
                                     : (store.type === "test-websocket")
                                         ? `websocketTest-browserSocket-${hashOutput.hash}`
-                                        : `browserSocket-${hashOutput.hash}`;
-                            socket_extension({
-                                callback: client_respond,
-                                handler: (store.type === "test-websocket")
-                                    ? message_handler.test_websocket
-                                    : (store.type === "test-performance-socket")
-                                        ? message_handler.test_performance
-                                        : message_handler.default,
-                                identifier: identifier,
-                                proxy: null,
-                                role: "server",
-                                server: server_id,
-                                single_socket: single_socket,
-                                socket: socket,
-                                temporary: temporary,
-                                timeout: null,
-                                type: store.type,
-                                userAgent: store.userAgent
-                            });
+                                        : `browserSocket-${hashOutput.hash}`,
+                                config:config_websocket_extensions = {
+                                    callback: client_respond,
+                                    handler: (store.type === "test-websocket")
+                                        ? message_handler.test_websocket
+                                        : (store.type === "test-performance-socket")
+                                            ? message_handler.test_performance
+                                            : message_handler.default,
+                                    identifier: identifier,
+                                    proxy: null,
+                                    role: "server",
+                                    server: server_id,
+                                    single_socket: single_socket,
+                                    socket: socket,
+                                    temporary: temporary,
+                                    timeout: null,
+                                    type: store.type,
+                                    userAgent: store.userAgent
+                                };
+                            socket_extension(config);
                         };
                         hash({
                             algorithm: "sha1",

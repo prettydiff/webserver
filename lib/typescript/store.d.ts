@@ -19,6 +19,10 @@ interface store_compose {
     [key:string]: core_compose_container;
 }
 
+interface store_demo {
+    [key:string]: services_demo;
+}
+
 interface store_elements {
     [key:string]: HTMLElement;
 }

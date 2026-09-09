@@ -55,6 +55,14 @@ interface services_dashboard_open {
 }
 // Initial payload to populate the dashboard with data
 
+interface services_demo {
+    port: number;
+    process: number;
+    socket: string;
+    time: number;
+    time_string: string;
+}
+
 interface services_dns_input {
     names: string[];
     reverse: boolean;
@@ -415,6 +423,7 @@ type socket_data =
     {data: services_compose_variables;       service: "services_compose_variables";} |
     {data: services_compose;                 service: "services_compose";} |
     {data: services_dashboard_open;          service: "services_dashboard_open";} |
+    {data: services_demo;                    service: "services_demo";} |
     {data: services_dns_input;               service: "services_dns_input";} |
     {data: services_dns_output;              service: "services_dns_output";} |
     {data: services_dns_reverse;             service: "services_dns_reverse";} |
