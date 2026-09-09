@@ -239,13 +239,19 @@ const server_start = function server_start(id:string, callback:(name:string) => 
             },
             path_ca:string = (vars.data.server[id].config.certificate_path === undefined)
                 ? `${certLocation}int.crt`
-                : vars.data.server[id].config.certificate_path.ca,
+                : (vars.data.server[id].config.certificate_path.ca === null)
+                    ? ""
+                    : vars.data.server[id].config.certificate_path.ca,
             path_cert:string = (vars.data.server[id].config.certificate_path === undefined)
                 ? `${certLocation}server.crt`
-                : vars.data.server[id].config.certificate_path.ca,
+                : (vars.data.server[id].config.certificate_path.cert === null)
+                    ? ""
+                    : vars.data.server[id].config.certificate_path.cert,
             path_key:string = (vars.data.server[id].config.certificate_path === undefined)
                 ? `${certLocation}server.key`
-                : vars.data.server[id].config.certificate_path.ca;
+                : (vars.data.server[id].config.certificate_path.key === null)
+                    ? ""
+                    : vars.data.server[id].config.certificate_path.key;
         if (path_ca === null) {
             stat_callback(null);
         } else {
