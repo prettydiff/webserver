@@ -90,21 +90,42 @@ const server_halt = function services_serverHalt(data:services_server_action, ca
                             });
                         }
                     } else if (data.action === "modify") {
-                        const activate = function servers_serverHalt_closed_activate():void {
-                            if (vars.data.server[id].config.activate === true) {
-                                // 3. Reactivate the server(s) if its given "activate" property has a true boolean value
-                                server_start(data.server.id, function servers_serverHalt_closed_activate_serverStart():void {
+                        const modify = function servers_serverHalt_closed_modify():void {
+                                vars.data.server[id].config = data.server;
+                                if (vars.options.demo === true) {
                                     complete();
-                                });
-                            } else {
-                                complete();
-                            }
-                        };
-                        vars.data.server[id].config = data.server;
-                        if (vars.options.demo === true) {
-                            complete();
+                                } else {
+                                    save(activate, "servers-web");
+                                }
+                            },
+                            activate = function servers_serverHalt_closed_activate():void {
+                                if (vars.data.server[id].config.activate === true) {
+                                    // 3. Reactivate the server(s) if its given "activate" property has a true boolean value
+                                    server_start(data.server.id, function servers_serverHalt_closed_activate_serverStart():void {
+                                        complete();
+                                    });
+                                } else {
+                                    complete();
+                                }
+                            };
+                        if (data.server.name === vars.data.server[id].config.name) {
+                            modify();
                         } else {
-                            save(activate, "servers-web");
+                            file.remove({
+                                callback: function servers_serverHalt_closed_removeNamed():void {
+                                    file.write({
+                                        callback: function servers_serverHalt_closed_removeNamed_writeNamed():void {
+                                            modify();
+                                        },
+                                        contents: data.server.name,
+                                        location: `${vars.path.project}servers${vars.path.sep + id + vars.path.sep}name-${data.server.name.file_sanitize()}`,
+                                        section: "servers-web"
+                                    });
+                                },
+                                exclusions: [],
+                                location: `${vars.path.project}servers${vars.path.sep + id + vars.path.sep}name-${vars.data.server[id].config.name.file_sanitize()}`,
+                                section: "servers-web"
+                            });
                         }
                     }
                 }

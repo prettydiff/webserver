@@ -106,10 +106,10 @@ interface core_message_inspection {
 }
 
 interface core_module_demo {
-    clock: (time:number, callback:(time_string:string) => void) => void;
+    clock: (time:number, id:string, callback:(time_string:string) => void) => void;
     clock_self: () => void;
     instances: store_demo;
-    kill: (id:string) => void;
+    kill: (id:string, socket:websocket_client) => void;
     service: type_receiver;
 }
 

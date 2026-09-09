@@ -56,6 +56,7 @@ interface services_dashboard_open {
 // Initial payload to populate the dashboard with data
 
 interface services_demo {
+    child?: node_childProcess_ChildProcess;
     port: number;
     process: number;
     socket: string;
