@@ -179,9 +179,9 @@ const server_start = function server_start(id:string, callback:(name:string) => 
                 }
                 if (count === 3) {
                     const read_cert = function server_start_statCallback_readCert():void {
-                        const read_callback = function server_start_statCallback_readCert_readCallback(file:Buffer, location:string, id:string):void {
-                            const type:"ca"|"cert"|"key" = id as "ca"|"cert"|"key";
-                            if (file === null) {
+                        const read_callback = function server_start_statCallback_readCert_readCallback(file:Buffer, location:string, type_id:string):void {
+                            const type:"ca"|"cert"|"key" = type_id as "ca"|"cert"|"key";
+                            if (file === null && type_id !== "ca") {
                                 log.application({
                                     error: new Error(),
                                     message: `Required certificate files are missing for server named ${vars.data.server[id].config.name}.`,
@@ -191,18 +191,24 @@ const server_start = function server_start(id:string, callback:(name:string) => 
                                     time: Date.now()
                                 });
                             } else {
-                                https.certificates[type] = file.toString();
+                                https.certificates[type] = (file === null)
+                                    ? null
+                                    : file.toString();
                                 https.fileFlag[type] = true;
                                 certCheck();
                             }
                         };
-                        file.read({
-                            callback: read_callback,
-                            identifier: "ca",
-                            location: path_ca,
-                            no_file: null,
-                            section:  "servers-web"
-                        });
+                        if (path_ca === null) {
+                            read_callback(null, "", "ca");
+                        } else {
+                            file.read({
+                                callback: read_callback,
+                                identifier: "ca",
+                                location: path_ca,
+                                no_file: null,
+                                section:  "servers-web"
+                            });
+                        }
                         file.read({
                             callback: read_callback,
                             identifier: "cert",
@@ -240,7 +246,11 @@ const server_start = function server_start(id:string, callback:(name:string) => 
             path_key:string = (vars.data.server[id].config.certificate_path === undefined)
                 ? `${certLocation}server.key`
                 : vars.data.server[id].config.certificate_path.ca;
-        node.fs.stat(path_ca, stat_callback);
+        if (path_ca === null) {
+            stat_callback(null);
+        } else {
+            node.fs.stat(path_ca, stat_callback);
+        }
         node.fs.stat(path_cert, stat_callback);
         node.fs.stat(path_key, stat_callback);
     }
