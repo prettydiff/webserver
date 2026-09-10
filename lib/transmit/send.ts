@@ -2,6 +2,9 @@
 import message_inspection from "../services/message_inspection.ts";
 
 const send = function transmit_send(body:Buffer|socket_data|string, socket:websocket_client, opcode:0|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15):void {
+    if (socket === undefined || socket === null) {
+        return;
+    }
     const writeFrame = function transmit_send_writeFrame():void {
             const writeCallback = function transmit_send_writeFrame_writeCallback():void {
                 socket.queue_index = socket.queue_index + 1;
@@ -35,9 +38,6 @@ const send = function transmit_send(body:Buffer|socket_data|string, socket:webso
     let dataPackage:Buffer = (isBuffer === true)
         ? body as Buffer
         : Buffer.from(stringBody);
-    if (socket === undefined || socket === null) {
-        return;
-    }
     if (opcode !== 3 || (opcode === 3 && socketData.service !== "services_message_inspection")) {
         message_inspection.send({
             count: 0,

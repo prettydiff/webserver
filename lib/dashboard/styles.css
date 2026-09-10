@@ -306,6 +306,7 @@ select{background:var(--background_textarea);border-color:var(--border_input);bo
         canvas{background:var(--background_textarea)};
         .graphs .section div{border-color:var(--border_input);border-style:solid;border-width:0.1em};
         .graphs[data-type="composite"] .section div{height:40em}
+        .stat-select{display:none}
     }
     #terminal{
         .demo-terminal{display:none;float:left;margin:-2.8em 0 0 15em}

@@ -1,5 +1,5 @@
 
-import message_inspection from "../services/message_inspection.ts";
+import http_write from "./http_write.ts";
 
 const http_trace = function http_trace(headerList:string[], socket:websocket_client):void {
     const len:number = headerList.length,
@@ -28,18 +28,7 @@ const http_trace = function http_trace(headerList:string[], socket:websocket_cli
             get_header("accept")
         ];
     output[1] = output[1] + output.slice(output.length - 4).join("\r\n").length;
-    socket.write(output.join("\r\n"));
-    socket.destroySoon();
-    message_inspection.send({
-        count: 0,
-        direction: "out",
-        maximum_size: 0,
-        message: output.join("\r\n"),
-        service: socket.server_hash,
-        throttle_size: 0,
-        throttle_time: 0,
-        type: "web-server"
-    });
+    http_write(socket, output.join("\r\n"), true);
 };
 
 export default http_trace;

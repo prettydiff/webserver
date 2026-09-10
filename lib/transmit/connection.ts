@@ -2,6 +2,7 @@
 import get_address from "../core/get_address.ts";
 import hash from "../core/hash.ts";
 import http from "../http/index.ts";
+import http_write from "../http/http_write.ts";
 import log from "../core/log.ts";
 import node from "../core/node.ts";
 import message_handler from "./messageHandler.ts";
@@ -111,7 +112,7 @@ const connection = function transmit_connection(this:core_server_instance, TLS_s
                         store.userAgent = `${ua[0]}, ${ua[1]}, ${store.userAgent.slice(store.userAgent.lastIndexOf(")") + 2)}`;
                     } else if ((/^upgrade-insecure-requests:\s*1$/).test(lower) === true && socket.encrypted !== true && server.upgrade === true && vars.data.server[server_id].ports.secure > 0) {
                         flags.upgrade = true;
-                    } else if (lower === "services_http_test: true") {
+                    } else if ((/services_http_test:\s*true/).test(lower) === true) {
                         flags.dashboard_http_test = true;
                     }
                 },
@@ -453,25 +454,26 @@ const connection = function transmit_connection(this:core_server_instance, TLS_s
                                     ? `dashboard-terminal-${hashOutput.hash}`
                                     : (store.type === "test-websocket")
                                         ? `websocketTest-browserSocket-${hashOutput.hash}`
-                                        : `browserSocket-${hashOutput.hash}`;
-                            socket_extension({
-                                callback: client_respond,
-                                handler: (store.type === "test-websocket")
-                                    ? message_handler.test_websocket
-                                    : (store.type === "test-performance-socket")
-                                        ? message_handler.test_performance
-                                        : message_handler.default,
-                                identifier: identifier,
-                                proxy: null,
-                                role: "server",
-                                server: server_id,
-                                single_socket: single_socket,
-                                socket: socket,
-                                temporary: temporary,
-                                timeout: null,
-                                type: store.type,
-                                userAgent: store.userAgent
-                            });
+                                        : `browserSocket-${hashOutput.hash}`,
+                                config:config_websocket_extensions = {
+                                    callback: client_respond,
+                                    handler: (store.type === "test-websocket")
+                                        ? message_handler.test_websocket
+                                        : (store.type === "test-performance-socket")
+                                            ? message_handler.test_performance
+                                            : message_handler.default,
+                                    identifier: identifier,
+                                    proxy: null,
+                                    role: "server",
+                                    server: server_id,
+                                    single_socket: single_socket,
+                                    socket: socket,
+                                    temporary: temporary,
+                                    timeout: null,
+                                    type: store.type,
+                                    userAgent: store.userAgent
+                                };
+                            socket_extension(config);
                         };
                         hash({
                             algorithm: "sha1",
@@ -637,7 +639,7 @@ const connection = function transmit_connection(this:core_server_instance, TLS_s
                     domain:string = (node.net.isIPv6(store.domain) === true)
                         ? `[${store.domain}]`
                         : store.domain;
-                socket.write([
+                http_write(socket, [
                     "HTTP/1.1 308",
                     `location: https://${domain}:${vars.data.server[server_id].ports.secure + resource}`,
                     "content-length: 5",
@@ -645,7 +647,7 @@ const connection = function transmit_connection(this:core_server_instance, TLS_s
                     "moved",
                     "",
                     ""
-                ].join("\r\n"));
+                ].join("\r\n"), true);
             // regular local traffic
             } else {
                 local_service();

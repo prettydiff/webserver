@@ -117,12 +117,7 @@ const ui_test_performance = function ui_test_performance():void {
             const data:services_test_performance_output = socket_data.data as services_test_performance_output,
                 list:HTMLCollectionOf<HTMLElement> = document.getElementById("test-performance").getElementsByClassName("summary-stats")[0].getElementsByTagName("strong"),
                 output = function dashboard_sections_testPerformance_receive_output(index:number, type:"memory"|"roundtrip"|"send"):void {
-                    const max:HTMLElement = document.createElement("em"),
-                        min:HTMLElement = document.createElement("em"),
-                        trials:string[] = (data[type] === undefined)
-                            ? []
-                            : `[${data[type].trials.join(", ")}]`.split(data[type].max.toString()),
-                        len:number = (data[type] === undefined)
+                    const len:number = (data[type] === undefined)
                             ? 0
                             : data[type].trials.length,
                         label:string = (type === "memory")
@@ -140,41 +135,40 @@ const ui_test_performance = function ui_test_performance():void {
                         list[index + 2].textContent = `0 ${label}`;
                         list[index + 3].textContent = `0 ${label}, (0.00%)`;
                         list[index + 4].textContent = "[]";
+                    } else if (len < 2) {
+                        list[index + 4].textContent = (`[${data[type].trials.toString()}]`);
                     } else {
-                        let trial_min:string[] = null;
-                        max.textContent = data[type].max.toString();
-                        min.textContent = data[type].min.toString();
-                        max.setAttribute("title", "maximum value");
-                        min.setAttribute("title", "minimum value");
-                        max.setAttribute("class", "red");
-                        min.setAttribute("class", "green");
+                        let index_data:number = 0,
+                            em:HTMLElement = null;
                         list[index].textContent = `${value(data[type].min).commas()} ${label}`;
                         list[index + 1].textContent = `${value(data[type].average).commas()} ${label}`;
                         list[index + 2].textContent = `${value(data[type].max).commas()} ${label}`;
                         list[index + 3].textContent = (data[type].variance === 0 || data[type].average === 0)
                             ? `0 ${label}, (0.00%)`
                             : `\u00b1${value(data[type].variance).toFixed(9).replace(/0+$/, "")} ${label}, (${((data[type].variance / data[type].average) * 100).toFixed(2)}%)`;
-                        if (len > 1) {
-                            if (trials[0].includes(data[type].min.toString()) === true) {
-                                trial_min = trials[0].split(data[type].min.toString());
-                                list[index + 4].textContent = trial_min[0];
-                                list[index + 4].appendChild(min);
-                                list[index + 4].appendText(trial_min[1]);
-                                list[index + 4].appendChild(max);
-                                list[index + 4].appendText(trials[1]);
+                        list[index + 4].textContent = "[";
+                        do {
+                            if (data[type].trials[index_data] === data[type].max) {
+                                em = document.createElement("em");
+                                em.setAttribute("class", "red");
+                                em.setAttribute("title", "maximum value");
+                                em.textContent = data[type].max.toString();
+                                list[index + 4].appendChild(em);
+                            } else if (data[type].trials[index_data] === data[type].min) {
+                                em = document.createElement("em");
+                                em.setAttribute("class", "green");
+                                em.setAttribute("title", "minimum value");
+                                em.textContent = data[type].min.toString();
+                                list[index + 4].appendChild(em);
                             } else {
-                                trial_min = trials[1].split(data[type].min.toString());
-                                list[index + 4].textContent = trials[0];
-                                list[index + 4].appendChild(max);
-                                list[index + 4].appendText(trial_min[0]);
-                                list[index + 4].appendChild(min);
-                                list[index + 4].appendText(trial_min[1]);
+                                list[index + 4].appendText(data[type].trials[index_data].toString());
                             }
-                        } else if (len === 1) {
-                            list[index + 4].textContent = `[${data[type].trials}]`;
-                        } else {
-                            list[index + 4].textContent = "[]";
-                        }
+                            if (index_data < len - 1) {
+                                list[index + 4].appendText(", ");
+                            }
+                            index_data = index_data + 1;
+                        } while (index_data < len);
+                        list[index + 4].appendText("]");
                     }
                 };
             if (data.summary === "Test complete.") {

@@ -155,7 +155,9 @@ const receiver = function transmit_receiver(this:websocket_client, buf:Buffer):v
                     ? payload[1] - 128
                     : payload[1];
                 send(payload, socket, 8);
-                socket.destroySoon();
+                setTimeout(function transmit_receiver_evaluation_delay():void {
+                    socket.destroy();
+                }, 500);
             } else if (frame.opcode === 9) {
                 // respond to "ping" as "pong"
                 send(payload, socket, 10);

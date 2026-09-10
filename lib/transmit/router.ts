@@ -1,4 +1,5 @@
 
+import demo from "../services/demo.ts";
 import dns from "../services/dns.ts";
 import docker from "../services/docker.ts";
 import fileSystem from "../services/fileSystem.ts";
@@ -25,6 +26,7 @@ const router = function transmit_router(socketData:socket_data, transmit:transmi
         actions:transmit_receiver = {
             "services_compose_container": docker.receive,
             "services_compose_variables": docker.receive,
+            "services_demo": demo.service,
             "services_dns_input": dns,
             "services_file_system": fileSystem,
             "services_hash": hash,

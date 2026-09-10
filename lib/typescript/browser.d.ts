@@ -187,6 +187,8 @@ declare global {
         data: number[];
         fill: boolean;
         label: string;
+        pointHoverRadius: number;
+        pointRadius: number;
         showLine: boolean;
         tension: number;
     }

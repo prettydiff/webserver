@@ -55,9 +55,6 @@ vars.path.sep = node.path.sep;
     if (vars.options.test === true) {
         vars.test.testing = true;
     }
-    if (vars.options.demo === true) {
-        vars.environment.demo_kill = Date.now() + 600000;
-    }
 
     vars.path.project = (vars.test.testing === true)
         ? `${process_path}test${vars.path.sep}`

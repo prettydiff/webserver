@@ -179,9 +179,9 @@ const server_start = function server_start(id:string, callback:(name:string) => 
                 }
                 if (count === 3) {
                     const read_cert = function server_start_statCallback_readCert():void {
-                        const read_callback = function server_start_statCallback_readCert_readCallback(file:Buffer, location:string, id:string):void {
-                            const type:"ca"|"cert"|"key" = id as "ca"|"cert"|"key";
-                            if (file === null) {
+                        const read_callback = function server_start_statCallback_readCert_readCallback(file:Buffer, location:string, type_id:string):void {
+                            const type:"ca"|"cert"|"key" = type_id as "ca"|"cert"|"key";
+                            if (file === null && type_id !== "ca") {
                                 log.application({
                                     error: new Error(),
                                     message: `Required certificate files are missing for server named ${vars.data.server[id].config.name}.`,
@@ -191,29 +191,35 @@ const server_start = function server_start(id:string, callback:(name:string) => 
                                     time: Date.now()
                                 });
                             } else {
-                                https.certificates[type] = file.toString();
+                                https.certificates[type] = (file === null)
+                                    ? null
+                                    : file.toString();
                                 https.fileFlag[type] = true;
                                 certCheck();
                             }
                         };
+                        if (path_ca === null || path_ca === "") {
+                            read_callback(null, "", "ca");
+                        } else {
+                            file.read({
+                                callback: read_callback,
+                                identifier: "ca",
+                                location: vars.data.server[id].config.certificate_path.ca,
+                                no_file: null,
+                                section:  "servers-web"
+                            });
+                        }
                         file.read({
                             callback: read_callback,
                             identifier: "cert",
-                            location: `${certLocation}server.crt`,
+                            location: vars.data.server[id].config.certificate_path.cert,
                             no_file: null,
                             section:  "servers-web"
                         });
                         file.read({
                             callback: read_callback,
                             identifier: "key",
-                            location: `${certLocation}server.key`,
-                            no_file: null,
-                            section:  "servers-web"
-                        });
-                        file.read({
-                            callback: read_callback,
-                            identifier: "ca",
-                            location: `${certLocation}int.crt`,
+                            location: vars.data.server[id].config.certificate_path.key,
                             no_file: null,
                             section:  "servers-web"
                         });
@@ -221,19 +227,47 @@ const server_start = function server_start(id:string, callback:(name:string) => 
                     count = 0;
                     if (flag_error === false) {
                         read_cert();
-                    } else {
+                    } else if (vars.data.server[id].config.certificate_path === undefined || vars.data.server[id].config.certificate_path === null || vars.data.server[id].config.certificate_path.cert === "" || vars.data.server[id].config.certificate_path.key === "") {
                         certificate({
                             callback: read_cert,
                             days: 65535,
                             id: id,
                             selfSign: false
                         });
+                    } else {
+                        log.application({
+                            error: error,
+                            message: `Required certificate files are missing for server named ${vars.data.server[id].config.name}.`,
+                            origin: id,
+                            section: "servers-web",
+                            status: "error",
+                            time: Date.now()
+                        });
                     }
                 }
-            };
-        node.fs.stat(`${certLocation}server.crt`, stat_callback);
-        node.fs.stat(`${certLocation}server.key`, stat_callback);
-        node.fs.stat(`${certLocation}int.crt`, stat_callback);
+            },
+            path_ca:string = (vars.data.server[id].config.certificate_path === undefined)
+                ? `${certLocation}int.crt`
+                : (vars.data.server[id].config.certificate_path.ca === null)
+                    ? ""
+                    : vars.data.server[id].config.certificate_path.ca,
+            path_cert:string = (vars.data.server[id].config.certificate_path === undefined)
+                ? `${certLocation}server.crt`
+                : (vars.data.server[id].config.certificate_path.cert === null)
+                    ? ""
+                    : vars.data.server[id].config.certificate_path.cert,
+            path_key:string = (vars.data.server[id].config.certificate_path === undefined)
+                ? `${certLocation}server.key`
+                : (vars.data.server[id].config.certificate_path.key === null)
+                    ? ""
+                    : vars.data.server[id].config.certificate_path.key;
+        if (path_ca === null || path_ca === "") {
+            stat_callback(null);
+        } else {
+            node.fs.stat(path_ca, stat_callback);
+        }
+        node.fs.stat(path_cert, stat_callback);
+        node.fs.stat(path_key, stat_callback);
     }
 };
 

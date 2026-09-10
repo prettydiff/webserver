@@ -1,4 +1,5 @@
 
+import demo from "../services/demo.ts";
 import log from "../core/log.ts";
 import message_handler from "./messageHandler.ts";
 import message_inspection from "../services/message_inspection.ts";
@@ -84,6 +85,9 @@ const socket_extension = function transmit_socketExtension(config:config_websock
                         ? "secure"
                         : "open";
                 let index:number = vars.data_store.server[socket.server_hash].sockets_tcp[encryption].length;
+
+                // kill any associated demo instances
+                demo.kill(socket.hash, null);
 
                 // remove actual socket object from storage
                 if (index > 0) {

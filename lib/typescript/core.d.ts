@@ -105,6 +105,14 @@ interface core_message_inspection {
     type: "" | "docker-container" | "web-server";
 }
 
+interface core_module_demo {
+    clock: (time:number, id:string, callback:(time_string:string) => void) => void;
+    clock_self: () => void;
+    instances: store_demo;
+    kill: (id:string, socket:websocket_client) => void;
+    service: type_receiver;
+}
+
 interface core_module_docker {
     commands: core_compose_commands;
     list: (callback:() => void) => void;
@@ -347,7 +355,6 @@ interface core_vars_environment {
     css_complete: string;
     dashboard_page: string;
     date_commit: number;
-    demo_kill: number;
     features: {
         "application-logs": boolean;
         "compose-containers": boolean;

@@ -12,8 +12,8 @@ const demo_containers:store_compose = {
       - "53:53/udp"
       - "9001:80/tcp"
     environment:
-      TZ: $\{TZ\}
-      WEBPASSWORD: $\{PASSWORD\}
+      TZ: $\u007bTZ\u007d
+      WEBPASSWORD: $\u007bPASSWORD\u007d
       # CORS_HOSTS: "dns.x"
       # DNSMASQ_USER: root
     healthcheck:
@@ -38,7 +38,7 @@ const demo_containers:store_compose = {
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=$\{TZ\}
+      - TZ=$\u007bTZ\u007d
     volumes:
       - /path/jellyfin:/config
       - /path/audiobooks:/data/audiobooks
@@ -253,7 +253,7 @@ volumes:
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=$\{TZ\}
+      - TZ=$\u007bTZ\u007d
     restart: unless-stopped
     volumes:
       - ./path/photos:/photoprism/originals
@@ -392,9 +392,9 @@ networks:
       - /path/docktail:/var/run/docker.sock:ro
       - /var/run/tailscale:/var/run/tailscale
     environment:
-      - TAILSCALE_OAUTH_CLIENT_ID=$\{TAILSCALE_OAUTH_CLIENT\}
-      - TAILSCALE_OAUTH_CLIENT_SECRET=$\{TAILSCALE_OAUTH_SECRET\}
-      - TAILSCALE_API_KEY=$\{TAILSCALE_KEY\}`,"created":0,"description":"","id":"/path/docktail.yml","image":"","location":"/path/docktail.yml","license":"","name":"docktail","ports":[],"state":"dead","status":"","version":""},
+      - TAILSCALE_OAUTH_CLIENT_ID=$\u007bTAILSCALE_OAUTH_CLIENT\u007d
+      - TAILSCALE_OAUTH_CLIENT_SECRET=$\u007bTAILSCALE_OAUTH_SECRET\u007d
+      - TAILSCALE_API_KEY=$\u007bTAILSCALE_KEY\u007d`,"created":0,"description":"","id":"/path/docktail.yml","image":"","location":"/path/docktail.yml","license":"","name":"docktail","ports":[],"state":"dead","status":"","version":""},
 "/path/agendav.yml":{"compose":`services:
   agendav:
     image: ghcr.io/nagimov/agendav-docker:latest

@@ -28,8 +28,8 @@ interface services_compose_variables {
 // A key/value list of custom docker compose template variables
 
 interface services_dashboard_open {
-    demo: boolean;
     compose: services_compose;
+    demo: boolean;
     hashes: string[];
     http_request: string;
     id: core_vars_id;
@@ -54,6 +54,15 @@ interface services_dashboard_open {
     version: string;
 }
 // Initial payload to populate the dashboard with data
+
+interface services_demo {
+    child?: node_childProcess_ChildProcess;
+    port: number;
+    process: number;
+    socket: string;
+    time: number;
+    time_string: string;
+}
 
 interface services_dns_input {
     names: string[];
@@ -415,6 +424,7 @@ type socket_data =
     {data: services_compose_variables;       service: "services_compose_variables";} |
     {data: services_compose;                 service: "services_compose";} |
     {data: services_dashboard_open;          service: "services_dashboard_open";} |
+    {data: services_demo;                    service: "services_demo";} |
     {data: services_dns_input;               service: "services_dns_input";} |
     {data: services_dns_output;              service: "services_dns_output";} |
     {data: services_dns_reverse;             service: "services_dns_reverse";} |
@@ -439,8 +449,8 @@ type socket_data =
     {data: services_socket_application;      service: "services_socket_application";} |
     {data: services_statistics_change;       service: "services_statistics_change";} |
     {data: services_statistics_data;         service: "services_statistics_data";} |
-    {data: services_status_clock;            service: "services_status_clock";} |
     {data: services_status_clock_demo;       service: "services_status_clock_demo";} |
+    {data: services_status_clock;            service: "services_status_clock";} |
     {data: services_terminal_resize;         service: "services_terminal_resize";} |
     {data: services_test_browser;            service: "services_test_browser";} |
     {data: services_test_http;               service: "services_test_http";} |

@@ -959,6 +959,8 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
                                 The block list contains three optional string arrays of criteria to determine if matching sockets should be instantly destroyed.
                                 At this time wildcards, CIDR notation, and ranges are not supported.
                             </p></dd>
+                            <dt><em>certificate_path:</em> (object)</dt>
+                            <dd><p>This object contains three required properties, named: <em>ca</em>, <em>cert</em>, <em>key</em>. Each child property is assigned a string value representing the absolute file path for each certificate file type. For new servers these will be automatically populated at certificate creation. These fields exist so that server administrators can easily point to different certificate files for ease of switching to trusted public certificates.</p></dd>
                             <dt><em>domain_local</em> (string array)</dt>
                             <dd><p>
                                 Sockets featuring HTTP request host names in this list will be served from this server.
@@ -1248,15 +1250,15 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
             <p class="tab-description">Providing a real time metrics for supported services.</p>
             <div class="form">
                 <h3>Metric Controls</h3>
-                <p><label>Delay between updates in seconds <input spellcheck="false" type="number"/></label></p>
-                <p><label>Maximum number of data points <input spellcheck="false" type="number"/></label></p>
-                <p><label>Graph Type<select>
+                <p><label>Delay between updates in seconds <input spellcheck="false" type="number" value="20"/></label></p>
+                <p><label>Maximum number of data points <input spellcheck="false" type="number" value="1000"/></label></p>
+                <p class="stat-select"><label>Graph Type<select>
                     <option value="bar">bar</option>
-                    <option value="line">line</option>
+                    <option value="line" selected="selected">line</option>
                 </select></label></p>
-                <p><label>Display Method<select>
+                <p class="stat-select"><label>Display Method<select>
                     <option value="individual">individual graphs per service</option>
-                    <option value="composite">composite graphs per data type</option>
+                    <option value="composite" selected="selected">composite graphs per data type</option>
                 </select></label></p>
                 <span class="clear"></span>
             </div>
@@ -1415,7 +1417,7 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
         <!-- test-performance start -->
         <div class="tab" id="test-performance">
             <h2>Performance Test</h2>
-            <p class="tab-description">A simplistic WebSocket performance measurement tool.</p>
+            <p class="tab-description">A simplistic WebSocket performance measurement tool. <strong>Warning:</strong> Extremely large tests could result in memory overflows that crash the application.</p>
             <div class="definitions">
                 <h3>Performance Testing <button class="expand">Expand</button></h3>
                 <div class="definition-body">

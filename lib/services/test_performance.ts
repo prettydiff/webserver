@@ -104,10 +104,10 @@ const test_performance = function services_testPerformance(socket_data:socket_da
             if (measure === data.measure) {
                 socket_test.destroy();
                 const index_value:number = (measure === "roundtrip")
-                    ? 2
-                    : 1;
+                        ? 2
+                        : 1,
+                    mem:os_node_memoryUsage = process.memoryUsage();
                 test_time[test_time.length - 1][index_value] = process.hrtime.bigint();
-                const mem:os_node_memoryUsage = process.memoryUsage();
                 memory[memory.length - 1][1] = mem.heapUsed;
                 index_test = index_test + 1;
                 if (index_test < data.quantity_tests) {
@@ -173,7 +173,7 @@ const test_performance = function services_testPerformance(socket_data:socket_da
                                 let index:number = data.quantity_transmit;
                                 socket_test.segmentation = data.frame_body_size;
                                 socket_test.proxy = transmit.socket as websocket_client;
-                                socket_test.queue_callback = function services_testPerformance_testWebSocket_hash_socket_queueCallback():void {
+                                socket_test.queue_callback = function services_testPerformance_testWebSocket_hash_create_queueCallback():void {
                                     if (index < 1) {
                                         complete("send", socket_test);
                                     }
@@ -181,7 +181,9 @@ const test_performance = function services_testPerformance(socket_data:socket_da
                                 if (index > 0) {
                                     do {
                                         index = index - 1;
-                                        send(data.body, socket_test, 1);
+                                        setTimeout(function services_testPerformance_testWebSocket_hash_create_send():void {
+                                            send(data.body, socket_test, 1);
+                                        }, 0);
                                     } while (index > 0);
                                 }
                             }
@@ -223,6 +225,14 @@ const test_performance = function services_testPerformance(socket_data:socket_da
             }
         };
     if (typeof data.quantity_tests === "number" && typeof data.quantity_transmit === "number" && data.quantity_tests > 0 && data.quantity_transmit > 0) {
+        if (vars.options.demo === true) {
+            if (data.quantity_tests > 10) {
+                data.quantity_tests = 10;
+            }
+            if (data.quantity_transmit > 1000) {
+                data.quantity_transmit = 1000;
+            }
+        }
         time_start = process.hrtime.bigint();
         test_type();
     } else {
