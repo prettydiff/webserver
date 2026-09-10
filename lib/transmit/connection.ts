@@ -601,14 +601,14 @@ const connection = function transmit_connection(this:core_server_instance, TLS_s
                 type: "web-server"
             });
 
-            // origin is in the socket's redirect_domain list
+            // origin is not in the socket's domain_local or redirect_domain lists
             if (blocked === true || (domain_local.includes(store.origin) === false && socket.proxy === null)) {
                 socket.destroy();
-            // TLS data sent to open server - proxy the socket to the server's TLS port
+            // TLS data sent to open server - proxy the socket to the server's TLS port, if one is running
             } else if (data[0] === 22 && socket.addresses.local.port === server.ports.open && vars.data.server[server_id].ports.secure > 0) {
                 store.domain = `open_socket_tunnel-${vars.data.server[server_id].config.name}`;
                 proxy_create(address.local.address, vars.data.server[server_id].ports.secure, false);
-            // origin in specified block list or requested origin is not in domain_local list
+            // request indicates need for a proxy
             } else if (domain_redirect === true) {
                 const pair:[string, number] = (socket.encrypted === true)
                         ? server.redirect_domain[`${store.origin}.secure`]
@@ -628,7 +628,7 @@ const connection = function transmit_connection(this:core_server_instance, TLS_s
                 }
                 store.domain = `tls_socket_redirect-${vars.data.server[server_id].config.name}`;
                 proxy_create(host, port, socket.encrypted);
-            // redirect TLS connections sent to open servers instead to secure server peer if one is active
+            // request is an HTTP upgrade
             } else if (flags.upgrade === true as boolean && flags.dashboard_http_test === false) {
                 // * server option 'upgrade' must be true
                 // * must be http request with header 'upgrade-insecure-requests: 1'
