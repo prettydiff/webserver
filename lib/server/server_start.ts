@@ -174,7 +174,7 @@ const server_start = function server_start(id:string, callback:(name:string) => 
             },
             stat_callback = function server_start_statCallback(error:node_error):void {
                 count = count + 1;
-                if (error !== null) {
+                if (error !== null && error.path !== "null") {
                     flag_error = true;
                 }
                 if (count === 3) {
@@ -243,6 +243,10 @@ const server_start = function server_start(id:string, callback:(name:string) => 
                             status: "error",
                             time: Date.now()
                         });
+                        if (vars.environment.loading === true) {
+                            // eslint-disable-next-line no-console
+                            console.log(`Required certificate files are missing for server named ${vars.data.server[id].config.name}.`);
+                        }
                     }
                 }
             },
