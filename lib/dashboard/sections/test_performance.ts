@@ -151,13 +151,13 @@ const ui_test_performance = function ui_test_performance():void {
                             if (data[type].trials[index_data] === data[type].max) {
                                 em = document.createElement("em");
                                 em.setAttribute("class", "red");
-                                em.setAttribute("title", "maximum value")
+                                em.setAttribute("title", "maximum value");
                                 em.textContent = data[type].max.toString();
                                 list[index + 4].appendChild(em);
                             } else if (data[type].trials[index_data] === data[type].min) {
                                 em = document.createElement("em");
                                 em.setAttribute("class", "green");
-                                em.setAttribute("title", "minimum value")
+                                em.setAttribute("title", "minimum value");
                                 em.textContent = data[type].min.toString();
                                 list[index + 4].appendChild(em);
                             } else {

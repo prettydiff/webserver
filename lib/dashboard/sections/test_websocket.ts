@@ -40,7 +40,7 @@ const ui_test_websocket = function ui_test_websocket():void {
                 dashboard.message.send({data: payload, service: "services_websocket_handshake"});
                 dashboard.utility.setState();
             },
-            keyup_frame: function dashboard_sections_websocketTest_keyupFrame(event:Event):void {
+            keyup_frame: function dashboard_sections_websocketTest_keyupFrame():void {
                 const encodeLength:TextEncoder = new TextEncoder(),
                     text:string = dashboard.sections["test-websocket"].nodes.message_send_body.value,
                     textLength:number = encodeLength.encode(text).length,

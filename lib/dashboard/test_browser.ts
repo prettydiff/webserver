@@ -339,7 +339,7 @@ const test_browser = function testBrowser(socketData:socket_data):void {
         },
 
         /* Process a single event instance */
-        event: function testBrowser_event(item:services_test_browser, pageLoad:boolean):void {
+        event: function testBrowser_event(item:services_test_browser):void {
             if (item.index > remote.index || remote.index < 0) {
                 remote.index = item.index;
                 remote.suite_name = item.suite_name;

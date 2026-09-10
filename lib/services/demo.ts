@@ -99,7 +99,14 @@ const demo:core_module_demo = {
             child.on("exit", function services_demo_service_exit():void {
                 demo.kill(hash, socket);
             });
+            if (process.argv.includes("verbose") === true) {
+                child.stdout.on("data", function services_demo_service_stdout(stdout:Buffer):void {
+                    // eslint-disable-next-line no-console
+                    console.log(stdout.toString());
+                });
+            }
             child.stderr.on("data", function services_demo_service_stderr(stderr:Buffer):void {
+                // eslint-disable-next-line no-restricted-syntax
                 try {
                     const data:services_demo = JSON.parse(stderr.toString()),
                         payload:services_demo = {
@@ -111,7 +118,7 @@ const demo:core_module_demo = {
                             time_string: ""
                         };
                     demo.instances[socket.hash] = payload;
-                    demo.clock(data.time, hash, function services_demo_service_stderr_clock(time_string):void {
+                    demo.clock(data.time, hash, function services_demo_service_stderr_clock(time_string:string):void {
                         demo.instances[socket.hash].time_string = time_string;
                         if (socket !== null) {
                             const payload_send:services_demo = {
@@ -127,7 +134,7 @@ const demo:core_module_demo = {
                             }, socket, 3);
                         }
                     });
-                } catch (e:unknown) {
+                } catch(e:unknown) {
                     const payload:services_demo = {
                         port: 0,
                         process: 0,

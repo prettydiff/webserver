@@ -104,10 +104,10 @@ const test_performance = function services_testPerformance(socket_data:socket_da
             if (measure === data.measure) {
                 socket_test.destroy();
                 const index_value:number = (measure === "roundtrip")
-                    ? 2
-                    : 1;
+                        ? 2
+                        : 1,
+                    mem:os_node_memoryUsage = process.memoryUsage();
                 test_time[test_time.length - 1][index_value] = process.hrtime.bigint();
-                const mem:os_node_memoryUsage = process.memoryUsage();
                 memory[memory.length - 1][1] = mem.heapUsed;
                 index_test = index_test + 1;
                 if (index_test < data.quantity_tests) {

@@ -69,7 +69,7 @@ const ui_message = function ui_message():void {
                         JSON.stringify(dashboard.global.payload).length.commas(),
                         dashboard.global.payload
                     ];
-                }
+                };
                 dashboard.global.loaded = true;
             }
         },

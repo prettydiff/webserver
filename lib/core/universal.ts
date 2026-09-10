@@ -141,6 +141,7 @@ const utilities:core_module_universal = {
 
     },
     file_sanitize: function core_fileSanitize(this:string):string {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         let input:string = this;
         if (process.platform === "win32") {
             input = input.replace(/\\|:/g, "")
