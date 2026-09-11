@@ -78,6 +78,9 @@ const demo:core_module_demo = {
             hash:string = (socket === null)
                 ? "local"
                 : socket.hash;
+        if (Object.keys(demo.instances).length > 49) {
+            return;
+        }
         if (demo.instances[hash] === undefined) {
             const args:string[] = (function services_demo_service_args():string[] {
                     const len:number = process.argv.length,
