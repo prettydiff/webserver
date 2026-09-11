@@ -84,6 +84,9 @@ const server_create = function services_serverCreate(data:services_server_action
                     };
                 }
                 if (vars.options.demo === true) {
+                    if (Object.keys(vars.data.server).length > 2) {
+                        return;
+                    }
                     config.encryption = "open";
                 }
                 if (vars.data.server[config.id] === undefined) {
