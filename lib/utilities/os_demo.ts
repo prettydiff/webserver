@@ -343,8 +343,8 @@ const os_demo = function utilities_osDemo(type_os:type_os_services, callback:(ou
                 USER: "root",
                 HOME: "/root",
                 SHELL: "/bin/bash",
-                SUDO_COMMAND: "/home/cheney/.nvm/versions/node/v26.7.0/bin/node /home/cheney/webserver/lib/index.ts",
-                SUDO_USER: "cheney",
+                SUDO_COMMAND: "/home/user/.nvm/versions/node/v26.7.0/bin/node /home/user/aphorio/lib/index.ts",
+                SUDO_USER: "user",
                 SUDO_UID: "1000",
                 SUDO_GID: "1000"
                 },
@@ -367,12 +367,12 @@ const os_demo = function utilities_osDemo(type_os:type_os_services, callback:(ou
                 admin: true,
                 arch: "x64",
                 argv: [
-                "/home/cheney/.nvm/versions/node/v26.7.0/bin/node",
-                "/home/cheney/webserver/lib/index.ts"
+                "/home/user/.nvm/versions/node/v26.7.0/bin/node",
+                "/home/user/aphorio/lib/index.ts"
                 ],
                 cpuSystem: 0.03088,
                 cpuUser: 0.443905,
-                cwd: "/home/cheney/webserver",
+                cwd: "/home/user/aphorio",
                 memory: { external: 8273615, rss: 129601536, V8: 21221840 },
                 pid: 3451951,
                 platform: "linux",
@@ -2747,7 +2747,7 @@ const os_demo = function utilities_osDemo(type_os:type_os_services, callback:(ou
                 },
                 {
                     lastLogin: 1788288556000,
-                    name: "cheney",
+                    name: "user",
                     proc: 99,
                     type: "user",
                     uid: 1000
@@ -2782,9 +2782,9 @@ const os_demo = function utilities_osDemo(type_os:type_os_services, callback:(ou
             service: "services_os_all"
         });
     } else if (type_os === "main") {
-        const output:services_os_main = main;
+        vars.os.main = main;
         callback({
-            data: output,
+            data: main,
             service: "services_os_main"
         });
     } else if (type_os === "devs") {

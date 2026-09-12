@@ -228,9 +228,11 @@ const test_performance = function services_testPerformance(socket_data:socket_da
         if (vars.options.demo === true) {
             if (data.quantity_tests > 10) {
                 data.quantity_tests = 10;
+                output.quantity_tests = data.quantity_tests;
             }
             if (data.quantity_transmit > 1000) {
                 data.quantity_transmit = 1000;
+                output.quantity_transmit = data.quantity_transmit;
             }
         }
         time_start = process.hrtime.bigint();
